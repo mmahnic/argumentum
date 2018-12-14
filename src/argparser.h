@@ -1,23 +1,62 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 
 class CArgumentParser
 {
 public:
+   class Value
+   {
+   public:
+      virtual void setValue( const std::string& value ) = 0;
+   };
+
+   class String: public Value
+   {
+      std::string& mValue;
+   public:
+      String( std::string& value )
+         : mValue( value )
+      {}
+
+      void setValue( const std::string& value ) override
+      {
+         mValue = value;
+      }
+   };
+
+   class Int: public Value
+   {
+      long& mValue;
+   public:
+      Int( long& value )
+         : mValue( value )
+      {}
+
+      void setValue( const std::string& value ) override
+      {
+         mValue = std::stol( value );
+      }
+   };
+
    class CParameter
    {
       friend class CArgumentParser;
    private:
-      std::string& mValue;
+      std::unique_ptr<Value> mpValue;
       std::string mShortName;
       std::string mLongName;
 
    public:
       CParameter( std::string& value )
-         : mValue( value )
-      { }
+         : mpValue( std::make_unique<String>(value) )
+      {}
+
+      CParameter( long& value )
+         : mpValue( std::make_unique<Int>(value) )
+      {}
 
       CParameter& shortName( const std::string& name )
       {
@@ -42,6 +81,12 @@ public:
       return mParameters.back();
    }
 
+   CParameter& addParameter( long& value )
+   {
+      mParameters.emplace_back( value );
+      return mParameters.back();
+   }
+
    void parseArguments( const std::vector<std::string>& args )
    {
       int iparam = -1;
@@ -54,7 +99,7 @@ public:
 
          if ( name.empty() ) {
             if ( iparam >= 0 )
-               mParameters[iparam].mValue = arg;
+               mParameters[iparam].mpValue->setValue( arg );
          }
          else {
             iparam = -1;

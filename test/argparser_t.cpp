@@ -22,3 +22,14 @@ TEST( CArgumentParserTest, shouldParseLongArguments )
 
    EXPECT_EQ( "success", value );
 }
+
+TEST( CArgumentParserTest, shouldParseIntegerValues )
+{
+   long value;
+
+   CArgumentParser parser;
+   parser.addParameter( value ).shortName( "v" ).longName( "value" );
+   parser.parseArguments( { "--value", "2314" } );
+
+   EXPECT_EQ( 2314, value );
+}
