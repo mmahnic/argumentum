@@ -65,3 +65,39 @@ TEST( CArgumentParserTest, shouldOnlyAddOptionValueIfRequired )
    // TODO: This can be changed with the flagValue() parameter option.
    EXPECT_EQ( "1", flag.value() );
 }
+
+TEST( CArgumentParserTest, shouldSkipParsingOptionsAfterDashDash )
+{
+   std::optional<long> value;
+   std::optional<std::string> flag;
+
+   CArgumentParser parser;
+   parser.addOption( value ).shortName( "v" ).longName( "value" ).hasArgument();
+   parser.addOption( flag ).longName( "skipped" );
+
+   parser.parseArguments( { "--value", "2314", "--", "--skipped" } );
+
+   EXPECT_EQ( 2314, value.value() );
+   EXPECT_FALSE( bool(flag) );
+}
+
+TEST( CArgumentParserTest, shouldSupportShortOptionGroups )
+{
+   std::optional<long> flagA;
+   std::optional<std::string> flagB;
+   std::optional<std::string> flagC;
+   std::optional<long> flagD;
+
+   CArgumentParser parser;
+   parser.addOption( flagA ).shortName( "a" );
+   parser.addOption( flagB ).shortName( "b" );
+   parser.addOption( flagC ).shortName( "c" );
+   parser.addOption( flagD ).shortName( "d" );
+
+   parser.parseArguments( { "-abd" } );
+
+   EXPECT_EQ( 1, flagA.value() );
+   EXPECT_EQ( "1", flagB.value() );
+   EXPECT_FALSE( bool(flagC) );
+   EXPECT_EQ( 1, flagD.value() );
+}
