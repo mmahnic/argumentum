@@ -49,6 +49,7 @@ public:
       std::unique_ptr<Value> mpValue;
       std::string mShortName;
       std::string mLongName;
+      bool mHasArgument = false;
 
    public:
       CParameter( std::optional<std::string>& value )
@@ -68,6 +69,12 @@ public:
       CParameter& longName( const std::string& name )
       {
          mLongName = name;
+         return *this;
+      }
+
+      CParameter& hasArgument( bool hasArg=true )
+      {
+         mHasArgument = hasArg;
          return *this;
       }
    };
@@ -99,17 +106,29 @@ public:
             name = arg.substr( 1 );
 
          if ( name.empty() ) {
-            if ( iparam >= 0 )
+            if ( iparam >= 0 && mParameters[iparam].mHasArgument )
                mParameters[iparam].mpValue->setValue( arg );
+            else
+               addFreeArgument( arg );
          }
          else {
             iparam = -1;
             for ( int i = 0; i < mParameters.size(); ++i ) {
                auto& param = mParameters[i];
-               if ( param.mShortName == name || param.mLongName == name )
-                  iparam = i;
+               if ( param.mShortName == name || param.mLongName == name ) {
+                  if ( param.mHasArgument )
+                     iparam = i;
+                  else
+                     param.mpValue->setValue( "1" );
+               }
             }
          }
       }
+   }
+
+private:
+   void addFreeArgument( const std::string& arg )
+   {
+      // TODO: add arg to the list of free arguments
    }
 };
