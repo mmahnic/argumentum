@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <optional>
 
 class CArgumentParser
 {
@@ -15,9 +16,9 @@ public:
 
    class String: public Value
    {
-      std::string& mValue;
+      std::optional<std::string>& mValue;
    public:
-      String( std::string& value )
+      String( std::optional<std::string>& value )
          : mValue( value )
       {}
 
@@ -29,9 +30,9 @@ public:
 
    class Int: public Value
    {
-      long& mValue;
+      std::optional<long>& mValue;
    public:
-      Int( long& value )
+      Int( std::optional<long>& value )
          : mValue( value )
       {}
 
@@ -50,11 +51,11 @@ public:
       std::string mLongName;
 
    public:
-      CParameter( std::string& value )
+      CParameter( std::optional<std::string>& value )
          : mpValue( std::make_unique<String>(value) )
       {}
 
-      CParameter( long& value )
+      CParameter( std::optional<long>& value )
          : mpValue( std::make_unique<Int>(value) )
       {}
 
@@ -75,13 +76,13 @@ private:
    std::vector<CParameter> mParameters;
 
 public:
-   CParameter& addParameter( std::string& value )
+   CParameter& addParameter( std::optional<std::string>& value )
    {
       mParameters.emplace_back( value );
       return mParameters.back();
    }
 
-   CParameter& addParameter( long& value )
+   CParameter& addParameter( std::optional<long>& value )
    {
       mParameters.emplace_back( value );
       return mParameters.back();
