@@ -12,6 +12,7 @@ public:
    private:
       std::string& mValue;
       std::string mShortName;
+      std::string mLongName;
 
    public:
       CParameter( std::string& value )
@@ -21,6 +22,12 @@ public:
       CParameter& shortName( const std::string& name )
       {
          mShortName = name;
+         return *this;
+      }
+
+      CParameter& longName( const std::string& name )
+      {
+         mLongName = name;
          return *this;
       }
    };
@@ -53,7 +60,7 @@ public:
             iparam = -1;
             for ( int i = 0; i < mParameters.size(); ++i ) {
                auto& param = mParameters[i];
-               if ( param.mShortName == name )
+               if ( param.mShortName == name || param.mLongName == name )
                   iparam = i;
             }
          }
