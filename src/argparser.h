@@ -98,19 +98,20 @@ public:
    void parseArguments( const std::vector<std::string>& args )
    {
       bool ignoreOptions = false;
-      int iparam = -1;
+      // The active option will receive additional argument(s)
+      int activeOption = -1;
 
-      auto handleOption = [this, &iparam]( std::string_view name ) {
-         iparam = -1;
-         for ( int i = 0; i < mOptions.size(); ++i ) {
+      auto handleOption = [this]( std::string_view name ) -> int {
+         for ( unsigned i = 0; i < mOptions.size(); ++i ) {
             auto& option = mOptions[i];
             if ( option.mShortName == name || option.mLongName == name ) {
                if ( option.mHasArgument )
-                  iparam = i;
+                  return i;
                else
                   option.mpValue->setValue( "1" );
             }
          }
+         return -1;
       };
 
       for ( auto& arg : args ) {
@@ -126,19 +127,19 @@ public:
 
          auto arg_view = std::string_view( arg );
          if ( arg_view.substr( 0, 2 ) == "--" )
-            handleOption( arg.substr( 2 ) );
+            activeOption = handleOption( arg.substr( 2 ) );
          else if ( arg_view.substr( 0, 1 ) == "-" ) {
             for ( int i = 1; i < arg_view.size(); ++i )
-               handleOption( arg_view.substr( i, 1 ));
+               activeOption = handleOption( arg_view.substr( i, 1 ));
          }
          else {
-            if ( iparam >= 0 && mOptions[iparam].mHasArgument )
-               mOptions[iparam].mpValue->setValue( arg );
+            if ( activeOption >= 0 && mOptions[activeOption].mHasArgument )
+               mOptions[activeOption].mpValue->setValue( arg );
             else
                addFreeArgument( arg );
 
-            // NOTE: For now we assume ther is at most one argument per option
-            iparam = -1;
+            // NOTE: For now we assume there is at most one argument per option
+            activeOption = -1;
          }
 
       }
