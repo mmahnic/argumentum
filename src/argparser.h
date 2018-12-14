@@ -42,7 +42,7 @@ public:
       }
    };
 
-   class CParameter
+   class COption
    {
       friend class CArgumentParser;
    private:
@@ -52,27 +52,27 @@ public:
       bool mHasArgument = false;
 
    public:
-      CParameter( std::optional<std::string>& value )
+      COption( std::optional<std::string>& value )
          : mpValue( std::make_unique<String>(value) )
       {}
 
-      CParameter( std::optional<long>& value )
+      COption( std::optional<long>& value )
          : mpValue( std::make_unique<Int>(value) )
       {}
 
-      CParameter& shortName( const std::string& name )
+      COption& shortName( const std::string& name )
       {
          mShortName = name;
          return *this;
       }
 
-      CParameter& longName( const std::string& name )
+      COption& longName( const std::string& name )
       {
          mLongName = name;
          return *this;
       }
 
-      CParameter& hasArgument( bool hasArg=true )
+      COption& hasArgument( bool hasArg=true )
       {
          mHasArgument = hasArg;
          return *this;
@@ -80,19 +80,19 @@ public:
    };
 
 private:
-   std::vector<CParameter> mParameters;
+   std::vector<COption> mOptions;
 
 public:
-   CParameter& addParameter( std::optional<std::string>& value )
+   COption& addOption( std::optional<std::string>& value )
    {
-      mParameters.emplace_back( value );
-      return mParameters.back();
+      mOptions.emplace_back( value );
+      return mOptions.back();
    }
 
-   CParameter& addParameter( std::optional<long>& value )
+   COption& addOption( std::optional<long>& value )
    {
-      mParameters.emplace_back( value );
-      return mParameters.back();
+      mOptions.emplace_back( value );
+      return mOptions.back();
    }
 
    void parseArguments( const std::vector<std::string>& args )
@@ -106,20 +106,20 @@ public:
             name = arg.substr( 1 );
 
          if ( name.empty() ) {
-            if ( iparam >= 0 && mParameters[iparam].mHasArgument )
-               mParameters[iparam].mpValue->setValue( arg );
+            if ( iparam >= 0 && mOptions[iparam].mHasArgument )
+               mOptions[iparam].mpValue->setValue( arg );
             else
                addFreeArgument( arg );
          }
          else {
             iparam = -1;
-            for ( int i = 0; i < mParameters.size(); ++i ) {
-               auto& param = mParameters[i];
-               if ( param.mShortName == name || param.mLongName == name ) {
-                  if ( param.mHasArgument )
+            for ( int i = 0; i < mOptions.size(); ++i ) {
+               auto& option = mOptions[i];
+               if ( option.mShortName == name || option.mLongName == name ) {
+                  if ( option.mHasArgument )
                      iparam = i;
                   else
-                     param.mpValue->setValue( "1" );
+                     option.mpValue->setValue( "1" );
                }
             }
          }
