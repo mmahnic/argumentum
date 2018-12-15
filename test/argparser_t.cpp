@@ -232,3 +232,14 @@ TEST( CArgumentParserTest, shouldSupportFlagValues )
    res = parser.parseArguments( { "-b", "-a" } );
    EXPECT_EQ( "from-a", flag.value() );
 }
+
+TEST( CArgumentParserTest, shouldSupportFloatingPointValues )
+{
+   std::optional<double> value;
+
+   CArgumentParser parser;
+   parser.addOption( value ).shortName( "a" ).hasArgument();
+
+   auto res = parser.parseArguments( { "-a", "23.5" } );
+   EXPECT_NEAR( 23.5, value.value(), 1e-9 );
+}

@@ -57,6 +57,21 @@ public:
       }
    };
 
+   class Float: public Value
+   {
+      std::optional<double>& mValue;
+   public:
+      Float( std::optional<double>& value )
+         : mValue( value )
+      {}
+
+   protected:
+      void doSetValue( const std::string& value ) override
+      {
+         mValue = std::stod( value );
+      }
+   };
+
    class Option
    {
    private:
@@ -74,6 +89,10 @@ public:
 
       Option( std::optional<long>& value )
          : mpValue( std::make_unique<Int>(value) )
+      {}
+
+      Option( std::optional<double>& value )
+         : mpValue( std::make_unique<Float>(value) )
       {}
 
       template<typename TValue>
@@ -302,6 +321,12 @@ public:
    }
 
    Option& addOption( std::optional<long>& value )
+   {
+      mOptions.emplace_back( value );
+      return mOptions.back();
+   }
+
+   Option& addOption( std::optional<double>& value )
    {
       mOptions.emplace_back( value );
       return mOptions.back();
