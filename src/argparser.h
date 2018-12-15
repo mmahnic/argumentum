@@ -59,7 +59,6 @@ public:
 
    class Option
    {
-      friend class CArgumentParser;
    private:
       std::unique_ptr<Value> mpValue;
       std::string mShortName;
@@ -100,9 +99,34 @@ public:
          return *this;
       }
 
+      bool isRequired() const
+      {
+         return mIsRequired;
+      }
+
+      bool isArgumentExpected() const
+      {
+         return mHasArgument;
+      }
+
       const std::string& name() const
       {
          return mLongName.empty() ? mShortName : mLongName;
+      }
+
+      bool hasName( std::string_view name ) const
+      {
+         return name == mShortName || name == mLongName;
+      }
+
+      void setValue( const std::string& value )
+      {
+         mpValue->setValue( value );
+      }
+
+      bool hasValue() const
+      {
+         return mpValue->hasValue();
       }
    };
 
@@ -154,7 +178,7 @@ private:
       {
          if ( mActiveOption >= 0 ) {
             auto& option = mArgParser.mOptions[mActiveOption];
-            if ( !option.mpValue->hasValue() ) {
+            if ( !option.hasValue() ) {
                addError( option.name(), MISSING_ARGUMENT );
                closeOption();
                return;
@@ -164,15 +188,15 @@ private:
          auto nopt = mArgParser.mOptions.size();
          for ( unsigned i = 0; i < nopt; ++i ) {
             auto& option = mArgParser.mOptions[i];
-            if ( option.mShortName == name || option.mLongName == name ) {
-               if ( option.mHasArgument )
+            if ( option.hasName( name ) ) {
+               if ( option.isArgumentExpected() )
                   mActiveOption = i;
                else
                   setValue( option, "1" );
                return;
             }
          }
-         addError( std::string{name}, UNKNOWN_OPTION );
+         addError( name, UNKNOWN_OPTION );
          closeOption();
       }
 
@@ -186,7 +210,7 @@ private:
          mResult.freeArguments.push_back( arg );
       }
 
-      void addError( const std::string& optionName, int errorCode )
+      void addError( std::string_view optionName, int errorCode )
       {
          mResult.errors.emplace_back( optionName, errorCode );
       }
@@ -194,7 +218,7 @@ private:
       void setValue( Option& option, const std::string& value )
       {
          try {
-            option.mpValue->setValue( value );
+            option.setValue( value );
          }
          catch( std::invalid_argument ) {
             addError( option.name(), CONVERSION_ERROR );
@@ -228,7 +252,7 @@ private:
             else {
                if ( mActiveOption >= 0 ) {
                   auto& option = mArgParser.mOptions[mActiveOption];
-                  if ( option.mHasArgument )
+                  if ( option.isArgumentExpected() )
                      setValue(option, arg );
                   // NOTE: For now we assume there is at most one argument per option
                   closeOption();
@@ -270,7 +294,7 @@ private:
    void reportMissingOptions( ParseResult& result )
    {
       for ( auto& option : mOptions )
-         if ( option.mIsRequired && !option.mpValue->hasValue() )
+         if ( option.isRequired() && !option.hasValue() )
             result.errors.emplace_back( option.name(), MISSING_OPTION );
    }
 };
