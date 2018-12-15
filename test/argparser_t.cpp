@@ -101,3 +101,25 @@ TEST( CArgumentParserTest, shouldSupportShortOptionGroups )
    EXPECT_FALSE( bool(flagC) );
    EXPECT_EQ( 1, flagD.value() );
 }
+
+TEST( CArgumentParserTest, shouldReadArgumentForLastOptionInGroup )
+{
+   std::optional<long> flagA;
+   std::optional<std::string> flagB;
+   std::optional<std::string> flagC;
+   std::optional<long> flagD;
+
+   CArgumentParser parser;
+   parser.addOption( flagA ).shortName( "a" );
+   parser.addOption( flagB ).shortName( "b" );
+   parser.addOption( flagC ).shortName( "c" );
+   parser.addOption( flagD ).shortName( "d" ).hasArgument();
+
+   parser.parseArguments( { "-abd", "4213" } );
+
+   EXPECT_EQ( 1, flagA.value() );
+   EXPECT_EQ( "1", flagB.value() );
+   EXPECT_FALSE( bool(flagC) );
+   EXPECT_EQ( 4213, flagD.value() );
+}
+
