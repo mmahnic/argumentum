@@ -5,7 +5,9 @@
 #include <vector>
 #include <optional>
 
-class CArgumentParser
+namespace argparse {
+
+class ArgumentParser
 {
 public:
    class Value
@@ -199,14 +201,14 @@ public:
 private:
    class Parser
    {
-      CArgumentParser& mArgParser;
+      ArgumentParser& mArgParser;
       bool mIgnoreOptions = false;
       // The active option will receive additional argument(s)
       Option* mpActiveOption = nullptr;
       ParseResult mResult;
 
    public:
-      Parser( CArgumentParser& argParser )
+      Parser( ArgumentParser& argParser )
          : mArgParser( argParser )
       {}
 
@@ -355,3 +357,5 @@ private:
             result.errors.emplace_back( option.getName(), MISSING_OPTION );
    }
 };
+
+}
