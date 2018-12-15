@@ -65,6 +65,7 @@ public:
       std::string mShortName;
       std::string mLongName;
       bool mHasArgument = false;
+      bool mIsRequired = false;
 
    public:
       Option( std::optional<std::string>& value )
@@ -93,6 +94,12 @@ public:
          return *this;
       }
 
+      Option& required( bool isRequired=true )
+      {
+         mIsRequired = isRequired;
+         return *this;
+      }
+
       const std::string& name() const
       {
          return mLongName.empty() ? mShortName : mLongName;
@@ -102,6 +109,7 @@ public:
    // Errors known by the parser
    enum EError {
       UNKNOWN_OPTION,
+      MISSING_OPTION,
       MISSING_ARGUMENT,
       CONVERSION_ERROR
    };
@@ -229,6 +237,7 @@ private:
                   addFreeArgument( arg );
             }
          }
+
          return std::move( mResult );
       }
    };
@@ -252,6 +261,16 @@ public:
    ParseResult parseArguments( const std::vector<std::string>& args )
    {
       Parser parser( *this );
-      return parser.parse( args );
+      auto result = parser.parse( args );
+      reportMissingOptions( result );
+      return result;
+   }
+
+private:
+   void reportMissingOptions( ParseResult& result )
+   {
+      for ( auto& option : mOptions )
+         if ( option.mIsRequired && !option.mpValue->hasValue() )
+            result.errors.emplace_back( option.name(), MISSING_OPTION );
    }
 };

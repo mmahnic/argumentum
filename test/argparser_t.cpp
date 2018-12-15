@@ -137,6 +137,7 @@ TEST( CArgumentParserTest, shouldReportErrorForMissingArgument )
    EXPECT_EQ( "a", res.errors.front().option );
    ASSERT_EQ( 1, res.freeArguments.size() );
    EXPECT_EQ( "freearg", res.freeArguments.front() );
+   EXPECT_EQ( CArgumentParser::MISSING_ARGUMENT, res.errors.front().errorCode );
 }
 
 TEST( CArgumentParserTest, shouldReportBadConversionError )
@@ -149,6 +150,7 @@ TEST( CArgumentParserTest, shouldReportBadConversionError )
    auto res = parser.parseArguments( { "-a", "wrong" } );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "a", res.errors.front().option );
+   EXPECT_EQ( CArgumentParser::CONVERSION_ERROR, res.errors.front().errorCode );
 }
 
 TEST( CArgumentParserTest, shouldReportUnknownOptionError )
@@ -161,4 +163,20 @@ TEST( CArgumentParserTest, shouldReportUnknownOptionError )
    auto res = parser.parseArguments( { "-a", "2135", "--unknown" } );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "unknown", res.errors.front().option );
+   EXPECT_EQ( CArgumentParser::UNKNOWN_OPTION, res.errors.front().errorCode );
+}
+
+TEST( CArgumentParserTest, shouldReportMissingRequiredOptionError )
+{
+   std::optional<long> flagA;
+   std::optional<long> flagB;
+
+   CArgumentParser parser;
+   parser.addOption( flagA ).shortName( "a" ).hasArgument();
+   parser.addOption( flagA ).shortName( "b" ).required();
+
+   auto res = parser.parseArguments( { "-a", "2135" } );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( "b", res.errors.front().option );
+   EXPECT_EQ( CArgumentParser::MISSING_OPTION, res.errors.front().errorCode );
 }
