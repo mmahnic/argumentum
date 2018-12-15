@@ -80,6 +80,81 @@ public:
    };
 
 private:
+   class Parser
+   {
+      CArgumentParser& mArgParser;
+      bool mIgnoreOptions = false;
+      // The active option will receive additional argument(s)
+      int mActiveOption = -1;
+
+   public:
+      Parser( CArgumentParser& argParser )
+         : mArgParser( argParser )
+      {}
+
+      void startOption( std::string_view name )
+      {
+         auto nopt = mArgParser.mOptions.size();
+         for ( unsigned i = 0; i < nopt; ++i ) {
+            auto& option = mArgParser.mOptions[i];
+            if ( option.mShortName == name || option.mLongName == name ) {
+               if ( option.mHasArgument ) {
+                  mActiveOption = i;
+                  return;
+               }
+               else
+                  option.mpValue->setValue( "1" );
+            }
+         }
+         mActiveOption = -1;
+      }
+
+      void closeOption()
+      {
+         mActiveOption = -1;
+      }
+
+      void addFreeArgument( const std::string& arg )
+      {
+         // TODO: add arg to the list of free arguments
+      }
+
+      void parse( const std::vector<std::string>& args )
+      {
+         for ( auto& arg : args ) {
+            if ( arg == "--" ) {
+               mIgnoreOptions = true;
+               continue;
+            }
+
+            if ( mIgnoreOptions ){
+               addFreeArgument( arg );
+               continue;
+            }
+
+            auto arg_view = std::string_view( arg );
+            if ( arg_view.substr( 0, 2 ) == "--" )
+               startOption( arg.substr( 2 ) );
+            else if ( arg_view.substr( 0, 1 ) == "-" ) {
+               for ( int i = 1; i < arg_view.size(); ++i )
+                  startOption( arg_view.substr( i, 1 ));
+            }
+            else {
+               if ( mActiveOption >= 0 ) {
+                  auto& option = mArgParser.mOptions[mActiveOption];
+                  if ( option.mHasArgument )
+                     option.mpValue->setValue( arg );
+                  // NOTE: For now we assume there is at most one argument per option
+                  closeOption();
+               }
+               else
+                  addFreeArgument( arg );
+            }
+         }
+      }
+   };
+
+private:
    std::vector<COption> mOptions;
 
 public:
@@ -97,57 +172,7 @@ public:
 
    void parseArguments( const std::vector<std::string>& args )
    {
-      bool ignoreOptions = false;
-      // The active option will receive additional argument(s)
-      int activeOption = -1;
-
-      auto handleOption = [this]( std::string_view name ) -> int {
-         for ( unsigned i = 0; i < mOptions.size(); ++i ) {
-            auto& option = mOptions[i];
-            if ( option.mShortName == name || option.mLongName == name ) {
-               if ( option.mHasArgument )
-                  return i;
-               else
-                  option.mpValue->setValue( "1" );
-            }
-         }
-         return -1;
-      };
-
-      for ( auto& arg : args ) {
-         if ( arg == "--" ) {
-            ignoreOptions = true;
-            continue;
-         }
-
-         if ( ignoreOptions ){
-            addFreeArgument( arg );
-            continue;
-         }
-
-         auto arg_view = std::string_view( arg );
-         if ( arg_view.substr( 0, 2 ) == "--" )
-            activeOption = handleOption( arg.substr( 2 ) );
-         else if ( arg_view.substr( 0, 1 ) == "-" ) {
-            for ( int i = 1; i < arg_view.size(); ++i )
-               activeOption = handleOption( arg_view.substr( i, 1 ));
-         }
-         else {
-            if ( activeOption >= 0 && mOptions[activeOption].mHasArgument )
-               mOptions[activeOption].mpValue->setValue( arg );
-            else
-               addFreeArgument( arg );
-
-            // NOTE: For now we assume there is at most one argument per option
-            activeOption = -1;
-         }
-
-      }
-   }
-
-private:
-   void addFreeArgument( const std::string& arg )
-   {
-      // TODO: add arg to the list of free arguments
+      Parser parser( *this );
+      parser.parse( args );
    }
 };
