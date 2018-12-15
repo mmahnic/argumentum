@@ -123,3 +123,18 @@ TEST( CArgumentParserTest, shouldReadArgumentForLastOptionInGroup )
    EXPECT_EQ( 4213, flagD.value() );
 }
 
+TEST( CArgumentParserTest, shouldReportErrorForMissingArgument )
+{
+   std::optional<long> flagA;
+   std::optional<std::string> flagB;
+
+   CArgumentParser parser;
+   parser.addOption( flagA ).shortName( "a" ).hasArgument();
+   parser.addOption( flagB ).shortName( "b" );
+
+   auto res = parser.parseArguments( { "-a", "-b", "freearg" } );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( "a", res.errors.front().option );
+   ASSERT_EQ( 1, res.freeArguments.size() );
+   EXPECT_EQ( "freearg", res.freeArguments.front() );
+}

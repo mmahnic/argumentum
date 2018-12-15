@@ -10,8 +10,21 @@ class CArgumentParser
 public:
    class Value
    {
+      bool mValueWasSet = false;
    public:
-      virtual void setValue( const std::string& value ) = 0;
+      void setValue( const std::string& value )
+      {
+         mValueWasSet = true;
+         doSetValue( value );
+      }
+
+      bool hasValue() const
+      {
+         return mValueWasSet;
+      }
+
+   protected:
+      virtual void doSetValue( const std::string& value ) = 0;
    };
 
    class String: public Value
@@ -22,7 +35,8 @@ public:
          : mValue( value )
       {}
 
-      void setValue( const std::string& value ) override
+   protected:
+      void doSetValue( const std::string& value ) override
       {
          mValue = value;
       }
@@ -36,13 +50,14 @@ public:
          : mValue( value )
       {}
 
-      void setValue( const std::string& value ) override
+   protected:
+      void doSetValue( const std::string& value ) override
       {
          mValue = std::stol( value );
       }
    };
 
-   class COption
+   class Option
    {
       friend class CArgumentParser;
    private:
@@ -52,30 +67,63 @@ public:
       bool mHasArgument = false;
 
    public:
-      COption( std::optional<std::string>& value )
+      Option( std::optional<std::string>& value )
          : mpValue( std::make_unique<String>(value) )
       {}
 
-      COption( std::optional<long>& value )
+      Option( std::optional<long>& value )
          : mpValue( std::make_unique<Int>(value) )
       {}
 
-      COption& shortName( const std::string& name )
+      Option& shortName( const std::string& name )
       {
          mShortName = name;
          return *this;
       }
 
-      COption& longName( const std::string& name )
+      Option& longName( const std::string& name )
       {
          mLongName = name;
          return *this;
       }
 
-      COption& hasArgument( bool hasArg=true )
+      Option& hasArgument( bool hasArg=true )
       {
          mHasArgument = hasArg;
          return *this;
+      }
+
+      const std::string& name() const
+      {
+         return mLongName.empty() ? mShortName : mLongName;
+      }
+   };
+
+   // Errors known by the parser
+   enum EError {
+      MISSING_ARGUMENT,
+      CONVERSION_ERROR
+   };
+
+   struct ParseError
+   {
+      std::string option;
+      int errorCode;
+      ParseError( std::string_view optionName, int code )
+         : option( optionName ), errorCode( code )
+      {}
+   };
+
+   struct ParseResult
+   {
+      std::vector<std::string> freeArguments;
+      std::vector<ParseError> errors;
+
+   public:
+      void clear()
+      {
+         freeArguments.clear();
+         errors.clear();
       }
    };
 
@@ -86,6 +134,7 @@ private:
       bool mIgnoreOptions = false;
       // The active option will receive additional argument(s)
       int mActiveOption = -1;
+      ParseResult mResult;
 
    public:
       Parser( CArgumentParser& argParser )
@@ -94,6 +143,12 @@ private:
 
       void startOption( std::string_view name )
       {
+         if ( mActiveOption >= 0 ) {
+            auto& option = mArgParser.mOptions[mActiveOption];
+            if ( !option.mpValue->hasValue() )
+               mResult.errors.emplace_back( option.name(), MISSING_ARGUMENT );
+         }
+
          auto nopt = mArgParser.mOptions.size();
          for ( unsigned i = 0; i < nopt; ++i ) {
             auto& option = mArgParser.mOptions[i];
@@ -116,11 +171,12 @@ private:
 
       void addFreeArgument( const std::string& arg )
       {
-         // TODO: add arg to the list of free arguments
+         mResult.freeArguments.push_back( arg );
       }
 
-      void parse( const std::vector<std::string>& args )
+      ParseResult parse( const std::vector<std::string>& args )
       {
+         mResult.clear();
          for ( auto& arg : args ) {
             if ( arg == "--" ) {
                mIgnoreOptions = true;
@@ -151,28 +207,29 @@ private:
                   addFreeArgument( arg );
             }
          }
+         return std::move( mResult );
       }
    };
 
 private:
-   std::vector<COption> mOptions;
+   std::vector<Option> mOptions;
 
 public:
-   COption& addOption( std::optional<std::string>& value )
+   Option& addOption( std::optional<std::string>& value )
    {
       mOptions.emplace_back( value );
       return mOptions.back();
    }
 
-   COption& addOption( std::optional<long>& value )
+   Option& addOption( std::optional<long>& value )
    {
       mOptions.emplace_back( value );
       return mOptions.back();
    }
 
-   void parseArguments( const std::vector<std::string>& args )
+   ParseResult parseArguments( const std::vector<std::string>& args )
    {
       Parser parser( *this );
-      parser.parse( args );
+      return parser.parse( args );
    }
 };
