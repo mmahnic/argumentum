@@ -64,7 +64,7 @@ TEST( CArgumentParserTest, shouldOnlyAddOptionValueIfRequired )
    EXPECT_EQ( 2314, value.value() );
 
    // The parameters that do not require an argumet will be given the value "1".
-   // TODO: This can be changed with the flagValue() parameter option.
+   // NOTE: This can be changed with the flagValue() parameter option.
    EXPECT_EQ( "1", flag.value() );
 }
 
@@ -215,4 +215,20 @@ TEST( CArgumentParserTest, shouldSupportCustomOptionTypes )
    auto res = parser.parseArguments( { "-c", "value" } );
    EXPECT_EQ( "value", custom.value );
    EXPECT_EQ( "eulav", custom.reversed );
+}
+
+TEST( CArgumentParserTest, shouldSupportFlagValues )
+{
+   std::optional<std::string> flag;
+
+   CArgumentParser parser;
+   parser.addOption( flag ).shortName( "a" ).flagValue( "from-a" );
+   parser.addOption( flag ).shortName( "b" ).flagValue( "from-b" );
+
+   auto res = parser.parseArguments( { "-a", "-b" } );
+   EXPECT_EQ( "from-b", flag.value() );
+
+   flag = {};
+   res = parser.parseArguments( { "-b", "-a" } );
+   EXPECT_EQ( "from-a", flag.value() );
 }

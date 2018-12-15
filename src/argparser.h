@@ -63,6 +63,7 @@ public:
       std::unique_ptr<Value> mpValue;
       std::string mShortName;
       std::string mLongName;
+      std::string mFlagValue = "1";
       bool mHasArgument = false;
       bool mIsRequired = false;
 
@@ -104,6 +105,12 @@ public:
          return *this;
       }
 
+      Option& flagValue( std::string_view value )
+      {
+         mFlagValue = value;
+         return *this;
+      }
+
       bool isRequired() const
       {
          return mIsRequired;
@@ -132,6 +139,11 @@ public:
       bool hasValue() const
       {
          return mpValue->hasValue();
+      }
+
+      const std::string& getFlagValue() const
+      {
+         return mFlagValue;
       }
    };
 
@@ -196,7 +208,7 @@ private:
             if ( option.isArgumentExpected() )
                mpActiveOption = pOption;
             else
-               setValue( option, "1" );
+               setValue( option, option.getFlagValue() );
          }
          else {
             addError( name, UNKNOWN_OPTION );
