@@ -150,3 +150,15 @@ TEST( CArgumentParserTest, shouldReportBadConversionError )
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "a", res.errors.front().option );
 }
+
+TEST( CArgumentParserTest, shouldReportUnknownOptionError )
+{
+   std::optional<long> flagA;
+
+   CArgumentParser parser;
+   parser.addOption( flagA ).shortName( "a" ).hasArgument();
+
+   auto res = parser.parseArguments( { "-a", "2135", "--unknown" } );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( "unknown", res.errors.front().option );
+}

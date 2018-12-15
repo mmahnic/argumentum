@@ -101,6 +101,7 @@ public:
 
    // Errors known by the parser
    enum EError {
+      UNKNOWN_OPTION,
       MISSING_ARGUMENT,
       CONVERSION_ERROR
    };
@@ -145,23 +146,26 @@ private:
       {
          if ( mActiveOption >= 0 ) {
             auto& option = mArgParser.mOptions[mActiveOption];
-            if ( !option.mpValue->hasValue() )
+            if ( !option.mpValue->hasValue() ) {
                addError( option.name(), MISSING_ARGUMENT );
+               closeOption();
+               return;
+            }
          }
 
          auto nopt = mArgParser.mOptions.size();
          for ( unsigned i = 0; i < nopt; ++i ) {
             auto& option = mArgParser.mOptions[i];
             if ( option.mShortName == name || option.mLongName == name ) {
-               if ( option.mHasArgument ) {
+               if ( option.mHasArgument )
                   mActiveOption = i;
-                  return;
-               }
                else
                   setValue( option, "1" );
+               return;
             }
          }
-         mActiveOption = -1;
+         addError( std::string{name}, UNKNOWN_OPTION );
+         closeOption();
       }
 
       void closeOption()
