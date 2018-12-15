@@ -121,7 +121,7 @@ public:
          return mHasArgument;
       }
 
-      const std::string& name() const
+      const std::string& getName() const
       {
          return mLongName.empty() ? mShortName : mLongName;
       }
@@ -196,7 +196,7 @@ private:
          if ( mpActiveOption ) {
             auto& option = *mpActiveOption;
             if ( !option.hasValue() ) {
-               addError( option.name(), MISSING_ARGUMENT );
+               addError( option.getName(), MISSING_ARGUMENT );
                closeOption();
                return;
             }
@@ -246,10 +246,10 @@ private:
             option.setValue( value );
          }
          catch( std::invalid_argument ) {
-            addError( option.name(), CONVERSION_ERROR );
+            addError( option.getName(), CONVERSION_ERROR );
          }
          catch( std::out_of_range ) {
-            addError( option.name(), CONVERSION_ERROR );
+            addError( option.getName(), CONVERSION_ERROR );
          }
       }
 
@@ -327,6 +327,6 @@ private:
    {
       for ( auto& option : mOptions )
          if ( option.isRequired() && !option.hasValue() )
-            result.errors.emplace_back( option.name(), MISSING_OPTION );
+            result.errors.emplace_back( option.getName(), MISSING_OPTION );
    }
 };
