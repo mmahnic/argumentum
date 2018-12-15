@@ -166,7 +166,7 @@ private:
       CArgumentParser& mArgParser;
       bool mIgnoreOptions = false;
       // The active option will receive additional argument(s)
-      int mActiveOption = -1;
+      Option* mpActiveOption = nullptr;
       ParseResult mResult;
 
    public:
@@ -176,8 +176,8 @@ private:
 
       void startOption( std::string_view name )
       {
-         if ( mActiveOption >= 0 ) {
-            auto& option = mArgParser.mOptions[mActiveOption];
+         if ( mpActiveOption ) {
+            auto& option = *mpActiveOption;
             if ( !option.hasValue() ) {
                addError( option.name(), MISSING_ARGUMENT );
                closeOption();
@@ -185,24 +185,23 @@ private:
             }
          }
 
-         auto nopt = mArgParser.mOptions.size();
-         for ( unsigned i = 0; i < nopt; ++i ) {
-            auto& option = mArgParser.mOptions[i];
-            if ( option.hasName( name ) ) {
-               if ( option.isArgumentExpected() )
-                  mActiveOption = i;
-               else
-                  setValue( option, "1" );
-               return;
-            }
+         auto pOption = findOption( name );
+         if ( pOption ) {
+            auto& option = *pOption;
+            if ( option.isArgumentExpected() )
+               mpActiveOption = pOption;
+            else
+               setValue( option, "1" );
          }
-         addError( name, UNKNOWN_OPTION );
-         closeOption();
+         else {
+            addError( name, UNKNOWN_OPTION );
+            closeOption();
+         }
       }
 
       void closeOption()
       {
-         mActiveOption = -1;
+         mpActiveOption = nullptr;
       }
 
       void addFreeArgument( const std::string& arg )
@@ -213,6 +212,15 @@ private:
       void addError( std::string_view optionName, int errorCode )
       {
          mResult.errors.emplace_back( optionName, errorCode );
+      }
+
+      Option* findOption( std::string_view optionName ) const
+      {
+         for ( auto& option : mArgParser.mOptions )
+            if ( option.hasName( optionName ) )
+               return &option;
+
+         return nullptr;
       }
 
       void setValue( Option& option, const std::string& value )
@@ -250,8 +258,8 @@ private:
                   startOption( arg_view.substr( i, 1 ));
             }
             else {
-               if ( mActiveOption >= 0 ) {
-                  auto& option = mArgParser.mOptions[mActiveOption];
+               if ( mpActiveOption ) {
+                  auto& option = *mpActiveOption;
                   if ( option.isArgumentExpected() )
                      setValue(option, arg );
                   // NOTE: For now we assume there is at most one argument per option
