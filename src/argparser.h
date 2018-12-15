@@ -146,7 +146,7 @@ private:
          if ( mActiveOption >= 0 ) {
             auto& option = mArgParser.mOptions[mActiveOption];
             if ( !option.mpValue->hasValue() )
-               mResult.errors.emplace_back( option.name(), MISSING_ARGUMENT );
+               addError( option.name(), MISSING_ARGUMENT );
          }
 
          auto nopt = mArgParser.mOptions.size();
@@ -158,7 +158,7 @@ private:
                   return;
                }
                else
-                  option.mpValue->setValue( "1" );
+                  setValue( option, "1" );
             }
          }
          mActiveOption = -1;
@@ -172,6 +172,24 @@ private:
       void addFreeArgument( const std::string& arg )
       {
          mResult.freeArguments.push_back( arg );
+      }
+
+      void addError( const std::string& optionName, int errorCode )
+      {
+         mResult.errors.emplace_back( optionName, errorCode );
+      }
+
+      void setValue( Option& option, const std::string& value )
+      {
+         try {
+            option.mpValue->setValue( value );
+         }
+         catch( std::invalid_argument ) {
+            addError( option.name(), CONVERSION_ERROR );
+         }
+         catch( std::out_of_range ) {
+            addError( option.name(), CONVERSION_ERROR );
+         }
       }
 
       ParseResult parse( const std::vector<std::string>& args )
@@ -199,7 +217,7 @@ private:
                if ( mActiveOption >= 0 ) {
                   auto& option = mArgParser.mOptions[mActiveOption];
                   if ( option.mHasArgument )
-                     option.mpValue->setValue( arg );
+                     setValue(option, arg );
                   // NOTE: For now we assume there is at most one argument per option
                   closeOption();
                }

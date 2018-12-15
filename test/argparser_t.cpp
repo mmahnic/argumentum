@@ -138,3 +138,15 @@ TEST( CArgumentParserTest, shouldReportErrorForMissingArgument )
    ASSERT_EQ( 1, res.freeArguments.size() );
    EXPECT_EQ( "freearg", res.freeArguments.front() );
 }
+
+TEST( CArgumentParserTest, shouldReportBadConversionError )
+{
+   std::optional<long> flagA;
+
+   CArgumentParser parser;
+   parser.addOption( flagA ).shortName( "a" ).hasArgument();
+
+   auto res = parser.parseArguments( { "-a", "wrong" } );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( "a", res.errors.front().option );
+}
