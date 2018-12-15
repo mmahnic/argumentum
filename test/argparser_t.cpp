@@ -1,5 +1,7 @@
-#include <gtest/gtest.h>
 #include "../src/argparser.h"
+
+#include <gtest/gtest.h>
+#include <algorithm>
 
 TEST( CArgumentParserTest, shouldParseShortOptions )
 {
@@ -179,4 +181,38 @@ TEST( CArgumentParserTest, shouldReportMissingRequiredOptionError )
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "b", res.errors.front().option );
    EXPECT_EQ( CArgumentParser::MISSING_OPTION, res.errors.front().errorCode );
+}
+
+TEST( CArgumentParserTest, shouldSupportCustomOptionTypes )
+{
+   struct CustomType {
+      std::string value;
+      std::string reversed;
+   };
+
+   class CustomValue: public CArgumentParser::Value
+   {
+      CustomType& mValue;
+   public:
+      CustomValue( CustomType& value )
+         : mValue( value )
+      {}
+
+   protected:
+      void doSetValue( const std::string& value ) override
+      {
+         mValue.value = value;
+         mValue.reversed = value;
+         std::reverse( mValue.reversed.begin(), mValue.reversed.end() );
+      }
+   };
+
+   CustomType custom;
+
+   CArgumentParser parser;
+   parser.addOption( CustomValue( custom ) ).shortName( "c" ).hasArgument();
+
+   auto res = parser.parseArguments( { "-c", "value" } );
+   EXPECT_EQ( "value", custom.value );
+   EXPECT_EQ( "eulav", custom.reversed );
 }

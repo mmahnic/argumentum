@@ -75,6 +75,11 @@ public:
          : mpValue( std::make_unique<Int>(value) )
       {}
 
+      template<typename TValue>
+      Option( TValue value )
+         : mpValue( std::make_unique<TValue>( value ) )
+      {}
+
       Option& shortName( const std::string& name )
       {
          mShortName = name;
@@ -285,6 +290,13 @@ public:
    }
 
    Option& addOption( std::optional<long>& value )
+   {
+      mOptions.emplace_back( value );
+      return mOptions.back();
+   }
+
+   template<typename TValue>
+   Option& addOption( TValue value )
    {
       mOptions.emplace_back( value );
       return mOptions.back();
