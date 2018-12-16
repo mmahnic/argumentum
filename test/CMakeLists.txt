@@ -2,6 +2,7 @@
 # find_package (GTest REQUIRED)
 # link_directories( ${CMAKE_BINARY_DIR}/3rdparty/gtest )
 # link_directories( ${CMAKE_BINARY_DIR}/3rdparty/gtest )
+include_directories( ${CMAKE_SOURCE_DIR}/3rdparty/gtest/googletest/include )
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package (Threads REQUIRED)
