@@ -248,3 +248,20 @@ TEST( ArgumentParserTest, shouldSupportFloatingPointValues )
    auto res = parser.parseArguments( { "-a", "23.5" } );
    EXPECT_NEAR( 23.5, value.value(), 1e-9 );
 }
+
+TEST( ArgumentParserTest, shouldSupportRawValueTypes )
+{
+   std::string strvalue;
+   long intvalue = 1;
+   double floatvalue = 2.0;
+
+   ArgumentParser parser;
+   parser.addOption( strvalue ).longName( "str" ).hasArgument();
+   parser.addOption( intvalue ).longName( "int" ).hasArgument();
+   parser.addOption( floatvalue ).longName( "float" ).hasArgument();
+
+   auto res = parser.parseArguments( { "--str", "string", "--int", "2134", "--float", "32.4" } );
+   EXPECT_EQ( "string", strvalue );
+   EXPECT_EQ( 2134, intvalue );
+   EXPECT_NEAR( 32.4, floatvalue, 1e-9 );
+}

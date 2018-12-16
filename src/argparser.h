@@ -7,12 +7,22 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <functional>
 
 namespace argparse {
 
-template<typename TValue, typename TWrapper=void>
-struct select_wrapper_type
-{};
+template<typename TValue>
+struct convert_result
+{
+   using type = TValue;
+};
+
+template<typename TItem>
+struct convert_result<std::optional<TItem>>
+{
+   using type = TItem;
+};
+
 
 class ArgumentParser
 {
@@ -36,51 +46,24 @@ public:
       virtual void doSetValue( const std::string& value ) = 0;
    };
 
-   class String: public Value
+   template<typename TValue>
+   class ConvertedValue: public Value
    {
-      std::optional<std::string>& mValue;
+      using result_t = typename convert_result<TValue>::type;
+      using converter_t = std::function<result_t(const std::string&)>;
+      TValue& mValue;
+      converter_t mConvert = []( const std::string& ) { return {}; };
    public:
-      String( std::optional<std::string>& value )
-         : mValue( value )
+      ConvertedValue( TValue& value, converter_t converter )
+         : mValue( value ), mConvert( converter )
       {}
 
    protected:
       void doSetValue( const std::string& value ) override
       {
-         mValue = value;
+         mValue = mConvert( value );
       }
    };
-
-   class Int: public Value
-   {
-      std::optional<long>& mValue;
-   public:
-      Int( std::optional<long>& value )
-         : mValue( value )
-      {}
-
-   protected:
-      void doSetValue( const std::string& value ) override
-      {
-         mValue = std::stol( value );
-      }
-   };
-
-   class Float: public Value
-   {
-      std::optional<double>& mValue;
-   public:
-      Float( std::optional<double>& value )
-         : mValue( value )
-      {}
-
-   protected:
-      void doSetValue( const std::string& value ) override
-      {
-         mValue = std::stod( value );
-      }
-   };
-
 
    class Option
    {
@@ -99,8 +82,24 @@ public:
          if constexpr ( std::is_base_of<Value, TValue>::value ) {
             mpValue = std::make_unique<TValue>( value );
          }
+         else if constexpr ( std::is_same<std::string, TValue>::value
+               || std::is_same<std::optional<std::string>, TValue>::value ) {
+            using wrap_type = ConvertedValue<TValue>;
+            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return s; } );
+         }
+         else if constexpr ( std::is_same<long, TValue>::value
+               || std::is_same<std::optional<long>, TValue>::value ) {
+            using wrap_type = ConvertedValue<TValue>;
+            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return stol( s ); } );
+         }
+         else if constexpr ( std::is_same<double, TValue>::value
+               || std::is_same<std::optional<double>, TValue>::value ) {
+            using wrap_type = ConvertedValue<TValue>;
+            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return stod( s ); } );
+         }
          else {
-            mpValue = std::make_unique<typename select_wrapper_type<TValue>::type>( value );
+            using wrap_type = ConvertedValue<std::string>;
+            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return s; } );
          }
       }
 
@@ -319,14 +318,21 @@ private:
 
 public:
    template<typename TValue>
+   Option& addOption( std::optional<TValue>& value )
+   {
+      mOptions.emplace_back( value );
+      return mOptions.back();
+   }
+
+   template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value> >
    Option& addOption( TValue value )
    {
       mOptions.emplace_back( value );
       return mOptions.back();
    }
 
-   template<typename TValue>
-   Option& addOption( std::optional<TValue>& value )
+   template<typename TValue, typename = std::enable_if_t<!std::is_base_of<Value, TValue>::value> >
+   Option& addOption( TValue &value )
    {
       mOptions.emplace_back( value );
       return mOptions.back();
@@ -347,24 +353,6 @@ private:
          if ( option.isRequired() && !option.hasValue() )
             result.errors.emplace_back( option.getName(), MISSING_OPTION );
    }
-};
-
-template<>
-struct select_wrapper_type<std::optional<std::string>>
-{
-   using type = ArgumentParser::String;
-};
-
-template<>
-struct select_wrapper_type<std::optional<long>>
-{
-   using type = ArgumentParser::Int;
-};
-
-template<>
-struct select_wrapper_type<std::optional<double>>
-{
-   using type = ArgumentParser::Float;
 };
 
 }
