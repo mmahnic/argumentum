@@ -49,10 +49,12 @@ public:
    template<typename TValue>
    class ConvertedValue: public Value
    {
+   protected:
       using result_t = typename convert_result<TValue>::type;
       using converter_t = std::function<result_t(const std::string&)>;
       TValue& mValue;
       converter_t mConvert = []( const std::string& ) { return {}; };
+
    public:
       ConvertedValue( TValue& value, converter_t converter )
          : mValue( value ), mConvert( converter )

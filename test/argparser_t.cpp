@@ -222,6 +222,38 @@ TEST( ArgumentParserTest, shouldSupportCustomOptionTypes )
    EXPECT_EQ( "eulav", custom.reversed );
 }
 
+TEST( ArgumentParserTest, shouldSupportCustomOptionTypes_WithConvertedValue )
+{
+   struct CustomType {
+      std::optional<std::string> value;
+      std::string reversed;
+   };
+
+   class CustomValue: public ArgumentParser::ConvertedValue<CustomType>
+   {
+   public:
+      CustomValue( CustomType& value )
+         : ConvertedValue( value,
+               []( const std::string& value ) {
+                  CustomType custom;
+                  custom.value = value;
+                  custom.reversed = value;
+                  std::reverse( custom.reversed.begin(), custom.reversed.end() );
+                  return custom;
+               } )
+      {}
+   };
+
+   CustomType custom;
+
+   ArgumentParser parser;
+   parser.addOption( CustomValue( custom ) ).shortName( "c" ).hasArgument();
+
+   auto res = parser.parseArguments( { "-c", "value" } );
+   EXPECT_EQ( "value", custom.value.value() );
+   EXPECT_EQ( "eulav", custom.reversed );
+}
+
 TEST( ArgumentParserTest, shouldSupportFlagValues )
 {
    std::optional<std::string> flag;
