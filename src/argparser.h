@@ -10,6 +10,10 @@
 
 namespace argparse {
 
+template<typename TValue, typename TWrapper=void>
+struct select_wrapper_type
+{};
+
 class ArgumentParser
 {
 public:
@@ -77,6 +81,7 @@ public:
       }
    };
 
+
    class Option
    {
    private:
@@ -88,22 +93,16 @@ public:
       bool mIsRequired = false;
 
    public:
-      Option( std::optional<std::string>& value )
-         : mpValue( std::make_unique<String>(value) )
-      {}
-
-      Option( std::optional<long>& value )
-         : mpValue( std::make_unique<Int>(value) )
-      {}
-
-      Option( std::optional<double>& value )
-         : mpValue( std::make_unique<Float>(value) )
-      {}
-
       template<typename TValue>
-      Option( TValue value )
-         : mpValue( std::make_unique<TValue>( value ) )
-      {}
+      Option( TValue& value )
+      {
+         if constexpr ( std::is_base_of<Value, TValue>::value ) {
+            mpValue = std::make_unique<TValue>( value );
+         }
+         else {
+            mpValue = std::make_unique<typename select_wrapper_type<TValue>::type>( value );
+         }
+      }
 
       Option& shortName( const std::string& name )
       {
@@ -348,6 +347,24 @@ private:
          if ( option.isRequired() && !option.hasValue() )
             result.errors.emplace_back( option.getName(), MISSING_OPTION );
    }
+};
+
+template<>
+struct select_wrapper_type<std::optional<std::string>>
+{
+   using type = ArgumentParser::String;
+};
+
+template<>
+struct select_wrapper_type<std::optional<long>>
+{
+   using type = ArgumentParser::Int;
+};
+
+template<>
+struct select_wrapper_type<std::optional<double>>
+{
+   using type = ArgumentParser::Float;
 };
 
 }
