@@ -1,3 +1,6 @@
+// Copyright (c) 2018 Marko Mahnič
+// License: MIT. See LICENSE in the root of the project.
+
 #pragma once
 
 #include <memory>
