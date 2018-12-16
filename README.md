@@ -1,3 +1,8 @@
+<a href="https://scan.coverity.com/projects/mmahnic-argparse">
+  <img alt="Coverity Scan Build Status"
+       src="https://scan.coverity.com/projects/17475/badge.svg"/>
+</a>
+
 # Argparse
 
 A C++ library for parsing command line arguments.
