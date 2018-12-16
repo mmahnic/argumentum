@@ -317,13 +317,6 @@ private:
    std::vector<Option> mOptions;
 
 public:
-   template<typename TValue>
-   Option& addOption( std::optional<TValue>& value )
-   {
-      mOptions.emplace_back( value );
-      return mOptions.back();
-   }
-
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value> >
    Option& addOption( TValue value )
    {
