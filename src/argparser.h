@@ -319,26 +319,15 @@ private:
    std::vector<Option> mOptions;
 
 public:
-   Option& addOption( std::optional<std::string>& value )
-   {
-      mOptions.emplace_back( value );
-      return mOptions.back();
-   }
-
-   Option& addOption( std::optional<long>& value )
-   {
-      mOptions.emplace_back( value );
-      return mOptions.back();
-   }
-
-   Option& addOption( std::optional<double>& value )
+   template<typename TValue>
+   Option& addOption( TValue value )
    {
       mOptions.emplace_back( value );
       return mOptions.back();
    }
 
    template<typename TValue>
-   Option& addOption( TValue value )
+   Option& addOption( std::optional<TValue>& value )
    {
       mOptions.emplace_back( value );
       return mOptions.back();
