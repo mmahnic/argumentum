@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/mmahnic/argparse.svg?branch=master)](https://travis-ci.com/mmahnic/argparse)
+
 # Argparse
 
 A C++ library for parsing command line arguments.
