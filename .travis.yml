@@ -3,18 +3,43 @@ sudo: false
 language:
   - cpp
 
-dist: xenial
-
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-
 script:
   - cmake -H. -Bbuild
   - cd build
   - cmake --build .
   - test/runUnitTests
+
+matrix:
+  include:
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+
+      compiler: gcc-7
+
+      env:
+        - C_COMPILER=gcc-7
+        - CXX_COMPILER=g++-7
+
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+
+      compiler: gcc-8
+
+      env:
+        - C_COMPILER=gcc-8
+        - CXX_COMPILER=g++-8
 
 notifications:
   email: false
