@@ -1,4 +1,0 @@
-[submodule "3rdparty/gtest"]
-	path = 3rdparty/gtest
-	url = https://github.com/google/googletest.git
-	shallow = true

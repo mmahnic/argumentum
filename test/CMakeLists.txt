@@ -1,14 +1,7 @@
 
-# find_package (GTest REQUIRED)
-# link_directories( ${CMAKE_BINARY_DIR}/3rdparty/gtest )
-# link_directories( ${CMAKE_BINARY_DIR}/3rdparty/gtest )
-include_directories( ${CMAKE_SOURCE_DIR}/3rdparty/gtest/googletest/include )
-
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package (Threads REQUIRED)
-
+# The library is currently header-only.
 set(PARSER_SOURCES
-   ../src/argparser.cpp
+   # ../src/argparser.cpp
    )
 
 add_executable( runUnitTests
@@ -16,5 +9,14 @@ add_executable( runUnitTests
    argparser_t.cpp
    ${PARSER_SOURCES}
    )
-target_link_libraries( runUnitTests ${GTEST_LIBRARY} Threads::Threads )
 
+target_link_libraries( runUnitTests 
+   gtest_main
+   )
+
+add_test(
+  NAME
+    parser
+  COMMAND
+    ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/test/runUnitTests
+)
