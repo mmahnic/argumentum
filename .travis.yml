@@ -3,6 +3,8 @@ sudo: false
 language:
   - cpp
 
+dist: xenial
+
 addons:
   apt:
     sources:
