@@ -4,7 +4,7 @@ language:
   - cpp
 
 script:
-  - cmake -H. -Bbuild
+  - cmake -H. -Bbuild -DCMAKE_C_COMPILER=$C_COMPILER -DCMAKE_CXX_COMPILER=$CXX_COMPILER
   - cd build
   - cmake --build .
   - ctest
@@ -25,8 +25,6 @@ matrix:
       env:
         - C_COMPILER=gcc-7
         - CXX_COMPILER=g++-7
-        - CXX=g++-7
-        - CXX_FOR_BUILD=g++7
 
     - os: linux
       dist: xenial
@@ -42,8 +40,6 @@ matrix:
       env:
         - C_COMPILER=gcc-8
         - CXX_COMPILER=g++-8
-        - CXX=g++-8
-        - CXX_FOR_BUILD=g++8
 
 notifications:
   email: false
