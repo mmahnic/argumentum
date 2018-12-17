@@ -313,3 +313,26 @@ TEST( ArgumentParserTest, shouldAcceptOptionNamesInConstructor )
    EXPECT_EQ( 0, res.errors.size() );
    EXPECT_EQ( "long", strvalue );
 }
+
+TEST( ArgumentParserTest, shouldNotAcceptInvalidShortOptions )
+{
+   std::string strvalue;
+
+   ArgumentParser parser;
+   parser.addOption( strvalue, "-s", "--string" ).hasArgument();
+   parser.addOption( strvalue, "--l" ).hasArgument();
+
+   EXPECT_THROW( parser.addOption( strvalue, "-long" ).hasArgument(), std::invalid_argument );
+
+   auto res = parser.parseArguments( { "-s", "short" } );
+   EXPECT_EQ( 0, res.errors.size() );
+   EXPECT_EQ( "short", strvalue );
+
+   res = parser.parseArguments( { "--string", "long" } );
+   EXPECT_EQ( 0, res.errors.size() );
+   EXPECT_EQ( "long", strvalue );
+
+   res = parser.parseArguments( { "--l", "onecharlong" } );
+   EXPECT_EQ( 0, res.errors.size() );
+   EXPECT_EQ( "onecharlong", strvalue );
+}
