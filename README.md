@@ -27,10 +27,10 @@ int main( int argc, char** argv )
    long intValue2 = 0;
 
    ArgumentParser parser;
-   parser.addOption( stringValue ).shortName( "s" ).longName( "string" ).hasArgument();
-   parser.addOption( intValue ).shortName( "i" ).longName( "int" ).hasArgument();
-   parser.addOption( floatValue ).shortName( "f" ).longName( "float" ).hasArgument();
-   parser.addOption( intValue2 ).shortName( "v" ).longName( "verbose" );
+   parser.addOption( stringValue, "s", "stting" ).hasArgument();
+   parser.addOption( intValue, "-i", "--int" ).hasArgument();
+   parser.addOption( floatValue, "f", "float" ).hasArgument();
+   parser.addOption( intValue2, "v", "verbose" );
 
    vector<string> args;
    for ( int i = 1; i < argc; ++i )
