@@ -7,7 +7,7 @@ script:
   - cmake -H. -Bbuild
   - cd build
   - cmake --build .
-  - test/runUnitTests
+  - ctest
 
 matrix:
   include:
@@ -25,6 +25,8 @@ matrix:
       env:
         - C_COMPILER=gcc-7
         - CXX_COMPILER=g++-7
+        - CXX=g++-7
+        - CXX_FOR_BUILD=g++7
 
     - os: linux
       dist: xenial
@@ -40,6 +42,8 @@ matrix:
       env:
         - C_COMPILER=gcc-8
         - CXX_COMPILER=g++-8
+        - CXX=g++-8
+        - CXX_FOR_BUILD=g++8
 
 notifications:
   email: false
