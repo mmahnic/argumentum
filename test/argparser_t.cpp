@@ -13,7 +13,7 @@ TEST( ArgumentParserTest, shouldParseShortOptions )
    std::optional<std::string> value;
 
    ArgumentParser parser;
-   parser.addOption( value ).shortName( "v" ).hasArgument();
+   parser.addOption( value, "v" ).hasArgument();
    parser.parseArguments( { "-v", "success" } );
 
    EXPECT_EQ( "success", value.value() );
@@ -24,7 +24,7 @@ TEST( ArgumentParserTest, shouldParseLongOptions )
    std::optional<std::string> value;
 
    ArgumentParser parser;
-   parser.addOption( value ).shortName( "v" ).longName( "value" ).hasArgument();
+   parser.addOption( value, "v", "value" ).hasArgument();
    parser.parseArguments( { "--value", "success" } );
 
    EXPECT_EQ( "success", value.value() );
@@ -35,7 +35,7 @@ TEST( ArgumentParserTest, shouldParseIntegerValues )
    std::optional<long> value;
 
    ArgumentParser parser;
-   parser.addOption( value ).shortName( "v" ).longName( "value" ).hasArgument();
+   parser.addOption( value, "v", "value" ).hasArgument();
    parser.parseArguments( { "--value", "2314" } );
 
    EXPECT_EQ( 2314, value.value() );
@@ -47,8 +47,8 @@ TEST( ArgumentParserTest, shouldNotSetOptionValuesWithoutArguments )
    std::optional<std::string> unused;
 
    ArgumentParser parser;
-   parser.addOption( value ).shortName( "v" ).longName( "value" ).hasArgument();
-   parser.addOption( unused ).longName( "unused" );
+   parser.addOption( value, "v", "value" ).hasArgument();
+   parser.addOption( unused, "unused" );
    parser.parseArguments( { "--value", "2314" } );
 
    EXPECT_EQ( 2314, value.value() );
@@ -61,8 +61,8 @@ TEST( ArgumentParserTest, shouldOnlyAddOptionValueIfRequired )
    std::optional<std::string> flag;
 
    ArgumentParser parser;
-   parser.addOption( value ).shortName( "v" ).longName( "value" ).hasArgument();
-   parser.addOption( flag ).longName( "flag" );
+   parser.addOption( value, "v", "value" ).hasArgument();
+   parser.addOption( flag, "flag" );
 
    parser.parseArguments( { "--value", "2314", "--flag", "notused" } );
 
@@ -79,8 +79,8 @@ TEST( ArgumentParserTest, shouldSkipParsingOptionsAfterDashDash )
    std::optional<std::string> flag;
 
    ArgumentParser parser;
-   parser.addOption( value ).shortName( "v" ).longName( "value" ).hasArgument();
-   parser.addOption( flag ).longName( "skipped" );
+   parser.addOption( value, "v", "value" ).hasArgument();
+   parser.addOption( flag, "skipped" );
 
    parser.parseArguments( { "--value", "2314", "--", "--skipped" } );
 
@@ -96,10 +96,10 @@ TEST( ArgumentParserTest, shouldSupportShortOptionGroups )
    std::optional<long> flagD;
 
    ArgumentParser parser;
-   parser.addOption( flagA ).shortName( "a" );
-   parser.addOption( flagB ).shortName( "b" );
-   parser.addOption( flagC ).shortName( "c" );
-   parser.addOption( flagD ).shortName( "d" );
+   parser.addOption( flagA, "a" );
+   parser.addOption( flagB, "b" );
+   parser.addOption( flagC, "c" );
+   parser.addOption( flagD, "d" );
 
    parser.parseArguments( { "-abd" } );
 
@@ -117,10 +117,10 @@ TEST( ArgumentParserTest, shouldReadArgumentForLastOptionInGroup )
    std::optional<long> flagD;
 
    ArgumentParser parser;
-   parser.addOption( flagA ).shortName( "a" );
-   parser.addOption( flagB ).shortName( "b" );
-   parser.addOption( flagC ).shortName( "c" );
-   parser.addOption( flagD ).shortName( "d" ).hasArgument();
+   parser.addOption( flagA, "a" );
+   parser.addOption( flagB, "b" );
+   parser.addOption( flagC, "c" );
+   parser.addOption( flagD, "d" ).hasArgument();
 
    parser.parseArguments( { "-abd", "4213" } );
 
@@ -136,8 +136,8 @@ TEST( ArgumentParserTest, shouldReportErrorForMissingArgument )
    std::optional<std::string> flagB;
 
    ArgumentParser parser;
-   parser.addOption( flagA ).shortName( "a" ).hasArgument();
-   parser.addOption( flagB ).shortName( "b" );
+   parser.addOption( flagA, "a" ).hasArgument();
+   parser.addOption( flagB, "b" );
 
    auto res = parser.parseArguments( { "-a", "-b", "freearg" } );
    ASSERT_EQ( 1, res.errors.size() );
@@ -152,7 +152,7 @@ TEST( ArgumentParserTest, shouldReportBadConversionError )
    std::optional<long> flagA;
 
    ArgumentParser parser;
-   parser.addOption( flagA ).shortName( "a" ).hasArgument();
+   parser.addOption( flagA, "a" ).hasArgument();
 
    auto res = parser.parseArguments( { "-a", "wrong" } );
    ASSERT_EQ( 1, res.errors.size() );
@@ -165,7 +165,7 @@ TEST( ArgumentParserTest, shouldReportUnknownOptionError )
    std::optional<long> flagA;
 
    ArgumentParser parser;
-   parser.addOption( flagA ).shortName( "a" ).hasArgument();
+   parser.addOption( flagA, "a" ).hasArgument();
 
    auto res = parser.parseArguments( { "-a", "2135", "--unknown" } );
    ASSERT_EQ( 1, res.errors.size() );
@@ -179,8 +179,8 @@ TEST( ArgumentParserTest, shouldReportMissingRequiredOptionError )
    std::optional<long> flagB;
 
    ArgumentParser parser;
-   parser.addOption( flagA ).shortName( "a" ).hasArgument();
-   parser.addOption( flagA ).shortName( "b" ).required();
+   parser.addOption( flagA, "a" ).hasArgument();
+   parser.addOption( flagA, "b" ).required();
 
    auto res = parser.parseArguments( { "-a", "2135" } );
    ASSERT_EQ( 1, res.errors.size() );
@@ -215,7 +215,7 @@ TEST( ArgumentParserTest, shouldSupportCustomOptionTypes )
    CustomType custom;
 
    ArgumentParser parser;
-   parser.addOption( CustomValue( custom ) ).shortName( "c" ).hasArgument();
+   parser.addOption( CustomValue( custom ), "c" ).hasArgument();
 
    auto res = parser.parseArguments( { "-c", "value" } );
    EXPECT_EQ( "value", custom.value );
@@ -247,7 +247,7 @@ TEST( ArgumentParserTest, shouldSupportCustomOptionTypes_WithConvertedValue )
    CustomType custom;
 
    ArgumentParser parser;
-   parser.addOption( CustomValue( custom ) ).shortName( "c" ).hasArgument();
+   parser.addOption( CustomValue( custom ), "c" ).hasArgument();
 
    auto res = parser.parseArguments( { "-c", "value" } );
    EXPECT_EQ( "value", custom.value.value() );
@@ -259,8 +259,8 @@ TEST( ArgumentParserTest, shouldSupportFlagValues )
    std::optional<std::string> flag;
 
    ArgumentParser parser;
-   parser.addOption( flag ).shortName( "a" ).flagValue( "from-a" );
-   parser.addOption( flag ).shortName( "b" ).flagValue( "from-b" );
+   parser.addOption( flag, "a" ).flagValue( "from-a" );
+   parser.addOption( flag, "b" ).flagValue( "from-b" );
 
    auto res = parser.parseArguments( { "-a", "-b" } );
    EXPECT_EQ( "from-b", flag.value() );
@@ -275,7 +275,7 @@ TEST( ArgumentParserTest, shouldSupportFloatingPointValues )
    std::optional<double> value;
 
    ArgumentParser parser;
-   parser.addOption( value ).shortName( "a" ).hasArgument();
+   parser.addOption( value, "a" ).hasArgument();
 
    auto res = parser.parseArguments( { "-a", "23.5" } );
    EXPECT_NEAR( 23.5, value.value(), 1e-9 );
@@ -288,9 +288,9 @@ TEST( ArgumentParserTest, shouldSupportRawValueTypes )
    double floatvalue = 2.0;
 
    ArgumentParser parser;
-   parser.addOption( strvalue ).longName( "str" ).hasArgument();
-   parser.addOption( intvalue ).longName( "int" ).hasArgument();
-   parser.addOption( floatvalue ).longName( "float" ).hasArgument();
+   parser.addOption( strvalue, "str" ).hasArgument();
+   parser.addOption( intvalue, "int" ).hasArgument();
+   parser.addOption( floatvalue, "float" ).hasArgument();
 
    auto res = parser.parseArguments( { "--str", "string", "--int", "2134", "--float", "32.4" } );
    EXPECT_EQ( "string", strvalue );
@@ -335,4 +335,14 @@ TEST( ArgumentParserTest, shouldNotAcceptInvalidShortOptions )
    res = parser.parseArguments( { "--l", "onecharlong" } );
    EXPECT_EQ( 0, res.errors.size() );
    EXPECT_EQ( "onecharlong", strvalue );
+}
+
+TEST( ArgumentParserTest, shouldNotAcceptOptionsWithoutName )
+{
+   std::string strvalue;
+
+   ArgumentParser parser;
+   EXPECT_THROW( parser.addOption( strvalue, "-" ), std::invalid_argument );
+   EXPECT_THROW( parser.addOption( strvalue, "--" ), std::invalid_argument );
+   EXPECT_THROW( parser.addOption( strvalue, "" ), std::invalid_argument );
 }

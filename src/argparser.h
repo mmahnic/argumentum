@@ -105,13 +105,13 @@ public:
          }
       }
 
-      Option& shortName( std::string_view name )
+      Option& setShortName( std::string_view name )
       {
          mShortName = name;
          return *this;
       }
 
-      Option& longName( std::string_view name )
+      Option& setLongName( std::string_view name )
       {
          mLongName = name;
          return *this;
@@ -377,10 +377,13 @@ private:
             throw std::invalid_argument( "Short option name has too many characters." );
 
          if ( forceLong || name.size() > 1 )
-            option.longName( name );
+            option.setLongName( name );
          else
-            option.shortName( name );
+            option.setShortName( name );
       }
+
+      if ( option.getName().empty() )
+            throw std::invalid_argument( "An option must have a name." );
    }
 };
 
