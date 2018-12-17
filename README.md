@@ -27,7 +27,7 @@ int main( int argc, char** argv )
    long intValue2 = 0;
 
    ArgumentParser parser;
-   parser.addOption( stringValue, "s", "stting" ).hasArgument();
+   parser.addOption( stringValue, "s", "string" ).hasArgument();
    parser.addOption( intValue, "-i", "--int" ).hasArgument();
    parser.addOption( floatValue, "f", "float" ).hasArgument();
    parser.addOption( intValue2, "v", "verbose" );
