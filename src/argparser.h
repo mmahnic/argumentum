@@ -105,13 +105,13 @@ public:
          }
       }
 
-      Option& shortName( const std::string& name )
+      Option& shortName( std::string_view name )
       {
          mShortName = name;
          return *this;
       }
 
-      Option& longName( const std::string& name )
+      Option& longName( std::string_view name )
       {
          mLongName = name;
          return *this;
@@ -320,17 +320,21 @@ private:
 
 public:
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value> >
-   Option& addOption( TValue value )
+   Option& addOption( TValue value, const std::string& name="", const std::string& altName="" )
    {
       mOptions.emplace_back( value );
-      return mOptions.back();
+      auto& option = mOptions.back();
+      trySetNames( option, { name, altName } );
+      return option;
    }
 
    template<typename TValue, typename = std::enable_if_t<!std::is_base_of<Value, TValue>::value> >
-   Option& addOption( TValue &value )
+   Option& addOption( TValue &value, const std::string& name="", const std::string& altName="" )
    {
       mOptions.emplace_back( value );
-      return mOptions.back();
+      auto& option = mOptions.back();
+      trySetNames( option, { name, altName } );
+      return option;
    }
 
    ParseResult parseArguments( const std::vector<std::string>& args )
@@ -347,6 +351,36 @@ private:
       for ( auto& option : mOptions )
          if ( option.isRequired() && !option.hasValue() )
             result.errors.emplace_back( option.getName(), MISSING_OPTION );
+   }
+
+   void trySetNames( Option& option, const std::vector<std::string_view>& names ) const
+   {
+      for ( auto name : names ) {
+         if ( name.empty() || name == "-" || name == "--" )
+            continue;
+
+         bool forceShort = false;
+         bool forceLong = false;
+         if ( name.substr( 0, 2 ) == "--" ) {
+            forceLong = true;
+            name = name.substr( 2 );
+         }
+         else if ( name.substr( 0, 1 ) == "-" ) {
+            forceShort = true;
+            name = name.substr( 1 );
+         }
+
+         name.remove_prefix(std::min(name.find_first_not_of(" "), name.size()));
+         name.remove_suffix(name.size() - std::min(name.find_last_not_of(" ") + 1, name.size()));
+
+         if ( forceShort && name.size() > 1 )
+            throw std::invalid_argument( "Short option name has too many characters." );
+
+         if ( forceLong || name.size() > 1 )
+            option.longName( name );
+         else
+            option.shortName( name );
+      }
    }
 };
 

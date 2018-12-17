@@ -297,3 +297,19 @@ TEST( ArgumentParserTest, shouldSupportRawValueTypes )
    EXPECT_EQ( 2134, intvalue );
    EXPECT_NEAR( 32.4, floatvalue, 1e-9 );
 }
+
+TEST( ArgumentParserTest, shouldAcceptOptionNamesInConstructor )
+{
+   std::string strvalue;
+
+   ArgumentParser parser;
+   parser.addOption( strvalue, "s", "string" ).hasArgument();
+
+   auto res = parser.parseArguments( { "-s", "short" } );
+   EXPECT_EQ( 0, res.errors.size() );
+   EXPECT_EQ( "short", strvalue );
+
+   res = parser.parseArguments( { "--string", "long" } );
+   EXPECT_EQ( 0, res.errors.size() );
+   EXPECT_EQ( "long", strvalue );
+}
