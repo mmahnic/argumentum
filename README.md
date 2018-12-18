@@ -26,7 +26,9 @@ int main( int argc, char** argv )
    optional<double> floatValue;
    long intValue2 = 0;
 
-   ArgumentParser parser;
+   // Note: the argument parser will take references to the variables so it must
+   // outlive those variables. We signal this by using the unsafe() factory method.
+   auto parser = ArgumentParser::unsafe();
    parser.addOption( stringValue, "s", "string" ).hasArgument();
    parser.addOption( intValue, "-i", "--int" ).hasArgument();
    parser.addOption( floatValue, "f", "float" ).hasArgument();
