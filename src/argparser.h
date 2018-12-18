@@ -319,6 +319,18 @@ private:
    std::vector<Option> mOptions;
 
 public:
+   /**
+    * The argument parser takes references to the variables that will hold the
+    * parsed values.  The variables must outlive the argument parser.
+    *
+    * TODO: Create a construtcor that takes a shared pointer to a structure and
+    * verify that the variables added with addOption are within that structure.
+    */
+   static ArgumentParser unsafe()
+   {
+      return ArgumentParser();
+   }
+
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value> >
    Option& addOption( TValue value, const std::string& name="", const std::string& altName="" )
    {
@@ -346,6 +358,8 @@ public:
    }
 
 private:
+   ArgumentParser() = default;
+
    void reportMissingOptions( ParseResult& result )
    {
       for ( auto& option : mOptions )
