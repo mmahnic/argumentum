@@ -23,6 +23,12 @@ struct convert_result<std::optional<TItem>>
    using type = TItem;
 };
 
+template<typename TItem>
+struct convert_result<std::vector<TItem>>
+{
+   using type = TItem;
+};
+
 
 class ArgumentParser
 {
@@ -63,7 +69,19 @@ public:
    protected:
       void doSetValue( const std::string& value ) override
       {
-         mValue = mConvert( value );
+         assign( mValue, value );
+      }
+
+      template<typename TVar>
+      void assign( TVar& var, const std::string& value )
+      {
+         var = mConvert( value );
+      }
+
+      template<typename TVar>
+      void assign( std::vector<TVar>& var, const std::string& value )
+      {
+         var.push_back( mConvert( value ) );
       }
    };
 
@@ -97,6 +115,34 @@ public:
          else if constexpr ( std::is_same<double, TValue>::value
                || std::is_same<std::optional<double>, TValue>::value ) {
             using wrap_type = ConvertedValue<TValue>;
+            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return stod( s ); } );
+         }
+         else {
+            using wrap_type = ConvertedValue<std::string>;
+            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return s; } );
+         }
+      }
+
+      template<typename TValue>
+      Option( std::vector<TValue>& value )
+      {
+         using val_vector = std::vector<TValue>;
+         if constexpr ( std::is_base_of<Value, TValue>::value ) {
+            mpValue = std::make_unique<val_vector>( value );
+         }
+         else if constexpr ( std::is_same<std::string, TValue>::value
+               || std::is_same<std::optional<std::string>, TValue>::value ) {
+            using wrap_type = ConvertedValue<val_vector>;
+            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return s; } );
+         }
+         else if constexpr ( std::is_same<long, TValue>::value
+               || std::is_same<std::optional<long>, TValue>::value ) {
+            using wrap_type = ConvertedValue<val_vector>;
+            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return stol( s ); } );
+         }
+         else if constexpr ( std::is_same<double, TValue>::value
+               || std::is_same<std::optional<double>, TValue>::value ) {
+            using wrap_type = ConvertedValue<val_vector>;
             mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return stod( s ); } );
          }
          else {
@@ -319,12 +365,11 @@ private:
    std::vector<Option> mOptions;
 
 public:
+   // TODO: Create a constructor that takes a shared pointer to a structure and
+   // verify that the variables added with addOption are within that structure.
    /**
     * The argument parser takes references to the variables that will hold the
     * parsed values.  The variables must outlive the argument parser.
-    *
-    * TODO: Create a construtcor that takes a shared pointer to a structure and
-    * verify that the variables added with addOption are within that structure.
     */
    static ArgumentParser unsafe()
    {

@@ -346,3 +346,24 @@ TEST( ArgumentParserTest, shouldNotAcceptOptionsWithoutName )
    EXPECT_THROW( parser.addOption( strvalue, "--" ), std::invalid_argument );
    EXPECT_THROW( parser.addOption( strvalue, "" ), std::invalid_argument );
 }
+
+TEST( ArgumentParserTest, shouldSupportVectorOptions )
+{
+   std::vector<std::string> strings;
+   std::vector<long> longs;
+   std::vector<double> floats;
+
+   auto parser = ArgumentParser::unsafe();
+   parser.addOption( strings, "-s" ).hasArgument();
+   parser.addOption( longs, "-l" ).hasArgument();
+   parser.addOption( floats, "-f" ).hasArgument();
+
+   auto res = parser.parseArguments( { "-s", "string", "-f", "12.43", "-l", "576", "-l", "981" } );
+   ASSERT_EQ( 1, strings.size() );
+   EXPECT_EQ( "string", strings.front() );
+   ASSERT_EQ( 1, floats.size() );
+   EXPECT_NEAR( 12.43, floats.front(), 1e-9 );
+   ASSERT_EQ( 2, longs.size() );
+   EXPECT_EQ( 576, longs[0] );
+   EXPECT_EQ( 981, longs[1] );
+}
