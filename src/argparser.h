@@ -8,6 +8,7 @@
 #include <vector>
 #include <optional>
 #include <functional>
+#include <algorithm>
 
 namespace argparse {
 
@@ -252,6 +253,7 @@ private:
    {
       ArgumentParser& mArgParser;
       bool mIgnoreOptions = false;
+      int mPosition = 0;
       // The active option will receive additional argument(s)
       Option* mpActiveOption = nullptr;
       ParseResult mResult;
@@ -293,7 +295,16 @@ private:
 
       void addFreeArgument( const std::string& arg )
       {
-         mResult.freeArguments.push_back( arg );
+         if ( mPosition < mArgParser.mPositional.size() ) {
+            auto& option = mArgParser.mPositional[mPosition];
+            setValue( option, arg );
+            if ( mPosition < mArgParser.mPositional.size() - 1 )
+               ++mPosition;
+         }
+         else {
+            // TODO: rename freeArguments to ignoredArguments
+            mResult.freeArguments.push_back( arg );
+         }
       }
 
       void addError( std::string_view optionName, int errorCode )
@@ -363,6 +374,7 @@ private:
 
 private:
    std::vector<Option> mOptions;
+   std::vector<Option> mPositional;
 
 public:
    // TODO: Create a constructor that takes a shared pointer to a structure and
@@ -379,19 +391,15 @@ public:
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value> >
    Option& addOption( TValue value, const std::string& name="", const std::string& altName="" )
    {
-      mOptions.emplace_back( value );
-      auto& option = mOptions.back();
-      trySetNames( option, { name, altName } );
-      return option;
+      auto option = Option( value );
+      return tryAddOption( option, { name, altName } );
    }
 
    template<typename TValue, typename = std::enable_if_t<!std::is_base_of<Value, TValue>::value> >
    Option& addOption( TValue &value, const std::string& name="", const std::string& altName="" )
    {
-      mOptions.emplace_back( value );
-      auto& option = mOptions.back();
-      trySetNames( option, { name, altName } );
-      return option;
+      auto option = Option( value );
+      return tryAddOption( option, { name, altName } );
    }
 
    ParseResult parseArguments( const std::vector<std::string>& args )
@@ -410,6 +418,47 @@ private:
       for ( auto& option : mOptions )
          if ( option.isRequired() && !option.hasValue() )
             result.errors.emplace_back( option.getName(), MISSING_OPTION );
+   }
+
+   Option& tryAddOption( Option& newOption, std::vector<std::string_view> names )
+   {
+      auto strip = []( std::string_view name ) {
+         name.remove_prefix(std::min(name.find_first_not_of(" "), name.size()));
+         name.remove_suffix(name.size() - std::min(name.find_last_not_of(" ") + 1, name.size()));
+         return name;
+      };
+      auto isEmpty = [&]( auto name ) { return strip( name ) == ""; };
+
+      // Remove empty names
+      names.erase( std::remove_if( names.begin(), names.end(), isEmpty ), names.end() );
+
+      if ( names.empty() )
+         throw std::invalid_argument( "An argument must have a name." );
+
+      auto hasDash = []( auto name ) { return name[0] == '-'; };
+
+      auto isOption = [&]( auto names ) -> bool {
+         return std::all_of( names.begin(), names.end(), hasDash );
+      };
+
+      auto isPositional = [&]( auto names ) -> bool {
+         return std::none_of( names.begin(), names.end(), hasDash );
+      };
+
+      if ( isPositional( names ) ) {
+         mPositional.push_back( std::move(newOption) );
+         auto& option = mPositional.back();
+         option.setLongName( names.empty() ? "arg" : names[0] );
+         return option;
+      }
+      else if ( isOption( names ) ) {
+         mOptions.push_back( std::move(newOption) );
+         auto& option = mOptions.back();
+         trySetNames( option, names );
+         return option;
+      }
+
+      throw std::invalid_argument( "The argument must be either positional or an option." );
    }
 
    void trySetNames( Option& option, const std::vector<std::string_view>& names ) const

@@ -25,14 +25,16 @@ int main( int argc, char** argv )
    optional<long> intValue;
    optional<double> floatValue;
    long intValue2 = 0;
+   vector<string> arguments;
 
    // Note: the argument parser will take references to the variables so it must
    // outlive those variables. We signal this by using the unsafe() factory method.
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( stringValue, "s", "string" ).hasArgument();
+   parser.addOption( stringValue, "-s", "--string" ).hasArgument();
    parser.addOption( intValue, "-i", "--int" ).hasArgument();
-   parser.addOption( floatValue, "f", "float" ).hasArgument();
-   parser.addOption( intValue2, "v", "verbose" );
+   parser.addOption( floatValue, "-f", "--float" ).hasArgument();
+   parser.addOption( intValue2, "-v", "--verbose" );
+   parser.addOption( arguments, "args" );
 
    vector<string> args;
    for ( int i = 1; i < argc; ++i )
@@ -49,7 +51,7 @@ int main( int argc, char** argv )
    cout << "intValue2:   " << intValue2 << "\n";
 
    cout << "Free arguments: ";
-   for ( auto& arg : res.freeArguments )
+   for ( auto& arg : arguments )
       cout << "'" << arg << "' ";
    cout << "\n";
 

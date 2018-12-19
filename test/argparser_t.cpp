@@ -13,7 +13,7 @@ TEST( ArgumentParserTest, shouldParseShortOptions )
    std::optional<std::string> value;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( value, "v" ).hasArgument();
+   parser.addOption( value, "-v" ).hasArgument();
    parser.parseArguments( { "-v", "success" } );
 
    EXPECT_EQ( "success", value.value() );
@@ -24,7 +24,7 @@ TEST( ArgumentParserTest, shouldParseLongOptions )
    std::optional<std::string> value;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( value, "v", "value" ).hasArgument();
+   parser.addOption( value, "--value", "-v" ).hasArgument();
    parser.parseArguments( { "--value", "success" } );
 
    EXPECT_EQ( "success", value.value() );
@@ -35,7 +35,7 @@ TEST( ArgumentParserTest, shouldParseIntegerValues )
    std::optional<long> value;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( value, "v", "value" ).hasArgument();
+   parser.addOption( value, "-v", "--value" ).hasArgument();
    parser.parseArguments( { "--value", "2314" } );
 
    EXPECT_EQ( 2314, value.value() );
@@ -47,8 +47,8 @@ TEST( ArgumentParserTest, shouldNotSetOptionValuesWithoutArguments )
    std::optional<std::string> unused;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( value, "v", "value" ).hasArgument();
-   parser.addOption( unused, "unused" );
+   parser.addOption( value, "-v", "--value" ).hasArgument();
+   parser.addOption( unused, "--unused" );
    parser.parseArguments( { "--value", "2314" } );
 
    EXPECT_EQ( 2314, value.value() );
@@ -61,8 +61,8 @@ TEST( ArgumentParserTest, shouldOnlyAddOptionValueIfRequired )
    std::optional<std::string> flag;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( value, "v", "value" ).hasArgument();
-   parser.addOption( flag, "flag" );
+   parser.addOption( value, "-v", "--value" ).hasArgument();
+   parser.addOption( flag, "--flag" );
 
    parser.parseArguments( { "--value", "2314", "--flag", "notused" } );
 
@@ -79,8 +79,8 @@ TEST( ArgumentParserTest, shouldSkipParsingOptionsAfterDashDash )
    std::optional<std::string> flag;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( value, "v", "value" ).hasArgument();
-   parser.addOption( flag, "skipped" );
+   parser.addOption( value, "-v", "--value" ).hasArgument();
+   parser.addOption( flag, "--skipped" );
 
    parser.parseArguments( { "--value", "2314", "--", "--skipped" } );
 
@@ -96,10 +96,10 @@ TEST( ArgumentParserTest, shouldSupportShortOptionGroups )
    std::optional<long> flagD;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( flagA, "a" );
-   parser.addOption( flagB, "b" );
-   parser.addOption( flagC, "c" );
-   parser.addOption( flagD, "d" );
+   parser.addOption( flagA, "-a" );
+   parser.addOption( flagB, "-b" );
+   parser.addOption( flagC, "-c" );
+   parser.addOption( flagD, "-d" );
 
    parser.parseArguments( { "-abd" } );
 
@@ -117,10 +117,10 @@ TEST( ArgumentParserTest, shouldReadArgumentForLastOptionInGroup )
    std::optional<long> flagD;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( flagA, "a" );
-   parser.addOption( flagB, "b" );
-   parser.addOption( flagC, "c" );
-   parser.addOption( flagD, "d" ).hasArgument();
+   parser.addOption( flagA, "-a" );
+   parser.addOption( flagB, "-b" );
+   parser.addOption( flagC, "-c" );
+   parser.addOption( flagD, "-d" ).hasArgument();
 
    parser.parseArguments( { "-abd", "4213" } );
 
@@ -136,8 +136,8 @@ TEST( ArgumentParserTest, shouldReportErrorForMissingArgument )
    std::optional<std::string> flagB;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( flagA, "a" ).hasArgument();
-   parser.addOption( flagB, "b" );
+   parser.addOption( flagA, "-a" ).hasArgument();
+   parser.addOption( flagB, "-b" );
 
    auto res = parser.parseArguments( { "-a", "-b", "freearg" } );
    ASSERT_EQ( 1, res.errors.size() );
@@ -152,7 +152,7 @@ TEST( ArgumentParserTest, shouldReportBadConversionError )
    std::optional<long> flagA;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( flagA, "a" ).hasArgument();
+   parser.addOption( flagA, "-a" ).hasArgument();
 
    auto res = parser.parseArguments( { "-a", "wrong" } );
    ASSERT_EQ( 1, res.errors.size() );
@@ -165,7 +165,7 @@ TEST( ArgumentParserTest, shouldReportUnknownOptionError )
    std::optional<long> flagA;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( flagA, "a" ).hasArgument();
+   parser.addOption( flagA, "-a" ).hasArgument();
 
    auto res = parser.parseArguments( { "-a", "2135", "--unknown" } );
    ASSERT_EQ( 1, res.errors.size() );
@@ -179,8 +179,8 @@ TEST( ArgumentParserTest, shouldReportMissingRequiredOptionError )
    std::optional<long> flagB;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( flagA, "a" ).hasArgument();
-   parser.addOption( flagA, "b" ).required();
+   parser.addOption( flagA, "-a" ).hasArgument();
+   parser.addOption( flagA, "-b" ).required();
 
    auto res = parser.parseArguments( { "-a", "2135" } );
    ASSERT_EQ( 1, res.errors.size() );
@@ -215,7 +215,7 @@ TEST( ArgumentParserTest, shouldSupportCustomOptionTypes )
    CustomType custom;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( CustomValue( custom ), "c" ).hasArgument();
+   parser.addOption( CustomValue( custom ), "-c" ).hasArgument();
 
    auto res = parser.parseArguments( { "-c", "value" } );
    EXPECT_EQ( "value", custom.value );
@@ -247,7 +247,7 @@ TEST( ArgumentParserTest, shouldSupportCustomOptionTypes_WithConvertedValue )
    CustomType custom;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( CustomValue( custom ), "c" ).hasArgument();
+   parser.addOption( CustomValue( custom ), "-c" ).hasArgument();
 
    auto res = parser.parseArguments( { "-c", "value" } );
    EXPECT_EQ( "value", custom.value.value() );
@@ -259,8 +259,8 @@ TEST( ArgumentParserTest, shouldSupportFlagValues )
    std::optional<std::string> flag;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( flag, "a" ).flagValue( "from-a" );
-   parser.addOption( flag, "b" ).flagValue( "from-b" );
+   parser.addOption( flag, "-a" ).flagValue( "from-a" );
+   parser.addOption( flag, "-b" ).flagValue( "from-b" );
 
    auto res = parser.parseArguments( { "-a", "-b" } );
    EXPECT_EQ( "from-b", flag.value() );
@@ -275,7 +275,7 @@ TEST( ArgumentParserTest, shouldSupportFloatingPointValues )
    std::optional<double> value;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( value, "a" ).hasArgument();
+   parser.addOption( value, "-a" ).hasArgument();
 
    auto res = parser.parseArguments( { "-a", "23.5" } );
    EXPECT_NEAR( 23.5, value.value(), 1e-9 );
@@ -288,9 +288,9 @@ TEST( ArgumentParserTest, shouldSupportRawValueTypes )
    double floatvalue = 2.0;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( strvalue, "str" ).hasArgument();
-   parser.addOption( intvalue, "int" ).hasArgument();
-   parser.addOption( floatvalue, "float" ).hasArgument();
+   parser.addOption( strvalue, "--str" ).hasArgument();
+   parser.addOption( intvalue, "--int" ).hasArgument();
+   parser.addOption( floatvalue, "--float" ).hasArgument();
 
    auto res = parser.parseArguments( { "--str", "string", "--int", "2134", "--float", "32.4" } );
    EXPECT_EQ( "string", strvalue );
@@ -303,7 +303,7 @@ TEST( ArgumentParserTest, shouldAcceptOptionNamesInConstructor )
    std::string strvalue;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( strvalue, "s", "string" ).hasArgument();
+   parser.addOption( strvalue, "-s", "--string" ).hasArgument();
 
    auto res = parser.parseArguments( { "-s", "short" } );
    EXPECT_EQ( 0, res.errors.size() );
@@ -366,4 +366,19 @@ TEST( ArgumentParserTest, shouldSupportVectorOptions )
    ASSERT_EQ( 2, longs.size() );
    EXPECT_EQ( 576, longs[0] );
    EXPECT_EQ( 981, longs[1] );
+}
+
+TEST( ArgumentParserTest, shouldStorePositionalArgumentsInValues )
+{
+   std::vector<std::string> strings;
+
+   auto parser = ArgumentParser::unsafe();
+   parser.addOption( strings, "text" );
+
+   auto res = parser.parseArguments( { "one", "two", "three" } );
+
+   ASSERT_EQ( 3, strings.size() );
+   EXPECT_EQ( "one", strings[0] );
+   EXPECT_EQ( "two", strings[1] );
+   EXPECT_EQ( "three", strings[2] );
 }
