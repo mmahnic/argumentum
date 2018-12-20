@@ -36,7 +36,7 @@ bool vector_eq( const std::vector<T>& values, const std::vector<T>& var )
    return true;
 }
 
-};
+}   // namespace
 
 TEST( ArgumentParserTest, shouldParseShortOptions )
 {
@@ -389,13 +389,9 @@ TEST( ArgumentParserTest, shouldSupportVectorOptions )
    parser.addOption( floats, "-f" ).hasArgument();
 
    auto res = parser.parseArguments( { "-s", "string", "-f", "12.43", "-l", "576", "-l", "981" } );
-   ASSERT_EQ( 1, strings.size() );
-   EXPECT_EQ( "string", strings.front() );
-   ASSERT_EQ( 1, floats.size() );
-   EXPECT_NEAR( 12.43, floats.front(), 1e-9 );
-   ASSERT_EQ( 2, longs.size() );
-   EXPECT_EQ( 576, longs[0] );
-   EXPECT_EQ( 981, longs[1] );
+   EXPECT_TRUE( vector_eq( { "string" }, strings ) );
+   EXPECT_TRUE( vector_eq( { 12.43 }, floats ) );
+   EXPECT_TRUE( vector_eq( { 576, 981 }, longs ) );
 }
 
 TEST( ArgumentParserTest, shouldStorePositionalArgumentsInValues )
@@ -407,10 +403,7 @@ TEST( ArgumentParserTest, shouldStorePositionalArgumentsInValues )
 
    auto res = parser.parseArguments( { "one", "two", "three" } );
 
-   ASSERT_EQ( 3, strings.size() );
-   EXPECT_EQ( "one", strings[0] );
-   EXPECT_EQ( "two", strings[1] );
-   EXPECT_EQ( "three", strings[2] );
+   EXPECT_TRUE( vector_eq( { "one", "two", "three" }, strings ) );
 }
 
 TEST( ArgumentParserTest, shouldGroupPositionalArguments )
@@ -431,18 +424,14 @@ TEST( ArgumentParserTest, shouldGroupPositionalArguments )
    auto parser = makeParser();
    auto res = parser.parseArguments( { "-s", "string", "first", "second", "third" } );
    EXPECT_EQ( "first", firstArgument );
-   ASSERT_EQ( 2, otherArguments.size() );
-   EXPECT_EQ( "second", otherArguments[0] );
-   EXPECT_EQ( "third", otherArguments[1] );
+   EXPECT_TRUE( vector_eq( { "second", "third" }, otherArguments ) );
 
    parser = makeParser();
    firstArgument.clear();
    otherArguments.clear();
    res = parser.parseArguments( { "first", "second", "-s", "string", "third" } );
    EXPECT_EQ( "first", firstArgument );
-   ASSERT_EQ( 2, otherArguments.size() );
-   EXPECT_EQ( "second", otherArguments[0] );
-   EXPECT_EQ( "third", otherArguments[1] );
+   EXPECT_TRUE( vector_eq( { "second", "third" }, otherArguments ) );
 }
 
 TEST( ArgumentParserTest, shouldSupportOptionArgumentCounts )
@@ -458,13 +447,8 @@ TEST( ArgumentParserTest, shouldSupportOptionArgumentCounts )
 
    parser.parseArguments( { "-t", "the", "text", "-f", "file1", "file2", "file3", "-s", "string" } );
    EXPECT_EQ( "string", strvalue );
-   ASSERT_EQ( 2, texts.size() );
-   EXPECT_EQ( "the", texts[0] );
-   EXPECT_EQ( "text", texts[1] );
-   ASSERT_EQ( 3, files.size() );
-   EXPECT_EQ( "file1", files[0] );
-   EXPECT_EQ( "file2", files[1] );
-   EXPECT_EQ( "file3", files[2] );
+   EXPECT_TRUE( vector_eq( { "the", "text" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "file1", "file2", "file3" }, files ) );
 }
 
 TEST( ArgumentParserTest, shouldFailWhenOptionArgumentCountsAreWrong )
@@ -481,18 +465,14 @@ TEST( ArgumentParserTest, shouldFailWhenOptionArgumentCountsAreWrong )
    auto res = parser.parseArguments( { "-t", "the", "-f", "file1", "file2",
       "not-file3", "-s", "string" } );
    EXPECT_EQ( "string", strvalue );
-   ASSERT_EQ( 1, texts.size() );
-   EXPECT_EQ( "the", texts[0] );
-   ASSERT_EQ( 2, files.size() );
-   EXPECT_EQ( "file1", files[0] );
-   EXPECT_EQ( "file2", files[1] );
+   EXPECT_TRUE( vector_eq( { "the" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "file1", "file2" }, files ) );
 
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "t", res.errors.front().option );
    EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors.front().errorCode );
 
-   ASSERT_EQ( 1, res.ignoredArguments.size() );
-   EXPECT_EQ( "not-file3", res.ignoredArguments[0] );
+   EXPECT_TRUE( vector_eq( { "not-file3" }, res.ignoredArguments ) );
 }
 
 TEST( ArgumentParserTest, shouldSupportPositionalArgumentCounts )
