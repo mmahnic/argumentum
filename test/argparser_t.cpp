@@ -8,6 +8,36 @@
 
 using namespace argparse;
 
+namespace {
+
+template<typename T>
+bool vector_eq( const std::vector<T>& values, const std::vector<T>& var )
+{
+   auto dump = [&var]() {
+      std::cout << "Result: ";
+      for ( auto& v : var )
+         std::cout << "'" << v << "'  ";
+      std::cout << "\n";
+   };
+
+   if ( values.size() != var.size() ) {
+      std::cout << "Size: " << values.size() << "!=" << var.size() << "\n";
+      dump();
+      return false;
+   }
+
+   for ( int i = 0; i < var.size(); ++i )
+      if ( values[i] != var[i] ) {
+         std::cout << "Value: '" << values[i] << "'!='" << var[i] << "'\n";
+         dump();
+         return false;
+      }
+
+   return true;
+}
+
+};
+
 TEST( ArgumentParserTest, shouldParseShortOptions )
 {
    std::optional<std::string> value;
@@ -373,7 +403,7 @@ TEST( ArgumentParserTest, shouldStorePositionalArgumentsInValues )
    std::vector<std::string> strings;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( strings, "text" );
+   parser.addOption( strings, "text" ).nargs( -1 );
 
    auto res = parser.parseArguments( { "one", "two", "three" } );
 
@@ -389,18 +419,23 @@ TEST( ArgumentParserTest, shouldGroupPositionalArguments )
    std::string firstArgument;
    std::vector<std::string> otherArguments;
 
-   auto parser = ArgumentParser::unsafe();
-   parser.addOption( strvalue, "-s", "--string" ).hasArgument();
-   parser.addOption( strvalue, "--l" ).hasArgument();
-   parser.addOption( firstArgument, "text" );
-   parser.addOption( otherArguments, "args" );
+   auto makeParser = [&]() {
+      auto parser = ArgumentParser::unsafe();
+      parser.addOption( strvalue, "-s", "--string" ).hasArgument();
+      parser.addOption( strvalue, "--l" ).hasArgument();
+      parser.addOption( firstArgument, "text" ).nargs( 1 );
+      parser.addOption( otherArguments, "args" ).nargs( -1 );
+      return parser;
+   };
 
+   auto parser = makeParser();
    auto res = parser.parseArguments( { "-s", "string", "first", "second", "third" } );
    EXPECT_EQ( "first", firstArgument );
    ASSERT_EQ( 2, otherArguments.size() );
    EXPECT_EQ( "second", otherArguments[0] );
    EXPECT_EQ( "third", otherArguments[1] );
 
+   parser = makeParser();
    firstArgument.clear();
    otherArguments.clear();
    res = parser.parseArguments( { "first", "second", "-s", "string", "third" } );
@@ -443,7 +478,8 @@ TEST( ArgumentParserTest, shouldFailWhenOptionArgumentCountsAreWrong )
    parser.addOption( texts, "-t" ).nargs( 2 );
    parser.addOption( files, "-f" ).nargs( 2 );
 
-   auto res = parser.parseArguments( { "-t", "the", "-f", "file1", "file2", "not-file3", "-s", "string" } );
+   auto res = parser.parseArguments( { "-t", "the", "-f", "file1", "file2",
+      "not-file3", "-s", "string" } );
    EXPECT_EQ( "string", strvalue );
    ASSERT_EQ( 1, texts.size() );
    EXPECT_EQ( "the", texts[0] );
@@ -457,4 +493,23 @@ TEST( ArgumentParserTest, shouldFailWhenOptionArgumentCountsAreWrong )
 
    ASSERT_EQ( 1, res.ignoredArguments.size() );
    EXPECT_EQ( "not-file3", res.ignoredArguments[0] );
+}
+
+TEST( ArgumentParserTest, shouldSupportPositionalArgumentCounts )
+{
+   std::string strvalue;
+   std::vector<std::string> texts;
+   std::vector<std::string> files;
+
+   auto parser = ArgumentParser::unsafe();
+   parser.addOption( strvalue, "-s" ).nargs( 1 );
+   parser.addOption( texts, "text" ).nargs( 2 );
+   parser.addOption( files, "file" ).nargs( 2 );
+   auto res = parser.parseArguments( { "the", "-s", "string1", "text", "file1", "file2",
+      "not-file3", "-s", "string2" } );
+
+   EXPECT_EQ( "string2", strvalue );
+   EXPECT_TRUE( vector_eq( { "the", "text" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "file1", "file2" }, files ) );
+   EXPECT_TRUE( vector_eq( { "not-file3" }, res.ignoredArguments ) );
 }

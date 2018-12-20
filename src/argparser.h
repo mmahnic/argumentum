@@ -342,12 +342,24 @@ private:
       {
          if ( mPosition < mArgParser.mPositional.size() ) {
             auto& option = mArgParser.mPositional[mPosition];
-            setValue( option, arg );
-            if ( mPosition < mArgParser.mPositional.size() - 1 )
+            if ( option.willAcceptArgument() ) {
+               setValue( option, arg );
+               return;
+            }
+            else {
                ++mPosition;
+               while ( mPosition < mArgParser.mPositional.size() ) {
+                  auto& option = mArgParser.mPositional[mPosition];
+                  if ( option.willAcceptArgument() ) {
+                     setValue( option, arg );
+                     return;
+                  }
+                  ++mPosition;
+               }
+            }
          }
-         else
-            mResult.ignoredArguments.push_back( arg );
+
+         mResult.ignoredArguments.push_back( arg );
       }
 
       void addError( std::string_view optionName, int errorCode )
