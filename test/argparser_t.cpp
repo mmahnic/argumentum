@@ -142,8 +142,8 @@ TEST( ArgumentParserTest, shouldReportErrorForMissingArgument )
    auto res = parser.parseArguments( { "-a", "-b", "freearg" } );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "a", res.errors.front().option );
-   ASSERT_EQ( 1, res.freeArguments.size() );
-   EXPECT_EQ( "freearg", res.freeArguments.front() );
+   ASSERT_EQ( 1, res.ignoredArguments.size() );
+   EXPECT_EQ( "freearg", res.ignoredArguments.front() );
    EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors.front().errorCode );
 }
 
@@ -408,4 +408,53 @@ TEST( ArgumentParserTest, shouldGroupPositionalArguments )
    ASSERT_EQ( 2, otherArguments.size() );
    EXPECT_EQ( "second", otherArguments[0] );
    EXPECT_EQ( "third", otherArguments[1] );
+}
+
+TEST( ArgumentParserTest, shouldSupportOptionArgumentCounts )
+{
+   std::string strvalue;
+   std::vector<std::string> texts;
+   std::vector<std::string> files;
+
+   auto parser = ArgumentParser::unsafe();
+   parser.addOption( strvalue, "-s" ).nargs( 1 );
+   parser.addOption( texts, "-t" ).nargs( 2 );
+   parser.addOption( files, "-f" ).nargs( -1 );
+
+   parser.parseArguments( { "-t", "the", "text", "-f", "file1", "file2", "file3", "-s", "string" } );
+   EXPECT_EQ( "string", strvalue );
+   ASSERT_EQ( 2, texts.size() );
+   EXPECT_EQ( "the", texts[0] );
+   EXPECT_EQ( "text", texts[1] );
+   ASSERT_EQ( 3, files.size() );
+   EXPECT_EQ( "file1", files[0] );
+   EXPECT_EQ( "file2", files[1] );
+   EXPECT_EQ( "file3", files[2] );
+}
+
+TEST( ArgumentParserTest, shouldFailWhenOptionArgumentCountsAreWrong )
+{
+   std::string strvalue;
+   std::vector<std::string> texts;
+   std::vector<std::string> files;
+
+   auto parser = ArgumentParser::unsafe();
+   parser.addOption( strvalue, "-s" ).nargs( 1 );
+   parser.addOption( texts, "-t" ).nargs( 2 );
+   parser.addOption( files, "-f" ).nargs( 2 );
+
+   auto res = parser.parseArguments( { "-t", "the", "-f", "file1", "file2", "not-file3", "-s", "string" } );
+   EXPECT_EQ( "string", strvalue );
+   ASSERT_EQ( 1, texts.size() );
+   EXPECT_EQ( "the", texts[0] );
+   ASSERT_EQ( 2, files.size() );
+   EXPECT_EQ( "file1", files[0] );
+   EXPECT_EQ( "file2", files[1] );
+
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( "t", res.errors.front().option );
+   EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors.front().errorCode );
+
+   ASSERT_EQ( 1, res.ignoredArguments.size() );
+   EXPECT_EQ( "not-file3", res.ignoredArguments[0] );
 }

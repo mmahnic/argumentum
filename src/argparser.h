@@ -111,7 +111,8 @@ public:
       std::string mShortName;
       std::string mLongName;
       std::string mFlagValue = "1";
-      bool mHasArgument = false;
+      int mMinArgs = 0;
+      int mMaxArgs = 0;
       bool mIsRequired = false;
 
    public:
@@ -182,9 +183,21 @@ public:
          return *this;
       }
 
+      Option& nargs( int count )
+      {
+         if ( count >= 0 ) {
+            mMinArgs = count;
+            mMaxArgs = count;
+         }
+         else {
+            mMinArgs = 0;
+            mMaxArgs = -1;
+         }
+      }
+
       Option& hasArgument( bool hasArg=true )
       {
-         mHasArgument = hasArg;
+         nargs( 1 );
          return *this;
       }
 
@@ -227,7 +240,12 @@ public:
 
       bool willAcceptArgument() const
       {
-         return mHasArgument && mpValue->getOptionAssignCount() == 0; // TODO: count is less than max
+         return mMaxArgs < 0 || mpValue->getOptionAssignCount() < mMaxArgs;
+      }
+
+      bool needsMoreArguments() const
+      {
+         return mpValue->getOptionAssignCount() < mMinArgs;
       }
 
       /**
@@ -236,7 +254,7 @@ public:
        */
       bool wasAssigned() const
       {
-         return mpValue->getAssignCount() > 0; // TODO: count is more than min
+         return mpValue->getAssignCount() > 0;
       }
 
       const std::string& getFlagValue() const
@@ -264,13 +282,13 @@ public:
 
    struct ParseResult
    {
-      std::vector<std::string> freeArguments;
+      std::vector<std::string> ignoredArguments;
       std::vector<ParseError> errors;
 
    public:
       void clear()
       {
-         freeArguments.clear();
+         ignoredArguments.clear();
          errors.clear();
       }
    };
@@ -294,10 +312,9 @@ private:
       {
          if ( mpActiveOption ) {
             auto& option = *mpActiveOption;
-            if ( !option.wasAssigned() ) {
+            if ( option.needsMoreArguments() ) {
                addError( option.getName(), MISSING_ARGUMENT );
                closeOption();
-               return;
             }
          }
 
@@ -329,10 +346,8 @@ private:
             if ( mPosition < mArgParser.mPositional.size() - 1 )
                ++mPosition;
          }
-         else {
-            // TODO: rename freeArguments to ignoredArguments
-            mResult.freeArguments.push_back( arg );
-         }
+         else
+            mResult.ignoredArguments.push_back( arg );
       }
 
       void addError( std::string_view optionName, int errorCode )
