@@ -382,3 +382,30 @@ TEST( ArgumentParserTest, shouldStorePositionalArgumentsInValues )
    EXPECT_EQ( "two", strings[1] );
    EXPECT_EQ( "three", strings[2] );
 }
+
+TEST( ArgumentParserTest, shouldGroupPositionalArguments )
+{
+   std::string strvalue;
+   std::string firstArgument;
+   std::vector<std::string> otherArguments;
+
+   auto parser = ArgumentParser::unsafe();
+   parser.addOption( strvalue, "-s", "--string" ).hasArgument();
+   parser.addOption( strvalue, "--l" ).hasArgument();
+   parser.addOption( firstArgument, "text" );
+   parser.addOption( otherArguments, "args" );
+
+   auto res = parser.parseArguments( { "-s", "string", "first", "second", "third" } );
+   EXPECT_EQ( "first", firstArgument );
+   ASSERT_EQ( 2, otherArguments.size() );
+   EXPECT_EQ( "second", otherArguments[0] );
+   EXPECT_EQ( "third", otherArguments[1] );
+
+   firstArgument.clear();
+   otherArguments.clear();
+   res = parser.parseArguments( { "first", "second", "-s", "string", "third" } );
+   EXPECT_EQ( "first", firstArgument );
+   ASSERT_EQ( 2, otherArguments.size() );
+   EXPECT_EQ( "second", otherArguments[0] );
+   EXPECT_EQ( "third", otherArguments[1] );
+}

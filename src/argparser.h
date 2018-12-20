@@ -36,17 +36,35 @@ class ArgumentParser
 public:
    class Value
    {
-      bool mValueWasSet = false;
+      int mAssignCount = 0;
+      int mOptionAssignCount = 0;
    public:
       void setValue( const std::string& value )
       {
-         mValueWasSet = true;
+         ++mAssignCount;
+         ++mOptionAssignCount;
          doSetValue( value );
       }
 
-      bool hasValue() const
+      /**
+       * The count of assignments through all the options that share this value.
+       */
+      int getAssignCount() const
       {
-         return mValueWasSet;
+         return mAssignCount;
+      }
+
+      /**
+       * The count of assignments through the current option.
+       */
+      int getOptionAssignCount() const
+      {
+         return mOptionAssignCount;
+      }
+
+      void onOptionStarted()
+      {
+         mOptionAssignCount = 0;
       }
 
    protected:
@@ -187,11 +205,6 @@ public:
          return mIsRequired;
       }
 
-      bool isArgumentExpected() const
-      {
-         return mHasArgument;
-      }
-
       const std::string& getName() const
       {
          return mLongName.empty() ? mShortName : mLongName;
@@ -207,9 +220,23 @@ public:
          mpValue->setValue( value );
       }
 
-      bool hasValue() const
+      void onOptionStarted()
       {
-         return mpValue->hasValue();
+         mpValue->onOptionStarted();
+      }
+
+      bool willAcceptArgument() const
+      {
+         return mHasArgument && mpValue->getOptionAssignCount() == 0; // TODO: count is less than max
+      }
+
+      /**
+       * @returns true if the value was assigned through any option that shares
+       * this option's value.
+       */
+      bool wasAssigned() const
+      {
+         return mpValue->getAssignCount() > 0; // TODO: count is more than min
       }
 
       const std::string& getFlagValue() const
@@ -267,7 +294,7 @@ private:
       {
          if ( mpActiveOption ) {
             auto& option = *mpActiveOption;
-            if ( !option.hasValue() ) {
+            if ( !option.wasAssigned() ) {
                addError( option.getName(), MISSING_ARGUMENT );
                closeOption();
                return;
@@ -277,7 +304,8 @@ private:
          auto pOption = findOption( name );
          if ( pOption ) {
             auto& option = *pOption;
-            if ( option.isArgumentExpected() )
+            option.onOptionStarted();
+            if ( option.willAcceptArgument() )
                mpActiveOption = pOption;
             else
                setValue( option, option.getFlagValue() );
@@ -358,10 +386,11 @@ private:
             else {
                if ( mpActiveOption ) {
                   auto& option = *mpActiveOption;
-                  if ( option.isArgumentExpected() )
+                  if ( option.willAcceptArgument() ) {
                      setValue(option, arg );
-                  // NOTE: For now we assume there is at most one argument per option
-                  closeOption();
+                     if ( !option.willAcceptArgument() )
+                        closeOption();
+                  }
                }
                else
                   addFreeArgument( arg );
@@ -416,7 +445,7 @@ private:
    void reportMissingOptions( ParseResult& result )
    {
       for ( auto& option : mOptions )
-         if ( option.isRequired() && !option.hasValue() )
+         if ( option.isRequired() && !option.wasAssigned() )
             result.errors.emplace_back( option.getName(), MISSING_OPTION );
    }
 
