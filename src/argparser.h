@@ -310,13 +310,8 @@ private:
 
       void startOption( std::string_view name )
       {
-         if ( mpActiveOption ) {
-            auto& option = *mpActiveOption;
-            if ( option.needsMoreArguments() ) {
-               addError( option.getName(), MISSING_ARGUMENT );
-               closeOption();
-            }
-         }
+         if ( haveActiveOption() )
+            closeOption();
 
          auto pOption = findOption( name );
          if ( pOption ) {
@@ -327,14 +322,22 @@ private:
             else
                setValue( option, option.getFlagValue() );
          }
-         else {
+         else
             addError( name, UNKNOWN_OPTION );
-            closeOption();
-         }
+      }
+
+      bool haveActiveOption() const
+      {
+         return mpActiveOption != nullptr;
       }
 
       void closeOption()
       {
+         if ( haveActiveOption() ) {
+            auto& option = *mpActiveOption;
+            if ( option.needsMoreArguments() )
+               addError( option.getName(), MISSING_ARGUMENT );
+         }
          mpActiveOption = nullptr;
       }
 
@@ -411,7 +414,7 @@ private:
                   startOption( arg_view.substr( i, 1 ));
             }
             else {
-               if ( mpActiveOption ) {
+               if ( haveActiveOption() ) {
                   auto& option = *mpActiveOption;
                   if ( option.willAcceptArgument() ) {
                      setValue(option, arg );
@@ -423,6 +426,9 @@ private:
                   addFreeArgument( arg );
             }
          }
+
+         if ( haveActiveOption() )
+            closeOption();
 
          return std::move( mResult );
       }
