@@ -700,7 +700,7 @@ TEST( ArgumentParserTest, shouldSupportMaxNumberOfPositionalArguments )
    }
 }
 
-TEST( ArgumentParserTest, shouldSupportSetDefaultCountForPositionalArgumentsWithVectorValues )
+TEST( ArgumentParserTest, shouldSetDefaultCountForPositionalArgumentsWithVectorValues )
 {
    std::vector<std::string> texts;
    auto params = std::vector<std::string>{ "read", "the", "text" };
@@ -715,7 +715,7 @@ TEST( ArgumentParserTest, shouldSupportSetDefaultCountForPositionalArgumentsWith
    EXPECT_EQ( 0, res.errors.size() );
 }
 
-TEST( ArgumentParserTest, shouldSupportSetDefaultCountForPositionalArgumentsWithScalarValues )
+TEST( ArgumentParserTest, shouldSetDefaultCountForPositionalArgumentsWithScalarValues )
 {
    std::string strvalue;
    auto params = std::vector<std::string>{ "read", "the", "text" };
@@ -728,4 +728,14 @@ TEST( ArgumentParserTest, shouldSupportSetDefaultCountForPositionalArgumentsWith
    EXPECT_EQ( "read", strvalue );
    EXPECT_TRUE( vector_eq( { "the", "text" }, res.ignoredArguments ) );
    EXPECT_EQ( 0, res.errors.size() );
+}
+
+TEST( ArgumentParserTest, shouldSetFlagValueWhenZeroOrMoreArgumentsRequiredAndNoneGiven )
+{
+   std::vector<std::string> texts;
+   auto parser = ArgumentParser::unsafe();
+   parser.addOption( texts, "-t" ).maxargs( 1 );
+
+   auto res = parser.parseArguments( { "-t" } );
+   EXPECT_TRUE( vector_eq( { "1" }, texts ) );
 }

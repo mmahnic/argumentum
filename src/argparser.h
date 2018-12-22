@@ -278,6 +278,11 @@ public:
          return mpValue->getAssignCount() > 0;
       }
 
+      bool wasAssignedThroughThisOption() const
+      {
+         return mpValue->getOptionAssignCount() > 0;
+      }
+
       const std::string& getFlagValue() const
       {
          return mFlagValue;
@@ -400,6 +405,8 @@ private:
             auto& option = *mpActiveOption;
             if ( option.needsMoreArguments() )
                addError( option.getName(), MISSING_ARGUMENT );
+            else if ( option.willAcceptArgument() && !option.wasAssignedThroughThisOption() )
+               option.setValue( option.getFlagValue() );
          }
          mpActiveOption = nullptr;
       }
