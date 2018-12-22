@@ -664,3 +664,38 @@ TEST( ArgumentParserTest, shouldSupportMinNumberOfPositionalArguments )
    EXPECT_EQ( "text", res.errors[0].option );
    EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors[0].errorCode );
 }
+
+TEST( ArgumentParserTest, shouldSupportMaxNumberOfPositionalArguments )
+{
+   std::vector<std::string> texts;
+
+   auto testWithMaxArgs = [&]( int nargs, const std::vector<std::string>& params ) {
+      texts.clear();
+      auto parser = ArgumentParser::unsafe();
+      parser.addOption( texts, "text" ).maxargs( nargs );
+      return parser.parseArguments( params );
+   };
+   auto params = std::vector<std::string>{ "read", "the", "text" };
+
+   auto res = testWithMaxArgs( 0, params );
+   EXPECT_EQ( 0, texts.size() );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithMaxArgs( 1, params );
+   EXPECT_TRUE( vector_eq( { "read" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "the", "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithMaxArgs( 2, params );
+   EXPECT_TRUE( vector_eq( { "read", "the" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   for ( int nargs = 3; nargs < 5; ++nargs ) {
+      auto res = testWithMaxArgs( nargs, params );
+      EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) ) << "maxargs:" << nargs;
+      EXPECT_EQ( 0, res.ignoredArguments.size() ) << "maxargs:" << nargs;
+      EXPECT_EQ( 0, res.errors.size() ) << "maxargs:" << nargs;
+   }
+}
