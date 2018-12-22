@@ -174,59 +174,45 @@ public:
          mIsVectorValue = true;
       }
 
-      // TODO: The client shluld only see the methods for configuring the
-      // option, not everything esle. The ArgumentParser should return
-      // OptionConfig& instead of Option&. These methods should be void, Option
-      // class should be private.
-      Option& setShortName( std::string_view name )
+      void setShortName( std::string_view name )
       {
          mShortName = name;
-         return *this;
       }
 
-      Option& setLongName( std::string_view name )
+      void setLongName( std::string_view name )
       {
          mLongName = name;
-         return *this;
       }
 
       // TODO: nagrs, minargs, maxargs should be mutually exclusive for the
       // client.  This should be implemented in OptionConfig. OptionConfig
       // should throw if more than one is used.
-      Option& nargs( int count )
+      void setNArgs( int count )
       {
          mMinArgs = std::max( 0, count );
          mMaxArgs = mMinArgs;
       }
 
-      Option& minargs( int count )
+      void setMinArgs( int count )
       {
          mMinArgs = std::max( 0, count );
          mMaxArgs = -1;
       }
 
-      Option& maxargs( int count )
+      void setMaxArgs( int count )
       {
          mMinArgs = 0;
          mMaxArgs = std::max( 0, count );
       }
 
-      Option& hasArgument( bool hasArg=true )
-      {
-         nargs( 1 );
-         return *this;
-      }
-
-      Option& required( bool isRequired=true )
+      void setRequired( bool isRequired=true )
       {
          mIsRequired = isRequired;
-         return *this;
       }
 
-      Option& flagValue( std::string_view value )
+      void setFlagValue( std::string_view value )
       {
          mFlagValue = value;
-         return *this;
       }
 
       bool isRequired() const
@@ -286,6 +272,59 @@ public:
       const std::string& getFlagValue() const
       {
          return mFlagValue;
+      }
+   };
+
+   class OptionConfig
+   {
+      std::vector<Option>& mOptions;
+      size_t mIndex = 0;
+
+   public:
+      OptionConfig( std::vector<Option>& options, size_t index )
+         : mOptions( options ), mIndex( index )
+      {}
+
+      OptionConfig& setShortName( std::string_view name )
+      {
+         mOptions[mIndex].setShortName( name );
+         return *this;
+      }
+
+      OptionConfig& setLongName( std::string_view name )
+      {
+         mOptions[mIndex].setLongName( name );
+         return *this;
+      }
+
+      OptionConfig& nargs( int count )
+      {
+         mOptions[mIndex].setNArgs( count );
+         return *this;
+      }
+
+      OptionConfig& minargs( int count )
+      {
+         mOptions[mIndex].setMinArgs( count );
+         return *this;
+      }
+
+      OptionConfig& maxargs( int count )
+      {
+         mOptions[mIndex].setMaxArgs( count );
+         return *this;
+      }
+
+      OptionConfig& required( bool isRequired=true )
+      {
+         mOptions[mIndex].setRequired( isRequired );
+         return *this;
+      }
+
+      OptionConfig& flagValue( std::string_view value )
+      {
+         mOptions[mIndex].setFlagValue( value );
+         return *this;
       }
    };
 
@@ -480,14 +519,14 @@ public:
    }
 
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value> >
-   Option& addOption( TValue value, const std::string& name="", const std::string& altName="" )
+   OptionConfig addOption( TValue value, const std::string& name="", const std::string& altName="" )
    {
       auto option = Option( value );
       return tryAddOption( option, { name, altName } );
    }
 
    template<typename TValue, typename = std::enable_if_t<!std::is_base_of<Value, TValue>::value> >
-   Option& addOption( TValue &value, const std::string& name="", const std::string& altName="" )
+   OptionConfig addOption( TValue &value, const std::string& name="", const std::string& altName="" )
    {
       auto option = Option( value );
       return tryAddOption( option, { name, altName } );
@@ -515,7 +554,7 @@ private:
             result.errors.emplace_back( option.getName(), MISSING_ARGUMENT );
    }
 
-   Option& tryAddOption( Option& newOption, std::vector<std::string_view> names )
+   OptionConfig tryAddOption( Option& newOption, std::vector<std::string_view> names )
    {
       auto strip = []( std::string_view name ) {
          name.remove_prefix(std::min(name.find_first_not_of(" "), name.size()));
@@ -546,17 +585,20 @@ private:
          option.setLongName( names.empty() ? "arg" : names[0] );
 
          if ( option.hasVectorValue() )
-            option.minargs( 0 );
+            option.setMinArgs( 0 );
          else
-            option.nargs( 1 );
+            option.setNArgs( 1 );
 
-         return option;
+         // return option;
+         return { mPositional, mPositional.size() - 1 };
       }
       else if ( isOption( names ) ) {
          mOptions.push_back( std::move(newOption) );
          auto& option = mOptions.back();
          trySetNames( option, names );
-         return option;
+
+         // return option;
+         return { mOptions, mOptions.size() - 1 };
       }
 
       throw std::invalid_argument( "The argument must be either positional or an option." );
