@@ -498,17 +498,13 @@ TEST( ArgumentParserTest, shouldSupportExactNumberOfOptionArguments )
 {
    std::vector<std::string> texts;
 
-   auto makeParser = [&]( int nargs ) {
-      auto parser = ArgumentParser::unsafe();
-      parser.addOption( texts, "-t" ).nargs( nargs );
-      return parser;
-   };
-   auto params = std::vector<std::string>{ "-t", "read", "the", "text" };
-
    auto testWithNargs = [&]( int nargs, const std::vector<std::string>& params ) {
       texts.clear();
-      return makeParser( nargs ).parseArguments( params );
+      auto parser = ArgumentParser::unsafe();
+      parser.addOption( texts, "-t" ).nargs( nargs );
+      return parser.parseArguments( params );
    };
+   auto params = std::vector<std::string>{ "-t", "read", "the", "text" };
 
    auto res = testWithNargs( 0, params );
    // When an option doesn't accept arguments, the default value is set/added
@@ -543,17 +539,13 @@ TEST( ArgumentParserTest, shouldSupportExactNumberOfPositionalArguments )
 {
    std::vector<std::string> texts;
 
-   auto makeParser = [&]( int nargs ) {
-      auto parser = ArgumentParser::unsafe();
-      parser.addOption( texts, "text" ).nargs( nargs );
-      return parser;
-   };
-   auto params = std::vector<std::string>{ "read", "the", "text" };
-
    auto testWithNargs = [&]( int nargs, const std::vector<std::string>& params ) {
       texts.clear();
-      return makeParser( nargs ).parseArguments( params );
+      auto parser = ArgumentParser::unsafe();
+      parser.addOption( texts, "text" ).nargs( nargs );
+      return parser.parseArguments( params );
    };
+   auto params = std::vector<std::string>{ "read", "the", "text" };
 
    auto res = testWithNargs( 0, params );
    EXPECT_EQ( 0, texts.size() );
@@ -587,17 +579,13 @@ TEST( ArgumentParserTest, shouldSupportMinNumberOfOptionArguments )
 {
    std::vector<std::string> texts;
 
-   auto makeParser = [&]( int nargs ) {
-      auto parser = ArgumentParser::unsafe();
-      parser.addOption( texts, "-t" ).minargs( nargs );
-      return parser;
-   };
-   auto params = std::vector<std::string>{ "-t", "read", "the", "text" };
-
    auto testWithMinArgs = [&]( int nargs, const std::vector<std::string>& params ) {
       texts.clear();
-      return makeParser( nargs ).parseArguments( params );
+      auto parser = ArgumentParser::unsafe();
+      parser.addOption( texts, "-t" ).minargs( nargs );
+      return parser.parseArguments( params );
    };
+   auto params = std::vector<std::string>{ "-t", "read", "the", "text" };
 
    for ( int nargs = 0; nargs < 4; ++nargs ) {
       auto res = testWithMinArgs( nargs, params );
