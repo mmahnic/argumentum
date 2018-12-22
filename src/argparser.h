@@ -114,6 +114,7 @@ public:
       int mMinArgs = 0;
       int mMaxArgs = 0;
       bool mIsRequired = false;
+      bool mIsVectorValue = false;
 
    public:
       template<typename TValue>
@@ -169,6 +170,8 @@ public:
             using wrap_type = ConvertedValue<std::string>;
             mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return s; } );
          }
+
+         mIsVectorValue = true;
       }
 
       Option& setShortName( std::string_view name )
@@ -252,6 +255,11 @@ public:
       bool needsMoreArguments() const
       {
          return mpValue->getOptionAssignCount() < mMinArgs;
+      }
+
+      bool hasVectorValue() const
+      {
+         return mIsVectorValue;
       }
 
       /**
@@ -522,6 +530,8 @@ private:
          mPositional.push_back( std::move(newOption) );
          auto& option = mPositional.back();
          option.setLongName( names.empty() ? "arg" : names[0] );
+         if ( option.hasVectorValue() )
+            option.minargs( 0 );
          return option;
       }
       else if ( isOption( names ) ) {

@@ -699,3 +699,18 @@ TEST( ArgumentParserTest, shouldSupportMaxNumberOfPositionalArguments )
       EXPECT_EQ( 0, res.errors.size() ) << "maxargs:" << nargs;
    }
 }
+
+TEST( ArgumentParserTest, shouldSupportSetDefaultCountForPositionalArgumentsWithVectorValues )
+{
+   std::vector<std::string> texts;
+   auto params = std::vector<std::string>{ "read", "the", "text" };
+
+   auto parser = ArgumentParser::unsafe();
+   // If the value variable is a vector, the default is minargs(0)
+   parser.addOption( texts, "text" );
+
+   auto res = parser.parseArguments( params );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
+   EXPECT_EQ( 0, res.ignoredArguments.size() );
+   EXPECT_EQ( 0, res.errors.size() );
+}
