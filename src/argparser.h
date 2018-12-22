@@ -185,14 +185,8 @@ public:
 
       Option& nargs( int count )
       {
-         if ( count >= 0 ) {
-            mMinArgs = count;
-            mMaxArgs = count;
-         }
-         else {
-            mMinArgs = 0;
-            mMaxArgs = -1;
-         }
+         mMinArgs = std::max( 0, count );
+         mMaxArgs = mMinArgs;
       }
 
       Option& minargs( int count )

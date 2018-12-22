@@ -399,7 +399,7 @@ TEST( ArgumentParserTest, shouldStorePositionalArgumentsInValues )
    std::vector<std::string> strings;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( strings, "text" ).nargs( -1 );
+   parser.addOption( strings, "text" ).minargs( 0 );
 
    auto res = parser.parseArguments( { "one", "two", "three" } );
 
@@ -417,7 +417,7 @@ TEST( ArgumentParserTest, shouldGroupPositionalArguments )
       parser.addOption( strvalue, "-s", "--string" ).hasArgument();
       parser.addOption( strvalue, "--l" ).hasArgument();
       parser.addOption( firstArgument, "text" ).nargs( 1 );
-      parser.addOption( otherArguments, "args" ).nargs( -1 );
+      parser.addOption( otherArguments, "args" ).minargs( 0 );
       return parser;
    };
 
@@ -443,7 +443,7 @@ TEST( ArgumentParserTest, shouldSupportOptionArgumentCounts )
    auto parser = ArgumentParser::unsafe();
    parser.addOption( strvalue, "-s" ).nargs( 1 );
    parser.addOption( texts, "-t" ).nargs( 2 );
-   parser.addOption( files, "-f" ).nargs( -1 );
+   parser.addOption( files, "-f" ).minargs( 0 );
 
    parser.parseArguments( { "-t", "the", "text", "-f", "file1", "file2", "file3", "-s", "string" } );
    EXPECT_EQ( "string", strvalue );
