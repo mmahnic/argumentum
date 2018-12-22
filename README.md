@@ -30,9 +30,9 @@ int main( int argc, char** argv )
    // Note: the argument parser will take references to the variables so it must
    // outlive those variables. We signal this by using the unsafe() factory method.
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( stringValue, "-s", "--string" ).hasArgument();
-   parser.addOption( intValue, "-i", "--int" ).hasArgument();
-   parser.addOption( floatValue, "-f", "--float" ).hasArgument();
+   parser.addOption( stringValue, "-s", "--string" ).nargs( 1 );
+   parser.addOption( intValue, "-i", "--int" ).nargs( 1 );
+   parser.addOption( floatValue, "-f", "--float" ).nargs( 1 );
    parser.addOption( intValue2, "-v", "--verbose" );
    parser.addOption( arguments, "args" );
 
@@ -50,7 +50,7 @@ int main( int argc, char** argv )
       << ( bool(floatValue) ? to_string(floatValue.value()) : "not set" ) << "\n";
    cout << "intValue2:   " << intValue2 << "\n";
 
-   cout << "Free arguments: ";
+   cout << "Positional arguments: ";
    for ( auto& arg : arguments )
       cout << "'" << arg << "' ";
    cout << "\n";
