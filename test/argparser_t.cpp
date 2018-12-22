@@ -739,3 +739,20 @@ TEST( ArgumentParserTest, shouldSetFlagValueWhenZeroOrMoreArgumentsRequiredAndNo
    auto res = parser.parseArguments( { "-t" } );
    EXPECT_TRUE( vector_eq( { "1" }, texts ) );
 }
+
+TEST( ArgumentParserTest, shouldSetArgumentCountAtMostOnce )
+{
+   std::vector<std::string> texts;
+   auto parser = ArgumentParser::unsafe();
+
+   EXPECT_NO_THROW( parser.addOption( texts, "-a" ).nargs( 1 ) );
+   EXPECT_NO_THROW( parser.addOption( texts, "-b" ).minargs( 1 ) );
+   EXPECT_NO_THROW( parser.addOption( texts, "-c" ).maxargs( 1 ) );
+
+   EXPECT_THROW( parser.addOption( texts, "-d" ).nargs( 1 ).minargs( 1 ), std::invalid_argument );
+   EXPECT_THROW( parser.addOption( texts, "-e" ).nargs( 1 ).maxargs( 1 ), std::invalid_argument );
+   EXPECT_THROW( parser.addOption( texts, "-f" ).minargs( 1 ).nargs( 1 ), std::invalid_argument );
+   EXPECT_THROW( parser.addOption( texts, "-g" ).minargs( 1 ).maxargs( 1 ), std::invalid_argument );
+   EXPECT_THROW( parser.addOption( texts, "-h" ).maxargs( 1 ).nargs( 1 ), std::invalid_argument );
+   EXPECT_THROW( parser.addOption( texts, "-i" ).maxargs( 1 ).minargs( 1 ), std::invalid_argument );
+}

@@ -184,9 +184,6 @@ public:
          mLongName = name;
       }
 
-      // TODO: nagrs, minargs, maxargs should be mutually exclusive for the
-      // client.  This should be implemented in OptionConfig. OptionConfig
-      // should throw if more than one is used.
       void setNArgs( int count )
       {
          mMinArgs = std::max( 0, count );
@@ -279,6 +276,7 @@ public:
    {
       std::vector<Option>& mOptions;
       size_t mIndex = 0;
+      bool mCountWasSet = false;
 
    public:
       OptionConfig( std::vector<Option>& options, size_t index )
@@ -299,19 +297,25 @@ public:
 
       OptionConfig& nargs( int count )
       {
+         ensureCountWasNotSet();
          mOptions[mIndex].setNArgs( count );
+         mCountWasSet = true;
          return *this;
       }
 
       OptionConfig& minargs( int count )
       {
+         ensureCountWasNotSet();
          mOptions[mIndex].setMinArgs( count );
+         mCountWasSet = true;
          return *this;
       }
 
       OptionConfig& maxargs( int count )
       {
+         ensureCountWasNotSet();
          mOptions[mIndex].setMaxArgs( count );
+         mCountWasSet = true;
          return *this;
       }
 
@@ -325,6 +329,13 @@ public:
       {
          mOptions[mIndex].setFlagValue( value );
          return *this;
+      }
+
+   private:
+      void ensureCountWasNotSet() const
+      {
+         if ( mCountWasSet )
+            throw std::invalid_argument( "Only one of nargs, minargs and maxargs can be used." );
       }
    };
 
