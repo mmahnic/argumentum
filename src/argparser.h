@@ -114,6 +114,7 @@ public:
       int mMinArgs = 0;
       int mMaxArgs = 0;
       bool mIsRequired = false;
+      bool mIsVectorValue = false;
 
    public:
       template<typename TValue>
@@ -169,8 +170,14 @@ public:
             using wrap_type = ConvertedValue<std::string>;
             mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return s; } );
          }
+
+         mIsVectorValue = true;
       }
 
+      // TODO: The client shluld only see the methods for configuring the
+      // option, not everything esle. The ArgumentParser should return
+      // OptionConfig& instead of Option&. These methods should be void, Option
+      // class should be private.
       Option& setShortName( std::string_view name )
       {
          mShortName = name;
@@ -183,16 +190,25 @@ public:
          return *this;
       }
 
+      // TODO: nagrs, minargs, maxargs should be mutually exclusive for the
+      // client.  This should be implemented in OptionConfig. OptionConfig
+      // should throw if more than one is used.
       Option& nargs( int count )
       {
-         if ( count >= 0 ) {
-            mMinArgs = count;
-            mMaxArgs = count;
-         }
-         else {
-            mMinArgs = 0;
-            mMaxArgs = -1;
-         }
+         mMinArgs = std::max( 0, count );
+         mMaxArgs = mMinArgs;
+      }
+
+      Option& minargs( int count )
+      {
+         mMinArgs = std::max( 0, count );
+         mMaxArgs = -1;
+      }
+
+      Option& maxargs( int count )
+      {
+         mMinArgs = 0;
+         mMaxArgs = std::max( 0, count );
       }
 
       Option& hasArgument( bool hasArg=true )
@@ -246,6 +262,11 @@ public:
       bool needsMoreArguments() const
       {
          return mpValue->getOptionAssignCount() < mMinArgs;
+      }
+
+      bool hasVectorValue() const
+      {
+         return mIsVectorValue;
       }
 
       /**
@@ -308,15 +329,52 @@ private:
          : mArgParser( argParser )
       {}
 
-      void startOption( std::string_view name )
+      ParseResult parse( const std::vector<std::string>& args )
       {
-         if ( mpActiveOption ) {
-            auto& option = *mpActiveOption;
-            if ( option.needsMoreArguments() ) {
-               addError( option.getName(), MISSING_ARGUMENT );
-               closeOption();
+         mResult.clear();
+         for ( auto& arg : args ) {
+            if ( arg == "--" ) {
+               mIgnoreOptions = true;
+               continue;
+            }
+
+            if ( mIgnoreOptions ){
+               addFreeArgument( arg );
+               continue;
+            }
+
+            auto arg_view = std::string_view( arg );
+            if ( arg_view.substr( 0, 2 ) == "--" )
+               startOption( arg.substr( 2 ) );
+            else if ( arg_view.substr( 0, 1 ) == "-" ) {
+               for ( int i = 1; i < arg_view.size(); ++i )
+                  startOption( arg_view.substr( i, 1 ));
+            }
+            else {
+               if ( haveActiveOption() ) {
+                  auto& option = *mpActiveOption;
+                  if ( option.willAcceptArgument() ) {
+                     setValue(option, arg );
+                     if ( !option.willAcceptArgument() )
+                        closeOption();
+                  }
+               }
+               else
+                  addFreeArgument( arg );
             }
          }
+
+         if ( haveActiveOption() )
+            closeOption();
+
+         return std::move( mResult );
+      }
+
+   private:
+      void startOption( std::string_view name )
+      {
+         if ( haveActiveOption() )
+            closeOption();
 
          auto pOption = findOption( name );
          if ( pOption ) {
@@ -327,14 +385,22 @@ private:
             else
                setValue( option, option.getFlagValue() );
          }
-         else {
+         else
             addError( name, UNKNOWN_OPTION );
-            closeOption();
-         }
+      }
+
+      bool haveActiveOption() const
+      {
+         return mpActiveOption != nullptr;
       }
 
       void closeOption()
       {
+         if ( haveActiveOption() ) {
+            auto& option = *mpActiveOption;
+            if ( option.needsMoreArguments() )
+               addError( option.getName(), MISSING_ARGUMENT );
+         }
          mpActiveOption = nullptr;
       }
 
@@ -388,44 +454,6 @@ private:
             addError( option.getName(), CONVERSION_ERROR );
          }
       }
-
-      ParseResult parse( const std::vector<std::string>& args )
-      {
-         mResult.clear();
-         for ( auto& arg : args ) {
-            if ( arg == "--" ) {
-               mIgnoreOptions = true;
-               continue;
-            }
-
-            if ( mIgnoreOptions ){
-               addFreeArgument( arg );
-               continue;
-            }
-
-            auto arg_view = std::string_view( arg );
-            if ( arg_view.substr( 0, 2 ) == "--" )
-               startOption( arg.substr( 2 ) );
-            else if ( arg_view.substr( 0, 1 ) == "-" ) {
-               for ( int i = 1; i < arg_view.size(); ++i )
-                  startOption( arg_view.substr( i, 1 ));
-            }
-            else {
-               if ( mpActiveOption ) {
-                  auto& option = *mpActiveOption;
-                  if ( option.willAcceptArgument() ) {
-                     setValue(option, arg );
-                     if ( !option.willAcceptArgument() )
-                        closeOption();
-                  }
-               }
-               else
-                  addFreeArgument( arg );
-            }
-         }
-
-         return std::move( mResult );
-      }
    };
 
 private:
@@ -474,6 +502,10 @@ private:
       for ( auto& option : mOptions )
          if ( option.isRequired() && !option.wasAssigned() )
             result.errors.emplace_back( option.getName(), MISSING_OPTION );
+
+      for ( auto& option : mPositional )
+         if ( option.needsMoreArguments() )
+            result.errors.emplace_back( option.getName(), MISSING_ARGUMENT );
    }
 
    Option& tryAddOption( Option& newOption, std::vector<std::string_view> names )
@@ -505,6 +537,12 @@ private:
          mPositional.push_back( std::move(newOption) );
          auto& option = mPositional.back();
          option.setLongName( names.empty() ? "arg" : names[0] );
+
+         if ( option.hasVectorValue() )
+            option.minargs( 0 );
+         else
+            option.nargs( 1 );
+
          return option;
       }
       else if ( isOption( names ) ) {

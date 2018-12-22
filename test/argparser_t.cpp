@@ -399,7 +399,7 @@ TEST( ArgumentParserTest, shouldStorePositionalArgumentsInValues )
    std::vector<std::string> strings;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( strings, "text" ).nargs( -1 );
+   parser.addOption( strings, "text" ).minargs( 0 );
 
    auto res = parser.parseArguments( { "one", "two", "three" } );
 
@@ -417,7 +417,7 @@ TEST( ArgumentParserTest, shouldGroupPositionalArguments )
       parser.addOption( strvalue, "-s", "--string" ).hasArgument();
       parser.addOption( strvalue, "--l" ).hasArgument();
       parser.addOption( firstArgument, "text" ).nargs( 1 );
-      parser.addOption( otherArguments, "args" ).nargs( -1 );
+      parser.addOption( otherArguments, "args" ).minargs( 0 );
       return parser;
    };
 
@@ -443,7 +443,7 @@ TEST( ArgumentParserTest, shouldSupportOptionArgumentCounts )
    auto parser = ArgumentParser::unsafe();
    parser.addOption( strvalue, "-s" ).nargs( 1 );
    parser.addOption( texts, "-t" ).nargs( 2 );
-   parser.addOption( files, "-f" ).nargs( -1 );
+   parser.addOption( files, "-f" ).minargs( 0 );
 
    parser.parseArguments( { "-t", "the", "text", "-f", "file1", "file2", "file3", "-s", "string" } );
    EXPECT_EQ( "string", strvalue );
@@ -492,4 +492,240 @@ TEST( ArgumentParserTest, shouldSupportPositionalArgumentCounts )
    EXPECT_TRUE( vector_eq( { "the", "text" }, texts ) );
    EXPECT_TRUE( vector_eq( { "file1", "file2" }, files ) );
    EXPECT_TRUE( vector_eq( { "not-file3" }, res.ignoredArguments ) );
+}
+
+TEST( ArgumentParserTest, shouldSupportExactNumberOfOptionArguments )
+{
+   std::vector<std::string> texts;
+
+   auto testWithNargs = [&]( int nargs, const std::vector<std::string>& params ) {
+      texts.clear();
+      auto parser = ArgumentParser::unsafe();
+      parser.addOption( texts, "-t" ).nargs( nargs );
+      return parser.parseArguments( params );
+   };
+   auto params = std::vector<std::string>{ "-t", "read", "the", "text" };
+
+   auto res = testWithNargs( 0, params );
+   // When an option doesn't accept arguments, the default value is set/added
+   EXPECT_TRUE( vector_eq( { "1" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithNargs( 1, params );
+   EXPECT_TRUE( vector_eq( { "read" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "the", "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithNargs( 2, params );
+   EXPECT_TRUE( vector_eq( { "read", "the" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithNargs( 3, params );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
+   EXPECT_EQ( 0, res.ignoredArguments.size() );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithNargs( 4, params );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
+   EXPECT_EQ( 0, res.ignoredArguments.size() );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( "t", res.errors[0].option );
+   EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors[0].errorCode );
+}
+
+TEST( ArgumentParserTest, shouldSupportExactNumberOfPositionalArguments )
+{
+   std::vector<std::string> texts;
+
+   auto testWithNargs = [&]( int nargs, const std::vector<std::string>& params ) {
+      texts.clear();
+      auto parser = ArgumentParser::unsafe();
+      parser.addOption( texts, "text" ).nargs( nargs );
+      return parser.parseArguments( params );
+   };
+   auto params = std::vector<std::string>{ "read", "the", "text" };
+
+   auto res = testWithNargs( 0, params );
+   EXPECT_EQ( 0, texts.size() );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithNargs( 1, params );
+   EXPECT_TRUE( vector_eq( { "read" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "the", "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithNargs( 2, params );
+   EXPECT_TRUE( vector_eq( { "read", "the" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithNargs( 3, params );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
+   EXPECT_EQ( 0, res.ignoredArguments.size() );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithNargs( 4, params );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
+   EXPECT_EQ( 0, res.ignoredArguments.size() );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( "text", res.errors[0].option );
+   EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors[0].errorCode );
+}
+
+TEST( ArgumentParserTest, shouldSupportMinNumberOfOptionArguments )
+{
+   std::vector<std::string> texts;
+
+   auto testWithMinArgs = [&]( int nargs, const std::vector<std::string>& params ) {
+      texts.clear();
+      auto parser = ArgumentParser::unsafe();
+      parser.addOption( texts, "-t" ).minargs( nargs );
+      return parser.parseArguments( params );
+   };
+   auto params = std::vector<std::string>{ "-t", "read", "the", "text" };
+
+   for ( int nargs = 0; nargs < 4; ++nargs ) {
+      auto res = testWithMinArgs( nargs, params );
+      EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) ) << "minargs:" << nargs;
+      EXPECT_EQ( 0, res.ignoredArguments.size() ) << "minargs:" << nargs;
+      EXPECT_EQ( 0, res.errors.size() ) << "minargs:" << nargs;
+   }
+
+   auto res = testWithMinArgs( 4, params );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
+   EXPECT_EQ( 0, res.ignoredArguments.size() );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( "t", res.errors[0].option );
+   EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors[0].errorCode );
+}
+
+TEST( ArgumentParserTest, shouldSupportMaxNumberOfOptionArguments )
+{
+   std::vector<std::string> texts;
+
+   auto testWithMaxArgs = [&]( int nargs, const std::vector<std::string>& params ) {
+      texts.clear();
+      auto parser = ArgumentParser::unsafe();
+      parser.addOption( texts, "-t" ).maxargs( nargs );
+      return parser.parseArguments( params );
+   };
+   auto params = std::vector<std::string>{ "-t", "read", "the", "text" };
+
+   auto res = testWithMaxArgs( 0, params );
+   // When an option doesn't accept arguments, the default value is set/added
+   EXPECT_TRUE( vector_eq( { "1" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithMaxArgs( 1, params );
+   EXPECT_TRUE( vector_eq( { "read" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "the", "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithMaxArgs( 2, params );
+   EXPECT_TRUE( vector_eq( { "read", "the" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   for ( int nargs = 3; nargs < 5; ++nargs ) {
+      auto res = testWithMaxArgs( nargs, params );
+      EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) ) << "maxargs:" << nargs;
+      EXPECT_EQ( 0, res.ignoredArguments.size() ) << "maxargs:" << nargs;
+      EXPECT_EQ( 0, res.errors.size() ) << "maxargs:" << nargs;
+   }
+}
+
+TEST( ArgumentParserTest, shouldSupportMinNumberOfPositionalArguments )
+{
+   std::vector<std::string> texts;
+
+   auto testWithMinArgs = [&]( int nargs, const std::vector<std::string>& params ) {
+      texts.clear();
+      auto parser = ArgumentParser::unsafe();
+      parser.addOption( texts, "text" ).minargs( nargs );
+      return parser.parseArguments( params );
+   };
+   auto params = std::vector<std::string>{ "read", "the", "text" };
+
+   for ( int nargs = 0; nargs < 4; ++nargs ) {
+      auto res = testWithMinArgs( nargs, params );
+      EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) ) << "maxargs:" << nargs;
+      EXPECT_EQ( 0, res.errors.size() ) << "maxargs:" << nargs;
+      EXPECT_EQ( 0, res.ignoredArguments.size() ) << "maxargs:" << nargs;
+   }
+
+   auto res = testWithMinArgs( 4, params );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
+   EXPECT_EQ( 0, res.ignoredArguments.size() );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( "text", res.errors[0].option );
+   EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors[0].errorCode );
+}
+
+TEST( ArgumentParserTest, shouldSupportMaxNumberOfPositionalArguments )
+{
+   std::vector<std::string> texts;
+
+   auto testWithMaxArgs = [&]( int nargs, const std::vector<std::string>& params ) {
+      texts.clear();
+      auto parser = ArgumentParser::unsafe();
+      parser.addOption( texts, "text" ).maxargs( nargs );
+      return parser.parseArguments( params );
+   };
+   auto params = std::vector<std::string>{ "read", "the", "text" };
+
+   auto res = testWithMaxArgs( 0, params );
+   EXPECT_EQ( 0, texts.size() );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithMaxArgs( 1, params );
+   EXPECT_TRUE( vector_eq( { "read" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "the", "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithMaxArgs( 2, params );
+   EXPECT_TRUE( vector_eq( { "read", "the" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   for ( int nargs = 3; nargs < 5; ++nargs ) {
+      auto res = testWithMaxArgs( nargs, params );
+      EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) ) << "maxargs:" << nargs;
+      EXPECT_EQ( 0, res.ignoredArguments.size() ) << "maxargs:" << nargs;
+      EXPECT_EQ( 0, res.errors.size() ) << "maxargs:" << nargs;
+   }
+}
+
+TEST( ArgumentParserTest, shouldSupportSetDefaultCountForPositionalArgumentsWithVectorValues )
+{
+   std::vector<std::string> texts;
+   auto params = std::vector<std::string>{ "read", "the", "text" };
+
+   auto parser = ArgumentParser::unsafe();
+   // If the value variable is a vector, the default is minargs(0)
+   parser.addOption( texts, "text" );
+
+   auto res = parser.parseArguments( params );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
+   EXPECT_EQ( 0, res.ignoredArguments.size() );
+   EXPECT_EQ( 0, res.errors.size() );
+}
+
+TEST( ArgumentParserTest, shouldSupportSetDefaultCountForPositionalArgumentsWithScalarValues )
+{
+   std::string strvalue;
+   auto params = std::vector<std::string>{ "read", "the", "text" };
+
+   auto parser = ArgumentParser::unsafe();
+   // If the value variable is a scalar, the default is nargs(1)
+   parser.addOption( strvalue, "text" );
+
+   auto res = parser.parseArguments( params );
+   EXPECT_EQ( "read", strvalue );
+   EXPECT_TRUE( vector_eq( { "the", "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
 }
