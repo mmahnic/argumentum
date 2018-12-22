@@ -174,6 +174,10 @@ public:
          mIsVectorValue = true;
       }
 
+      // TODO: The client shluld only see the methods for configuring the
+      // option, not everything esle. The ArgumentParser should return
+      // OptionConfig& instead of Option&. These methods should be void, Option
+      // class should be private.
       Option& setShortName( std::string_view name )
       {
          mShortName = name;
@@ -186,6 +190,9 @@ public:
          return *this;
       }
 
+      // TODO: nagrs, minargs, maxargs should be mutually exclusive for the
+      // client.  This should be implemented in OptionConfig. OptionConfig
+      // should throw if more than one is used.
       Option& nargs( int count )
       {
          mMinArgs = std::max( 0, count );
