@@ -308,6 +308,48 @@ private:
          : mArgParser( argParser )
       {}
 
+      ParseResult parse( const std::vector<std::string>& args )
+      {
+         mResult.clear();
+         for ( auto& arg : args ) {
+            if ( arg == "--" ) {
+               mIgnoreOptions = true;
+               continue;
+            }
+
+            if ( mIgnoreOptions ){
+               addFreeArgument( arg );
+               continue;
+            }
+
+            auto arg_view = std::string_view( arg );
+            if ( arg_view.substr( 0, 2 ) == "--" )
+               startOption( arg.substr( 2 ) );
+            else if ( arg_view.substr( 0, 1 ) == "-" ) {
+               for ( int i = 1; i < arg_view.size(); ++i )
+                  startOption( arg_view.substr( i, 1 ));
+            }
+            else {
+               if ( haveActiveOption() ) {
+                  auto& option = *mpActiveOption;
+                  if ( option.willAcceptArgument() ) {
+                     setValue(option, arg );
+                     if ( !option.willAcceptArgument() )
+                        closeOption();
+                  }
+               }
+               else
+                  addFreeArgument( arg );
+            }
+         }
+
+         if ( haveActiveOption() )
+            closeOption();
+
+         return std::move( mResult );
+      }
+
+   private:
       void startOption( std::string_view name )
       {
          if ( haveActiveOption() )
@@ -390,47 +432,6 @@ private:
          catch( std::out_of_range ) {
             addError( option.getName(), CONVERSION_ERROR );
          }
-      }
-
-      ParseResult parse( const std::vector<std::string>& args )
-      {
-         mResult.clear();
-         for ( auto& arg : args ) {
-            if ( arg == "--" ) {
-               mIgnoreOptions = true;
-               continue;
-            }
-
-            if ( mIgnoreOptions ){
-               addFreeArgument( arg );
-               continue;
-            }
-
-            auto arg_view = std::string_view( arg );
-            if ( arg_view.substr( 0, 2 ) == "--" )
-               startOption( arg.substr( 2 ) );
-            else if ( arg_view.substr( 0, 1 ) == "-" ) {
-               for ( int i = 1; i < arg_view.size(); ++i )
-                  startOption( arg_view.substr( i, 1 ));
-            }
-            else {
-               if ( haveActiveOption() ) {
-                  auto& option = *mpActiveOption;
-                  if ( option.willAcceptArgument() ) {
-                     setValue(option, arg );
-                     if ( !option.willAcceptArgument() )
-                        closeOption();
-                  }
-               }
-               else
-                  addFreeArgument( arg );
-            }
-         }
-
-         if ( haveActiveOption() )
-            closeOption();
-
-         return std::move( mResult );
       }
    };
 

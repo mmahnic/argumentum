@@ -494,7 +494,6 @@ TEST( ArgumentParserTest, shouldSupportPositionalArgumentCounts )
    EXPECT_TRUE( vector_eq( { "not-file3" }, res.ignoredArguments ) );
 }
 
-
 TEST( ArgumentParserTest, shouldSupportExactNumberOfOptionArguments )
 {
    std::vector<std::string> texts;
