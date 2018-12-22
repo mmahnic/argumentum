@@ -714,3 +714,18 @@ TEST( ArgumentParserTest, shouldSupportSetDefaultCountForPositionalArgumentsWith
    EXPECT_EQ( 0, res.ignoredArguments.size() );
    EXPECT_EQ( 0, res.errors.size() );
 }
+
+TEST( ArgumentParserTest, shouldSupportSetDefaultCountForPositionalArgumentsWithScalarValues )
+{
+   std::string strvalue;
+   auto params = std::vector<std::string>{ "read", "the", "text" };
+
+   auto parser = ArgumentParser::unsafe();
+   // If the value variable is a scalar, the default is nargs(1)
+   parser.addOption( strvalue, "text" );
+
+   auto res = parser.parseArguments( params );
+   EXPECT_EQ( "read", strvalue );
+   EXPECT_TRUE( vector_eq( { "the", "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+}

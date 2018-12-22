@@ -530,8 +530,12 @@ private:
          mPositional.push_back( std::move(newOption) );
          auto& option = mPositional.back();
          option.setLongName( names.empty() ? "arg" : names[0] );
+
          if ( option.hasVectorValue() )
             option.minargs( 0 );
+         else
+            option.nargs( 1 );
+
          return option;
       }
       else if ( isOption( names ) ) {
