@@ -497,7 +497,6 @@ TEST( ArgumentParserTest, shouldSupportPositionalArgumentCounts )
 TEST( ArgumentParserTest, shouldSupportExactNumberOfOptionArguments )
 {
    std::vector<std::string> texts;
-   std::string dummy;
 
    auto makeParser = [&]( int nargs ) {
       auto parser = ArgumentParser::unsafe();
@@ -543,7 +542,6 @@ TEST( ArgumentParserTest, shouldSupportExactNumberOfOptionArguments )
 TEST( ArgumentParserTest, shouldSupportExactNumberOfPositionalArguments )
 {
    std::vector<std::string> texts;
-   std::string dummy;
 
    auto makeParser = [&]( int nargs ) {
       auto parser = ArgumentParser::unsafe();
@@ -582,5 +580,36 @@ TEST( ArgumentParserTest, shouldSupportExactNumberOfPositionalArguments )
    EXPECT_EQ( 0, res.ignoredArguments.size() );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "text", res.errors[0].option );
+   EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors[0].errorCode );
+}
+
+TEST( ArgumentParserTest, shouldSupportMinNumberOfOptionArguments )
+{
+   std::vector<std::string> texts;
+
+   auto makeParser = [&]( int nargs ) {
+      auto parser = ArgumentParser::unsafe();
+      parser.addOption( texts, "-t" ).minargs( nargs );
+      return parser;
+   };
+   auto params = std::vector<std::string>{ "-t", "read", "the", "text" };
+
+   auto testWithMinArgs = [&]( int nargs, const std::vector<std::string>& params ) {
+      texts.clear();
+      return makeParser( nargs ).parseArguments( params );
+   };
+
+   for ( int nargs = 0; nargs < 4; ++nargs ) {
+      auto res = testWithMinArgs( nargs, params );
+      EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) ) << "minargs:" << nargs;
+      EXPECT_EQ( 0, res.ignoredArguments.size() ) << "minargs:" << nargs;
+      EXPECT_EQ( 0, res.errors.size() ) << "minargs:" << nargs;
+   }
+
+   auto res = testWithMinArgs( 4, params );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
+   EXPECT_EQ( 0, res.ignoredArguments.size() );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( "t", res.errors[0].option );
    EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors[0].errorCode );
 }

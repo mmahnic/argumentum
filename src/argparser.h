@@ -195,6 +195,12 @@ public:
          }
       }
 
+      Option& minargs( int count )
+      {
+         mMinArgs = std::max( 0, count );
+         mMaxArgs = -1;
+      }
+
       Option& hasArgument( bool hasArg=true )
       {
          nargs( 1 );
