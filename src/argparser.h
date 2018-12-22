@@ -481,6 +481,10 @@ private:
       for ( auto& option : mOptions )
          if ( option.isRequired() && !option.wasAssigned() )
             result.errors.emplace_back( option.getName(), MISSING_OPTION );
+
+      for ( auto& option : mPositional )
+         if ( option.needsMoreArguments() )
+            result.errors.emplace_back( option.getName(), MISSING_ARGUMENT );
    }
 
    Option& tryAddOption( Option& newOption, std::vector<std::string_view> names )

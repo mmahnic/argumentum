@@ -502,7 +502,6 @@ TEST( ArgumentParserTest, shouldSupportExactNumberOfOptionArguments )
    auto makeParser = [&]( int nargs ) {
       auto parser = ArgumentParser::unsafe();
       parser.addOption( texts, "-t" ).nargs( nargs );
-      parser.addOption( dummy, "-d" ).nargs( nargs );
       return parser;
    };
    auto params = std::vector<std::string>{ "-t", "read", "the", "text" };
@@ -536,5 +535,52 @@ TEST( ArgumentParserTest, shouldSupportExactNumberOfOptionArguments )
    res = testWithNargs( 4, params );
    EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
    EXPECT_EQ( 0, res.ignoredArguments.size() );
-   EXPECT_EQ( 1, res.errors.size() );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( "t", res.errors[0].option );
+   EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors[0].errorCode );
+}
+
+TEST( ArgumentParserTest, shouldSupportExactNumberOfPositionalArguments )
+{
+   std::vector<std::string> texts;
+   std::string dummy;
+
+   auto makeParser = [&]( int nargs ) {
+      auto parser = ArgumentParser::unsafe();
+      parser.addOption( texts, "text" ).nargs( nargs );
+      return parser;
+   };
+   auto params = std::vector<std::string>{ "read", "the", "text" };
+
+   auto testWithNargs = [&]( int nargs, const std::vector<std::string>& params ) {
+      texts.clear();
+      return makeParser( nargs ).parseArguments( params );
+   };
+
+   auto res = testWithNargs( 0, params );
+   EXPECT_EQ( 0, texts.size() );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithNargs( 1, params );
+   EXPECT_TRUE( vector_eq( { "read" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "the", "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithNargs( 2, params );
+   EXPECT_TRUE( vector_eq( { "read", "the" }, texts ) );
+   EXPECT_TRUE( vector_eq( { "text" }, res.ignoredArguments ) );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithNargs( 3, params );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
+   EXPECT_EQ( 0, res.ignoredArguments.size() );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = testWithNargs( 4, params );
+   EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
+   EXPECT_EQ( 0, res.ignoredArguments.size() );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( "text", res.errors[0].option );
+   EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors[0].errorCode );
 }
