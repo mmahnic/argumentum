@@ -35,7 +35,7 @@ class InvalidChoice: public std::invalid_argument
 {
 public:
    InvalidChoice( const std::string& value )
-      : std::invalid_argument( "Invalid choice '" + value + "'." )
+      : std::invalid_argument( value )
    {}
 };
 
