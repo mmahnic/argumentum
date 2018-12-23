@@ -30,6 +30,13 @@ struct convert_result<std::vector<TItem>>
    using type = TItem;
 };
 
+class InvalidChoice: public std::invalid_argument
+{
+public:
+   InvalidChoice( const std::string& value )
+      : std::invalid_argument( "Invalid choice '" + value + "'." )
+   {}
+};
 
 class ArgumentParser
 {
@@ -38,12 +45,19 @@ public:
    {
       int mAssignCount = 0;
       int mOptionAssignCount = 0;
+      bool mHasErrors = false;
    public:
       void setValue( const std::string& value )
       {
          ++mAssignCount;
          ++mOptionAssignCount;
          doSetValue( value );
+      }
+
+      void markBadArgument()
+      {
+         ++mOptionAssignCount;
+         mHasErrors = true;
       }
 
       /**
@@ -111,6 +125,7 @@ public:
       std::string mShortName;
       std::string mLongName;
       std::string mFlagValue = "1";
+      std::vector<std::string> mChoices;
       int mMinArgs = 0;
       int mMaxArgs = 0;
       bool mIsRequired = false;
@@ -212,6 +227,11 @@ public:
          mFlagValue = value;
       }
 
+      void setChoices( const std::vector<std::string>& choices )
+      {
+         mChoices = choices;
+      }
+
       bool isRequired() const
       {
          return mIsRequired;
@@ -229,6 +249,13 @@ public:
 
       void setValue( const std::string& value )
       {
+         if ( !mChoices.empty() && std::none_of( mChoices.begin(), mChoices.end(),
+                  [&value]( auto v ) { return v == value; } ) )
+         {
+            mpValue->markBadArgument();
+            throw InvalidChoice( value );
+         }
+
          mpValue->setValue( value );
       }
 
@@ -331,6 +358,12 @@ public:
          return *this;
       }
 
+      OptionConfig& choices( const std::vector<std::string>& choices )
+      {
+         mOptions[mIndex].setChoices( choices );
+         return *this;
+      }
+
    private:
       void ensureCountWasNotSet() const
       {
@@ -344,7 +377,8 @@ public:
       UNKNOWN_OPTION,
       MISSING_OPTION,
       MISSING_ARGUMENT,
-      CONVERSION_ERROR
+      CONVERSION_ERROR,
+      INVALID_CHOICE
    };
 
    struct ParseError
@@ -504,10 +538,13 @@ private:
          try {
             option.setValue( value );
          }
-         catch( std::invalid_argument ) {
+         catch( const InvalidChoice& ) {
+            addError( option.getName(), INVALID_CHOICE );
+         }
+         catch( const std::invalid_argument& ) {
             addError( option.getName(), CONVERSION_ERROR );
          }
-         catch( std::out_of_range ) {
+         catch( const std::out_of_range& ) {
             addError( option.getName(), CONVERSION_ERROR );
          }
       }

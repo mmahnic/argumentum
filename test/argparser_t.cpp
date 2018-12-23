@@ -756,3 +756,40 @@ TEST( ArgumentParserTest, shouldSetArgumentCountAtMostOnce )
    EXPECT_THROW( parser.addOption( texts, "-h" ).maxargs( 1 ).nargs( 1 ), std::invalid_argument );
    EXPECT_THROW( parser.addOption( texts, "-i" ).maxargs( 1 ).minargs( 1 ), std::invalid_argument );
 }
+
+TEST( ArgumentParserTest, shouldSetOptionChoices )
+{
+   std::string strvalue;
+   auto parser = ArgumentParser::unsafe();
+
+   parser.addOption( strvalue, "-s" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
+   auto res = parser.parseArguments( { "-s", "beta" } );
+   EXPECT_EQ( "beta", strvalue );
+   EXPECT_EQ( 0, res.errors.size() );
+}
+
+TEST( ArgumentParserTest, shouldFailIfArgumentIsNotInChoices )
+{
+   std::string strvalue;
+   auto parser = ArgumentParser::unsafe();
+
+   parser.addOption( strvalue, "-s" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
+   auto res = parser.parseArguments( { "-s", "phi" } );
+   EXPECT_TRUE( strvalue.empty() );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( "s", res.errors[0].option );
+   EXPECT_EQ( ArgumentParser::INVALID_CHOICE, res.errors[0].errorCode );
+}
+
+TEST( ArgumentParserTest, shouldFailIfPositionalArgumentIsNotInChoices )
+{
+   std::string strvalue;
+   auto parser = ArgumentParser::unsafe();
+
+   parser.addOption( strvalue, "string" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
+   auto res = parser.parseArguments( { "phi" } );
+   EXPECT_TRUE( strvalue.empty() );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( "string", res.errors[0].option );
+   EXPECT_EQ( ArgumentParser::INVALID_CHOICE, res.errors[0].errorCode );
+}
