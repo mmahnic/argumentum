@@ -171,7 +171,7 @@ TEST( ArgumentParserTest, shouldReportErrorForMissingArgument )
 
    auto res = parser.parseArguments( { "-a", "-b", "freearg" } );
    ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( "a", res.errors.front().option );
+   EXPECT_EQ( "-a", res.errors.front().option );
    ASSERT_EQ( 1, res.ignoredArguments.size() );
    EXPECT_EQ( "freearg", res.ignoredArguments.front() );
    EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors.front().errorCode );
@@ -186,7 +186,7 @@ TEST( ArgumentParserTest, shouldReportBadConversionError )
 
    auto res = parser.parseArguments( { "-a", "wrong" } );
    ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( "a", res.errors.front().option );
+   EXPECT_EQ( "-a", res.errors.front().option );
    EXPECT_EQ( ArgumentParser::CONVERSION_ERROR, res.errors.front().errorCode );
 }
 
@@ -199,7 +199,7 @@ TEST( ArgumentParserTest, shouldReportUnknownOptionError )
 
    auto res = parser.parseArguments( { "-a", "2135", "--unknown" } );
    ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( "unknown", res.errors.front().option );
+   EXPECT_EQ( "--unknown", res.errors.front().option );
    EXPECT_EQ( ArgumentParser::UNKNOWN_OPTION, res.errors.front().errorCode );
 }
 
@@ -214,7 +214,7 @@ TEST( ArgumentParserTest, shouldReportMissingRequiredOptionError )
 
    auto res = parser.parseArguments( { "-a", "2135" } );
    ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( "b", res.errors.front().option );
+   EXPECT_EQ( "-b", res.errors.front().option );
    EXPECT_EQ( ArgumentParser::MISSING_OPTION, res.errors.front().errorCode );
 }
 
@@ -469,7 +469,7 @@ TEST( ArgumentParserTest, shouldFailWhenOptionArgumentCountsAreWrong )
    EXPECT_TRUE( vector_eq( { "file1", "file2" }, files ) );
 
    ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( "t", res.errors.front().option );
+   EXPECT_EQ( "-t", res.errors.front().option );
    EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors.front().errorCode );
 
    EXPECT_TRUE( vector_eq( { "not-file3" }, res.ignoredArguments ) );
@@ -531,7 +531,7 @@ TEST( ArgumentParserTest, shouldSupportExactNumberOfOptionArguments )
    EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
    EXPECT_EQ( 0, res.ignoredArguments.size() );
    ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( "t", res.errors[0].option );
+   EXPECT_EQ( "-t", res.errors[0].option );
    EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors[0].errorCode );
 }
 
@@ -598,7 +598,7 @@ TEST( ArgumentParserTest, shouldSupportMinNumberOfOptionArguments )
    EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
    EXPECT_EQ( 0, res.ignoredArguments.size() );
    ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( "t", res.errors[0].option );
+   EXPECT_EQ( "-t", res.errors[0].option );
    EXPECT_EQ( ArgumentParser::MISSING_ARGUMENT, res.errors[0].errorCode );
 }
 
@@ -777,7 +777,7 @@ TEST( ArgumentParserTest, shouldFailIfArgumentIsNotInChoices )
    auto res = parser.parseArguments( { "-s", "phi" } );
    EXPECT_TRUE( strvalue.empty() );
    ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( "s", res.errors[0].option );
+   EXPECT_EQ( "-s", res.errors[0].option );
    EXPECT_EQ( ArgumentParser::INVALID_CHOICE, res.errors[0].errorCode );
 }
 
@@ -792,4 +792,38 @@ TEST( ArgumentParserTest, shouldFailIfPositionalArgumentIsNotInChoices )
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "string", res.errors[0].option );
    EXPECT_EQ( ArgumentParser::INVALID_CHOICE, res.errors[0].errorCode );
+}
+
+TEST( ArgumentParserTest, shouldDistinguishLongAndShortAndPositionalNames )
+{
+   std::string strShort;
+   std::string strLong;
+   std::string strArg;
+
+   auto parser = ArgumentParser::unsafe();
+   parser.addOption( strShort, "-s" ).nargs( 1 );
+   parser.addOption( strLong, "--s" ).nargs( 1 );
+   parser.addOption( strArg, "s" ).nargs( 1 );
+
+   auto res = parser.parseArguments( { "-s", "short", "--s", "long", "string" } );
+   EXPECT_EQ( "short", strShort );
+   EXPECT_EQ( "long", strLong );
+   EXPECT_EQ( "string", strArg );
+   EXPECT_EQ( 0, res.errors.size() );
+}
+
+TEST( ArgumentParserTest, shouldNotAcceptOptionsWithWhitespace )
+{
+   std::string strvalue;
+   auto parser = ArgumentParser::unsafe();
+
+   EXPECT_THROW( parser.addOption( strvalue, "a string" ), std::invalid_argument );
+   EXPECT_THROW( parser.addOption( strvalue, " string" ), std::invalid_argument );
+   EXPECT_THROW( parser.addOption( strvalue, "string " ), std::invalid_argument );
+   EXPECT_THROW( parser.addOption( strvalue, "-string " ), std::invalid_argument );
+   EXPECT_THROW( parser.addOption( strvalue, "--string " ), std::invalid_argument );
+   EXPECT_THROW( parser.addOption( strvalue, "-a string" ), std::invalid_argument );
+   EXPECT_THROW( parser.addOption( strvalue, "--a string" ), std::invalid_argument );
+   EXPECT_THROW( parser.addOption( strvalue, "- string" ), std::invalid_argument );
+   EXPECT_THROW( parser.addOption( strvalue, "-- string" ), std::invalid_argument );
 }

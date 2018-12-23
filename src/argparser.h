@@ -9,6 +9,7 @@
 #include <optional>
 #include <functional>
 #include <algorithm>
+#include <cctype>
 
 namespace argparse {
 
@@ -56,6 +57,7 @@ public:
 
       void markBadArgument()
       {
+         // Increase the assign count so that flagValue will not be used.
          ++mOptionAssignCount;
          mHasErrors = true;
       }
@@ -434,10 +436,17 @@ private:
 
             auto arg_view = std::string_view( arg );
             if ( arg_view.substr( 0, 2 ) == "--" )
-               startOption( arg.substr( 2 ) );
+               startOption( arg );
             else if ( arg_view.substr( 0, 1 ) == "-" ) {
-               for ( int i = 1; i < arg_view.size(); ++i )
-                  startOption( arg_view.substr( i, 1 ));
+               if ( arg.size() == 2 )
+                  startOption( arg );
+               else {
+                  auto opt = std::string{"--"};
+                  for ( int i = 1; i < arg_view.size(); ++i ) {
+                     opt[1] = arg_view[i];
+                     startOption( opt );
+                  }
+               }
             }
             else {
                if ( haveActiveOption() ) {
@@ -604,27 +613,26 @@ private:
 
    OptionConfig tryAddOption( Option& newOption, std::vector<std::string_view> names )
    {
-      auto strip = []( std::string_view name ) {
-         name.remove_prefix(std::min(name.find_first_not_of(" "), name.size()));
-         name.remove_suffix(name.size() - std::min(name.find_last_not_of(" ") + 1, name.size()));
-         return name;
-      };
-      auto isEmpty = [&]( auto name ) { return strip( name ) == ""; };
-
       // Remove empty names
-      names.erase( std::remove_if( names.begin(), names.end(), isEmpty ), names.end() );
+      auto is_empty = [&]( auto name ) { return name.empty(); };
+      names.erase( std::remove_if( names.begin(), names.end(), is_empty ), names.end() );
 
       if ( names.empty() )
          throw std::invalid_argument( "An argument must have a name." );
 
-      auto hasDash = []( auto name ) { return name[0] == '-'; };
+      for ( auto& name : names )
+         for ( auto ch : name )
+            if ( std::isspace( ch ) )
+               throw std::invalid_argument( "Argument names must not contain spaces." );
+
+      auto has_dash = []( auto name ) { return name[0] == '-'; };
 
       auto isOption = [&]( auto names ) -> bool {
-         return std::all_of( names.begin(), names.end(), hasDash );
+         return std::all_of( names.begin(), names.end(), has_dash );
       };
 
       auto isPositional = [&]( auto names ) -> bool {
-         return std::none_of( names.begin(), names.end(), hasDash );
+         return std::none_of( names.begin(), names.end(), has_dash );
       };
 
       if ( isPositional( names ) ) {
@@ -637,7 +645,6 @@ private:
          else
             option.setNArgs( 1 );
 
-         // return option;
          return { mPositional, mPositional.size() - 1 };
       }
       else if ( isOption( names ) ) {
@@ -645,7 +652,6 @@ private:
          auto& option = mOptions.back();
          trySetNames( option, names );
 
-         // return option;
          return { mOptions, mOptions.size() - 1 };
       }
 
@@ -655,30 +661,16 @@ private:
    void trySetNames( Option& option, const std::vector<std::string_view>& names ) const
    {
       for ( auto name : names ) {
-         if ( name.empty() || name == "-" || name == "--" )
+         if ( name.empty() || name == "-" || name == "--" || name[0] != '-' )
             continue;
 
-         bool forceShort = false;
-         bool forceLong = false;
-         if ( name.substr( 0, 2 ) == "--" ) {
-            forceLong = true;
-            name = name.substr( 2 );
-         }
-         else if ( name.substr( 0, 1 ) == "-" ) {
-            forceShort = true;
-            name = name.substr( 1 );
-         }
-
-         name.remove_prefix(std::min(name.find_first_not_of(" "), name.size()));
-         name.remove_suffix(name.size() - std::min(name.find_last_not_of(" ") + 1, name.size()));
-
-         if ( forceShort && name.size() > 1 )
-            throw std::invalid_argument( "Short option name has too many characters." );
-
-         if ( forceLong || name.size() > 1 )
+         if ( name.substr( 0, 2 ) == "--" )
             option.setLongName( name );
-         else
+         else if ( name.substr( 0, 1 ) == "-" ) {
+            if ( name.size() > 2 )
+               throw std::invalid_argument( "Short option name has too many characters." );
             option.setShortName( name );
+         }
       }
 
       if ( option.getName().empty() )
