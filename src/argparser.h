@@ -31,10 +31,10 @@ struct convert_result<std::vector<TItem>>
    using type = TItem;
 };
 
-class InvalidChoice: public std::invalid_argument
+class InvalidChoiceError: public std::invalid_argument
 {
 public:
-   InvalidChoice( const std::string& value )
+   InvalidChoiceError( const std::string& value )
       : std::invalid_argument( value )
    {}
 };
@@ -255,7 +255,7 @@ public:
                   [&value]( auto v ) { return v == value; } ) )
          {
             mpValue->markBadArgument();
-            throw InvalidChoice( value );
+            throw InvalidChoiceError( value );
          }
 
          mpValue->setValue( value );
@@ -547,7 +547,7 @@ private:
          try {
             option.setValue( value );
          }
-         catch( const InvalidChoice& ) {
+         catch( const InvalidChoiceError& ) {
             addError( option.getName(), INVALID_CHOICE );
          }
          catch( const std::invalid_argument& ) {
