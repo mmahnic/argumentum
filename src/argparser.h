@@ -46,10 +46,6 @@ class Options
 {
 public:
    virtual void add_arguments( ArgumentParser& parser ) = 0;
-   virtual void argument_warning( std::string_view message ) const
-   {
-      std::cerr << message << "\n";
-   }
 };
 
 class ArgumentParser
@@ -576,24 +572,53 @@ private:
    std::vector<Option> mOptions;
    std::vector<Option> mPositional;
    std::shared_ptr<Options> mpTargets;
-   size_t mTargetSize = 0;
 
 public:
-   // TODO: Create a constructor that takes a shared pointer to a structure and
-   // verify that the variables added with add_argument are within that structure.
    /**
+    * Create and return an argument parser.  If @p pOptions is not nullptr
+    * the arguments will be registered by calling its add_arguments method.
+    *
     * The argument parser takes references to the variables that will hold the
     * parsed values.  The variables must outlive the argument parser.
+    *
+    * The parser stores the pointer to @p pOptions. If it is not nullptr and
+    * all the registered variables are in the memory space used by *pOptions
+    * the variables will outlive the parser.
     */
-   static ArgumentParser unsafe()
+   static ArgumentParser unsafe( std::shared_ptr<Options> pOptions=nullptr )
    {
-      return ArgumentParser();
+      auto parser = ArgumentParser( pOptions );
+      if ( pOptions )
+         pOptions->add_arguments( parser );
+      return parser;
    }
 
-   template<typename TOptions>
-   static ArgumentParser create_checked( std::shared_ptr<TOptions> pOptions )
+   /**
+    * Create and return an argument parser.  The arguments will be registered
+    * by calling the add_arguments method of @p pOptions which must not be
+    * nullptr.
+    *
+    * The argument parser takes references to the variables that will hold the
+    * parsed values.  The variables must outlive the argument parser.
+    *
+    * The parser stores the pointer to @p pOptions. If all the registered
+    * variables are in the memory space used by *pOptions the variables will
+    * outlive the parser.
+    *
+    * NOTE: This method is essentially the same as unsafe().  The safety of the
+    * memory usage is not checked (it can not be because of possible custom
+    * Value arguments).  It is still the programmer's responsibility to check
+    * that valid memory space is being used.  The naming is just a way of
+    * documenting that the programmer made an effort to make the use of the
+    * parser safe.
+    */
+   static ArgumentParser create_safer( std::shared_ptr<Options> pOptions )
    {
-      return ArgumentParser( pOptions, sizeof( TOptions ) );
+      if ( !pOptions )
+         throw std::invalid_argument(
+               "The create_safe factory method requires a pointer to an Options structure." );
+
+      return unsafe( pOptions );
    }
 
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value> >
@@ -621,12 +646,9 @@ public:
 private:
    ArgumentParser() = default;
 
-   ArgumentParser( std::shared_ptr<Options> pOptions, size_t size )
-      : mpTargets( pOptions ), mTargetSize( size )
-   {
-      if ( mpTargets )
-         mpTargets->add_arguments( *this );
-   }
+   ArgumentParser( std::shared_ptr<Options> pOptions )
+      : mpTargets( pOptions )
+   {}
 
    void reportMissingOptions( ParseResult& result )
    {

@@ -843,7 +843,30 @@ TEST( ArgumentParserTest, shouldAcceptSharedOptionStructure )
    };
 
    auto pOpt = std::make_shared<Options>();
-   auto parser = ArgumentParser::create_checked( pOpt );
+   auto parser = ArgumentParser::create_safer( pOpt );
+   auto res = parser.parse_args( { "-s", "str", "-n", "3274" } );
+   EXPECT_EQ( "str", pOpt->str );
+   EXPECT_EQ( 3274, pOpt->count );
+}
+
+TEST( ArgumentParserTest, shouldRequireSharedOptionStructureInSaferVersion )
+{
+   struct Options: public argparse::Options
+   {
+      std::string str;
+      long count;
+
+      void add_arguments( ArgumentParser& parser ) override
+      {
+         parser.add_argument( str, "-s" ).nargs( 1 );
+         parser.add_argument( count, "-n" ).nargs( 1 );
+      }
+   };
+
+   EXPECT_THROW( ArgumentParser::create_safer( nullptr ), std::invalid_argument );
+
+   auto pOpt = std::make_shared<Options>();
+   auto parser = ArgumentParser::create_safer( pOpt );
    auto res = parser.parse_args( { "-s", "str", "-n", "3274" } );
    EXPECT_EQ( "str", pOpt->str );
    EXPECT_EQ( 3274, pOpt->count );
