@@ -410,14 +410,33 @@ public:
       }
    };
 
-   struct ParserConfig
+   class ParserConfig
    {
-      std::string program;
+   public:
+      struct Data
+      {
+         std::string program;
+         std::string description;
+      };
+
+   private:
+      Data mData;
 
    public:
+      const Data& data() const
+      {
+         return mData;
+      }
+
       ParserConfig& prog( std::string_view program )
       {
-         this->program = program;
+         mData.program = program;
+         return *this;
+      }
+
+      ParserConfig& description( std::string_view description )
+      {
+         mData.description = description;
          return *this;
       }
    };
@@ -678,9 +697,9 @@ public:
       return mConfig;
    }
 
-   const ParserConfig& getConfig() const
+   const ParserConfig::Data& getConfig() const
    {
-      return mConfig;
+      return mConfig.data();
    }
 
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value> >

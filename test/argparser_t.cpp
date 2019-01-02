@@ -904,3 +904,12 @@ TEST( ArgumentParserTest, shouldSetProgramName )
    auto& config = parser.getConfig();
    EXPECT_EQ( "testing-testing", config.program );
 }
+
+TEST( ArgumentParserTest, shouldSetProgramDescription )
+{
+   auto parser = ArgumentParser::create_unsafe();
+   parser.config().description( "An example." );
+
+   auto& config = parser.getConfig();
+   EXPECT_EQ( "An example.", config.description );
+}
