@@ -2,7 +2,7 @@
 
 # Argparse
 
-A C++ library for parsing command line arguments.
+A C++ library for parsing command line parameters.
 
 This is the result of a weekend TDD practice. The library is still under construction.
 
@@ -25,16 +25,16 @@ int main( int argc, char** argv )
    optional<long> intValue;
    optional<double> floatValue;
    long intValue2 = 0;
-   vector<string> arguments;
+   vector<string> params;
 
    // Note: the argument parser will take references to the variables so it must
    // outlive those variables. We signal this by using the unsafe() factory method.
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( stringValue, "-s", "--string" ).nargs( 1 );
-   parser.addOption( intValue, "-i", "--int" ).nargs( 1 );
-   parser.addOption( floatValue, "-f", "--float" ).nargs( 1 );
-   parser.addOption( intValue2, "-v", "--verbose" );
-   parser.addOption( arguments, "args" );
+   parser.add_argument( stringValue, "-s", "--string" ).nargs( 1 );
+   parser.add_argument( intValue, "-i", "--int" ).nargs( 1 );
+   parser.add_argument( floatValue, "-f", "--float" ).nargs( 1 );
+   parser.add_argument( intValue2, "-v", "--verbose" );
+   parser.add_argument( params, "params" );
 
    vector<string> args;
    for ( int i = 1; i < argc; ++i )
@@ -50,9 +50,9 @@ int main( int argc, char** argv )
       << ( bool(floatValue) ? to_string(floatValue.value()) : "not set" ) << "\n";
    cout << "intValue2:   " << intValue2 << "\n";
 
-   cout << "Positional arguments: ";
-   for ( auto& arg : arguments )
-      cout << "'" << arg << "' ";
+   cout << "Positional parameters: ";
+   for ( auto& param : params )
+      cout << "'" << param << "' ";
    cout << "\n";
 
    if ( res.errors.size() ) {

@@ -43,7 +43,7 @@ TEST( ArgumentParserTest, shouldParseShortOptions )
    std::optional<std::string> value;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( value, "-v" ).nargs( 1 );
+   parser.add_argument( value, "-v" ).nargs( 1 );
    parser.parseArguments( { "-v", "success" } );
 
    EXPECT_EQ( "success", value.value() );
@@ -54,7 +54,7 @@ TEST( ArgumentParserTest, shouldParseLongOptions )
    std::optional<std::string> value;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( value, "--value", "-v" ).nargs( 1 );
+   parser.add_argument( value, "--value", "-v" ).nargs( 1 );
    parser.parseArguments( { "--value", "success" } );
 
    EXPECT_EQ( "success", value.value() );
@@ -65,7 +65,7 @@ TEST( ArgumentParserTest, shouldParseIntegerValues )
    std::optional<long> value;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( value, "-v", "--value" ).nargs( 1 );
+   parser.add_argument( value, "-v", "--value" ).nargs( 1 );
    parser.parseArguments( { "--value", "2314" } );
 
    EXPECT_EQ( 2314, value.value() );
@@ -77,8 +77,8 @@ TEST( ArgumentParserTest, shouldNotSetOptionValuesWithoutArguments )
    std::optional<std::string> unused;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( value, "-v", "--value" ).nargs( 1 );
-   parser.addOption( unused, "--unused" );
+   parser.add_argument( value, "-v", "--value" ).nargs( 1 );
+   parser.add_argument( unused, "--unused" );
    parser.parseArguments( { "--value", "2314" } );
 
    EXPECT_EQ( 2314, value.value() );
@@ -91,8 +91,8 @@ TEST( ArgumentParserTest, shouldOnlyAddOptionValueIfRequired )
    std::optional<std::string> flag;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( value, "-v", "--value" ).nargs( 1 );
-   parser.addOption( flag, "--flag" );
+   parser.add_argument( value, "-v", "--value" ).nargs( 1 );
+   parser.add_argument( flag, "--flag" );
 
    parser.parseArguments( { "--value", "2314", "--flag", "notused" } );
 
@@ -109,8 +109,8 @@ TEST( ArgumentParserTest, shouldSkipParsingOptionsAfterDashDash )
    std::optional<std::string> flag;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( value, "-v", "--value" ).nargs( 1 );
-   parser.addOption( flag, "--skipped" );
+   parser.add_argument( value, "-v", "--value" ).nargs( 1 );
+   parser.add_argument( flag, "--skipped" );
 
    parser.parseArguments( { "--value", "2314", "--", "--skipped" } );
 
@@ -126,10 +126,10 @@ TEST( ArgumentParserTest, shouldSupportShortOptionGroups )
    std::optional<long> flagD;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( flagA, "-a" );
-   parser.addOption( flagB, "-b" );
-   parser.addOption( flagC, "-c" );
-   parser.addOption( flagD, "-d" );
+   parser.add_argument( flagA, "-a" );
+   parser.add_argument( flagB, "-b" );
+   parser.add_argument( flagC, "-c" );
+   parser.add_argument( flagD, "-d" );
 
    parser.parseArguments( { "-abd" } );
 
@@ -147,10 +147,10 @@ TEST( ArgumentParserTest, shouldReadArgumentForLastOptionInGroup )
    std::optional<long> flagD;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( flagA, "-a" );
-   parser.addOption( flagB, "-b" );
-   parser.addOption( flagC, "-c" );
-   parser.addOption( flagD, "-d" ).nargs( 1 );
+   parser.add_argument( flagA, "-a" );
+   parser.add_argument( flagB, "-b" );
+   parser.add_argument( flagC, "-c" );
+   parser.add_argument( flagD, "-d" ).nargs( 1 );
 
    parser.parseArguments( { "-abd", "4213" } );
 
@@ -166,8 +166,8 @@ TEST( ArgumentParserTest, shouldReportErrorForMissingArgument )
    std::optional<std::string> flagB;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( flagA, "-a" ).nargs( 1 );
-   parser.addOption( flagB, "-b" );
+   parser.add_argument( flagA, "-a" ).nargs( 1 );
+   parser.add_argument( flagB, "-b" );
 
    auto res = parser.parseArguments( { "-a", "-b", "freearg" } );
    ASSERT_EQ( 1, res.errors.size() );
@@ -182,7 +182,7 @@ TEST( ArgumentParserTest, shouldReportBadConversionError )
    std::optional<long> flagA;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( flagA, "-a" ).nargs( 1 );
+   parser.add_argument( flagA, "-a" ).nargs( 1 );
 
    auto res = parser.parseArguments( { "-a", "wrong" } );
    ASSERT_EQ( 1, res.errors.size() );
@@ -195,7 +195,7 @@ TEST( ArgumentParserTest, shouldReportUnknownOptionError )
    std::optional<long> flagA;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( flagA, "-a" ).nargs( 1 );
+   parser.add_argument( flagA, "-a" ).nargs( 1 );
 
    auto res = parser.parseArguments( { "-a", "2135", "--unknown" } );
    ASSERT_EQ( 1, res.errors.size() );
@@ -209,8 +209,8 @@ TEST( ArgumentParserTest, shouldReportMissingRequiredOptionError )
    std::optional<long> flagB;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( flagA, "-a" ).nargs( 1 );
-   parser.addOption( flagA, "-b" ).required();
+   parser.add_argument( flagA, "-a" ).nargs( 1 );
+   parser.add_argument( flagA, "-b" ).required();
 
    auto res = parser.parseArguments( { "-a", "2135" } );
    ASSERT_EQ( 1, res.errors.size() );
@@ -245,7 +245,7 @@ TEST( ArgumentParserTest, shouldSupportCustomOptionTypes )
    CustomType custom;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( CustomValue( custom ), "-c" ).nargs( 1 );
+   parser.add_argument( CustomValue( custom ), "-c" ).nargs( 1 );
 
    auto res = parser.parseArguments( { "-c", "value" } );
    EXPECT_EQ( "value", custom.value );
@@ -277,7 +277,7 @@ TEST( ArgumentParserTest, shouldSupportCustomOptionTypes_WithConvertedValue )
    CustomType custom;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( CustomValue( custom ), "-c" ).nargs( 1 );
+   parser.add_argument( CustomValue( custom ), "-c" ).nargs( 1 );
 
    auto res = parser.parseArguments( { "-c", "value" } );
    EXPECT_EQ( "value", custom.value.value() );
@@ -289,8 +289,8 @@ TEST( ArgumentParserTest, shouldSupportFlagValues )
    std::optional<std::string> flag;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( flag, "-a" ).flagValue( "from-a" );
-   parser.addOption( flag, "-b" ).flagValue( "from-b" );
+   parser.add_argument( flag, "-a" ).flagValue( "from-a" );
+   parser.add_argument( flag, "-b" ).flagValue( "from-b" );
 
    auto res = parser.parseArguments( { "-a", "-b" } );
    EXPECT_EQ( "from-b", flag.value() );
@@ -305,7 +305,7 @@ TEST( ArgumentParserTest, shouldSupportFloatingPointValues )
    std::optional<double> value;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( value, "-a" ).nargs( 1 );
+   parser.add_argument( value, "-a" ).nargs( 1 );
 
    auto res = parser.parseArguments( { "-a", "23.5" } );
    EXPECT_NEAR( 23.5, value.value(), 1e-9 );
@@ -318,9 +318,9 @@ TEST( ArgumentParserTest, shouldSupportRawValueTypes )
    double floatvalue = 2.0;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( strvalue, "--str" ).nargs( 1 );
-   parser.addOption( intvalue, "--int" ).nargs( 1 );
-   parser.addOption( floatvalue, "--float" ).nargs( 1 );
+   parser.add_argument( strvalue, "--str" ).nargs( 1 );
+   parser.add_argument( intvalue, "--int" ).nargs( 1 );
+   parser.add_argument( floatvalue, "--float" ).nargs( 1 );
 
    auto res = parser.parseArguments( { "--str", "string", "--int", "2134", "--float", "32.4" } );
    EXPECT_EQ( "string", strvalue );
@@ -333,7 +333,7 @@ TEST( ArgumentParserTest, shouldAcceptOptionNamesInConstructor )
    std::string strvalue;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( strvalue, "-s", "--string" ).nargs( 1 );
+   parser.add_argument( strvalue, "-s", "--string" ).nargs( 1 );
 
    auto res = parser.parseArguments( { "-s", "short" } );
    EXPECT_EQ( 0, res.errors.size() );
@@ -349,10 +349,10 @@ TEST( ArgumentParserTest, shouldNotAcceptInvalidShortOptions )
    std::string strvalue;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( strvalue, "-s", "--string" ).nargs( 1 );
-   parser.addOption( strvalue, "--l" ).nargs( 1 );
+   parser.add_argument( strvalue, "-s", "--string" ).nargs( 1 );
+   parser.add_argument( strvalue, "--l" ).nargs( 1 );
 
-   EXPECT_THROW( parser.addOption( strvalue, "-long" ).nargs( 1 ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( strvalue, "-long" ).nargs( 1 ), std::invalid_argument );
 
    auto res = parser.parseArguments( { "-s", "short" } );
    EXPECT_EQ( 0, res.errors.size() );
@@ -372,9 +372,9 @@ TEST( ArgumentParserTest, shouldNotAcceptOptionsWithoutName )
    std::string strvalue;
 
    auto parser = ArgumentParser::unsafe();
-   EXPECT_THROW( parser.addOption( strvalue, "-" ), std::invalid_argument );
-   EXPECT_THROW( parser.addOption( strvalue, "--" ), std::invalid_argument );
-   EXPECT_THROW( parser.addOption( strvalue, "" ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( strvalue, "-" ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( strvalue, "--" ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( strvalue, "" ), std::invalid_argument );
 }
 
 TEST( ArgumentParserTest, shouldSupportVectorOptions )
@@ -384,9 +384,9 @@ TEST( ArgumentParserTest, shouldSupportVectorOptions )
    std::vector<double> floats;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( strings, "-s" ).nargs( 1 );
-   parser.addOption( longs, "-l" ).nargs( 1 );
-   parser.addOption( floats, "-f" ).nargs( 1 );
+   parser.add_argument( strings, "-s" ).nargs( 1 );
+   parser.add_argument( longs, "-l" ).nargs( 1 );
+   parser.add_argument( floats, "-f" ).nargs( 1 );
 
    auto res = parser.parseArguments( { "-s", "string", "-f", "12.43", "-l", "576", "-l", "981" } );
    EXPECT_TRUE( vector_eq( { "string" }, strings ) );
@@ -399,7 +399,7 @@ TEST( ArgumentParserTest, shouldStorePositionalArgumentsInValues )
    std::vector<std::string> strings;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( strings, "text" ).minargs( 0 );
+   parser.add_argument( strings, "text" ).minargs( 0 );
 
    auto res = parser.parseArguments( { "one", "two", "three" } );
 
@@ -414,10 +414,10 @@ TEST( ArgumentParserTest, shouldGroupPositionalArguments )
 
    auto makeParser = [&]() {
       auto parser = ArgumentParser::unsafe();
-      parser.addOption( strvalue, "-s", "--string" ).nargs( 1 );
-      parser.addOption( strvalue, "--l" ).nargs( 1 );
-      parser.addOption( firstArgument, "text" ).nargs( 1 );
-      parser.addOption( otherArguments, "args" ).minargs( 0 );
+      parser.add_argument( strvalue, "-s", "--string" ).nargs( 1 );
+      parser.add_argument( strvalue, "--l" ).nargs( 1 );
+      parser.add_argument( firstArgument, "text" ).nargs( 1 );
+      parser.add_argument( otherArguments, "args" ).minargs( 0 );
       return parser;
    };
 
@@ -441,9 +441,9 @@ TEST( ArgumentParserTest, shouldSupportOptionArgumentCounts )
    std::vector<std::string> files;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( strvalue, "-s" ).nargs( 1 );
-   parser.addOption( texts, "-t" ).nargs( 2 );
-   parser.addOption( files, "-f" ).minargs( 0 );
+   parser.add_argument( strvalue, "-s" ).nargs( 1 );
+   parser.add_argument( texts, "-t" ).nargs( 2 );
+   parser.add_argument( files, "-f" ).minargs( 0 );
 
    parser.parseArguments( { "-t", "the", "text", "-f", "file1", "file2", "file3", "-s", "string" } );
    EXPECT_EQ( "string", strvalue );
@@ -458,9 +458,9 @@ TEST( ArgumentParserTest, shouldFailWhenOptionArgumentCountsAreWrong )
    std::vector<std::string> files;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( strvalue, "-s" ).nargs( 1 );
-   parser.addOption( texts, "-t" ).nargs( 2 );
-   parser.addOption( files, "-f" ).nargs( 2 );
+   parser.add_argument( strvalue, "-s" ).nargs( 1 );
+   parser.add_argument( texts, "-t" ).nargs( 2 );
+   parser.add_argument( files, "-f" ).nargs( 2 );
 
    auto res = parser.parseArguments( { "-t", "the", "-f", "file1", "file2",
       "not-file3", "-s", "string" } );
@@ -482,9 +482,9 @@ TEST( ArgumentParserTest, shouldSupportPositionalArgumentCounts )
    std::vector<std::string> files;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( strvalue, "-s" ).nargs( 1 );
-   parser.addOption( texts, "text" ).nargs( 2 );
-   parser.addOption( files, "file" ).nargs( 2 );
+   parser.add_argument( strvalue, "-s" ).nargs( 1 );
+   parser.add_argument( texts, "text" ).nargs( 2 );
+   parser.add_argument( files, "file" ).nargs( 2 );
    auto res = parser.parseArguments( { "the", "-s", "string1", "text", "file1", "file2",
       "not-file3", "-s", "string2" } );
 
@@ -501,7 +501,7 @@ TEST( ArgumentParserTest, shouldSupportExactNumberOfOptionArguments )
    auto testWithNargs = [&]( int nargs, const std::vector<std::string>& params ) {
       texts.clear();
       auto parser = ArgumentParser::unsafe();
-      parser.addOption( texts, "-t" ).nargs( nargs );
+      parser.add_argument( texts, "-t" ).nargs( nargs );
       return parser.parseArguments( params );
    };
    auto params = std::vector<std::string>{ "-t", "read", "the", "text" };
@@ -542,7 +542,7 @@ TEST( ArgumentParserTest, shouldSupportExactNumberOfPositionalArguments )
    auto testWithNargs = [&]( int nargs, const std::vector<std::string>& params ) {
       texts.clear();
       auto parser = ArgumentParser::unsafe();
-      parser.addOption( texts, "text" ).nargs( nargs );
+      parser.add_argument( texts, "text" ).nargs( nargs );
       return parser.parseArguments( params );
    };
    auto params = std::vector<std::string>{ "read", "the", "text" };
@@ -582,7 +582,7 @@ TEST( ArgumentParserTest, shouldSupportMinNumberOfOptionArguments )
    auto testWithMinArgs = [&]( int nargs, const std::vector<std::string>& params ) {
       texts.clear();
       auto parser = ArgumentParser::unsafe();
-      parser.addOption( texts, "-t" ).minargs( nargs );
+      parser.add_argument( texts, "-t" ).minargs( nargs );
       return parser.parseArguments( params );
    };
    auto params = std::vector<std::string>{ "-t", "read", "the", "text" };
@@ -609,7 +609,7 @@ TEST( ArgumentParserTest, shouldSupportMaxNumberOfOptionArguments )
    auto testWithMaxArgs = [&]( int nargs, const std::vector<std::string>& params ) {
       texts.clear();
       auto parser = ArgumentParser::unsafe();
-      parser.addOption( texts, "-t" ).maxargs( nargs );
+      parser.add_argument( texts, "-t" ).maxargs( nargs );
       return parser.parseArguments( params );
    };
    auto params = std::vector<std::string>{ "-t", "read", "the", "text" };
@@ -645,7 +645,7 @@ TEST( ArgumentParserTest, shouldSupportMinNumberOfPositionalArguments )
    auto testWithMinArgs = [&]( int nargs, const std::vector<std::string>& params ) {
       texts.clear();
       auto parser = ArgumentParser::unsafe();
-      parser.addOption( texts, "text" ).minargs( nargs );
+      parser.add_argument( texts, "text" ).minargs( nargs );
       return parser.parseArguments( params );
    };
    auto params = std::vector<std::string>{ "read", "the", "text" };
@@ -672,7 +672,7 @@ TEST( ArgumentParserTest, shouldSupportMaxNumberOfPositionalArguments )
    auto testWithMaxArgs = [&]( int nargs, const std::vector<std::string>& params ) {
       texts.clear();
       auto parser = ArgumentParser::unsafe();
-      parser.addOption( texts, "text" ).maxargs( nargs );
+      parser.add_argument( texts, "text" ).maxargs( nargs );
       return parser.parseArguments( params );
    };
    auto params = std::vector<std::string>{ "read", "the", "text" };
@@ -707,7 +707,7 @@ TEST( ArgumentParserTest, shouldSetDefaultCountForPositionalArgumentsWithVectorV
 
    auto parser = ArgumentParser::unsafe();
    // If the value variable is a vector, the default is minargs(0)
-   parser.addOption( texts, "text" );
+   parser.add_argument( texts, "text" );
 
    auto res = parser.parseArguments( params );
    EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
@@ -722,7 +722,7 @@ TEST( ArgumentParserTest, shouldSetDefaultCountForPositionalArgumentsWithScalarV
 
    auto parser = ArgumentParser::unsafe();
    // If the value variable is a scalar, the default is nargs(1)
-   parser.addOption( strvalue, "text" );
+   parser.add_argument( strvalue, "text" );
 
    auto res = parser.parseArguments( params );
    EXPECT_EQ( "read", strvalue );
@@ -734,7 +734,7 @@ TEST( ArgumentParserTest, shouldSetFlagValueWhenZeroOrMoreArgumentsRequiredAndNo
 {
    std::vector<std::string> texts;
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( texts, "-t" ).maxargs( 1 );
+   parser.add_argument( texts, "-t" ).maxargs( 1 );
 
    auto res = parser.parseArguments( { "-t" } );
    EXPECT_TRUE( vector_eq( { "1" }, texts ) );
@@ -745,16 +745,16 @@ TEST( ArgumentParserTest, shouldSetArgumentCountAtMostOnce )
    std::vector<std::string> texts;
    auto parser = ArgumentParser::unsafe();
 
-   EXPECT_NO_THROW( parser.addOption( texts, "-a" ).nargs( 1 ) );
-   EXPECT_NO_THROW( parser.addOption( texts, "-b" ).minargs( 1 ) );
-   EXPECT_NO_THROW( parser.addOption( texts, "-c" ).maxargs( 1 ) );
+   EXPECT_NO_THROW( parser.add_argument( texts, "-a" ).nargs( 1 ) );
+   EXPECT_NO_THROW( parser.add_argument( texts, "-b" ).minargs( 1 ) );
+   EXPECT_NO_THROW( parser.add_argument( texts, "-c" ).maxargs( 1 ) );
 
-   EXPECT_THROW( parser.addOption( texts, "-d" ).nargs( 1 ).minargs( 1 ), std::invalid_argument );
-   EXPECT_THROW( parser.addOption( texts, "-e" ).nargs( 1 ).maxargs( 1 ), std::invalid_argument );
-   EXPECT_THROW( parser.addOption( texts, "-f" ).minargs( 1 ).nargs( 1 ), std::invalid_argument );
-   EXPECT_THROW( parser.addOption( texts, "-g" ).minargs( 1 ).maxargs( 1 ), std::invalid_argument );
-   EXPECT_THROW( parser.addOption( texts, "-h" ).maxargs( 1 ).nargs( 1 ), std::invalid_argument );
-   EXPECT_THROW( parser.addOption( texts, "-i" ).maxargs( 1 ).minargs( 1 ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( texts, "-d" ).nargs( 1 ).minargs( 1 ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( texts, "-e" ).nargs( 1 ).maxargs( 1 ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( texts, "-f" ).minargs( 1 ).nargs( 1 ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( texts, "-g" ).minargs( 1 ).maxargs( 1 ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( texts, "-h" ).maxargs( 1 ).nargs( 1 ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( texts, "-i" ).maxargs( 1 ).minargs( 1 ), std::invalid_argument );
 }
 
 TEST( ArgumentParserTest, shouldSetOptionChoices )
@@ -762,7 +762,7 @@ TEST( ArgumentParserTest, shouldSetOptionChoices )
    std::string strvalue;
    auto parser = ArgumentParser::unsafe();
 
-   parser.addOption( strvalue, "-s" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
+   parser.add_argument( strvalue, "-s" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
    auto res = parser.parseArguments( { "-s", "beta" } );
    EXPECT_EQ( "beta", strvalue );
    EXPECT_EQ( 0, res.errors.size() );
@@ -773,7 +773,7 @@ TEST( ArgumentParserTest, shouldFailIfArgumentIsNotInChoices )
    std::string strvalue;
    auto parser = ArgumentParser::unsafe();
 
-   parser.addOption( strvalue, "-s" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
+   parser.add_argument( strvalue, "-s" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
    auto res = parser.parseArguments( { "-s", "phi" } );
    EXPECT_TRUE( strvalue.empty() );
    ASSERT_EQ( 1, res.errors.size() );
@@ -786,7 +786,7 @@ TEST( ArgumentParserTest, shouldFailIfPositionalArgumentIsNotInChoices )
    std::string strvalue;
    auto parser = ArgumentParser::unsafe();
 
-   parser.addOption( strvalue, "string" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
+   parser.add_argument( strvalue, "string" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
    auto res = parser.parseArguments( { "phi" } );
    EXPECT_TRUE( strvalue.empty() );
    ASSERT_EQ( 1, res.errors.size() );
@@ -801,9 +801,9 @@ TEST( ArgumentParserTest, shouldDistinguishLongAndShortAndPositionalNames )
    std::string strArg;
 
    auto parser = ArgumentParser::unsafe();
-   parser.addOption( strShort, "-s" ).nargs( 1 );
-   parser.addOption( strLong, "--s" ).nargs( 1 );
-   parser.addOption( strArg, "s" ).nargs( 1 );
+   parser.add_argument( strShort, "-s" ).nargs( 1 );
+   parser.add_argument( strLong, "--s" ).nargs( 1 );
+   parser.add_argument( strArg, "s" ).nargs( 1 );
 
    auto res = parser.parseArguments( { "-s", "short", "--s", "long", "string" } );
    EXPECT_EQ( "short", strShort );
@@ -817,13 +817,13 @@ TEST( ArgumentParserTest, shouldNotAcceptOptionsWithWhitespace )
    std::string strvalue;
    auto parser = ArgumentParser::unsafe();
 
-   EXPECT_THROW( parser.addOption( strvalue, "a string" ), std::invalid_argument );
-   EXPECT_THROW( parser.addOption( strvalue, " string" ), std::invalid_argument );
-   EXPECT_THROW( parser.addOption( strvalue, "string " ), std::invalid_argument );
-   EXPECT_THROW( parser.addOption( strvalue, "-string " ), std::invalid_argument );
-   EXPECT_THROW( parser.addOption( strvalue, "--string " ), std::invalid_argument );
-   EXPECT_THROW( parser.addOption( strvalue, "-a string" ), std::invalid_argument );
-   EXPECT_THROW( parser.addOption( strvalue, "--a string" ), std::invalid_argument );
-   EXPECT_THROW( parser.addOption( strvalue, "- string" ), std::invalid_argument );
-   EXPECT_THROW( parser.addOption( strvalue, "-- string" ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( strvalue, "a string" ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( strvalue, " string" ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( strvalue, "string " ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( strvalue, "-string " ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( strvalue, "--string " ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( strvalue, "-a string" ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( strvalue, "--a string" ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( strvalue, "- string" ), std::invalid_argument );
+   EXPECT_THROW( parser.add_argument( strvalue, "-- string" ), std::invalid_argument );
 }

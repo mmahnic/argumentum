@@ -565,7 +565,7 @@ private:
 
 public:
    // TODO: Create a constructor that takes a shared pointer to a structure and
-   // verify that the variables added with addOption are within that structure.
+   // verify that the variables added with add_argument are within that structure.
    /**
     * The argument parser takes references to the variables that will hold the
     * parsed values.  The variables must outlive the argument parser.
@@ -576,17 +576,17 @@ public:
    }
 
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value> >
-   OptionConfig addOption( TValue value, const std::string& name="", const std::string& altName="" )
+   OptionConfig add_argument( TValue value, const std::string& name="", const std::string& altName="" )
    {
       auto option = Option( value );
-      return tryAddOption( option, { name, altName } );
+      return tryAddArgument( option, { name, altName } );
    }
 
    template<typename TValue, typename = std::enable_if_t<!std::is_base_of<Value, TValue>::value> >
-   OptionConfig addOption( TValue &value, const std::string& name="", const std::string& altName="" )
+   OptionConfig add_argument( TValue &value, const std::string& name="", const std::string& altName="" )
    {
       auto option = Option( value );
-      return tryAddOption( option, { name, altName } );
+      return tryAddArgument( option, { name, altName } );
    }
 
    ParseResult parseArguments( const std::vector<std::string>& args )
@@ -611,7 +611,7 @@ private:
             result.errors.emplace_back( option.getName(), MISSING_ARGUMENT );
    }
 
-   OptionConfig tryAddOption( Option& newOption, std::vector<std::string_view> names )
+   OptionConfig tryAddArgument( Option& newOption, std::vector<std::string_view> names )
    {
       // Remove empty names
       auto is_empty = [&]( auto name ) { return name.empty(); };
