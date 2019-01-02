@@ -895,3 +895,12 @@ TEST( ArgumentParserTest, shouldAcceptArgumentHelpStrings )
 
    EXPECT_THROW( parser.describe_argument( "--unknown" ), std::invalid_argument );
 }
+
+TEST( ArgumentParserTest, shouldSetProgramName )
+{
+   auto parser = ArgumentParser::create_unsafe();
+   parser.config().prog( "testing-testing" );
+
+   auto& config = parser.getConfig();
+   EXPECT_EQ( "testing-testing", config.program );
+}

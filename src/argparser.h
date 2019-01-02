@@ -410,6 +410,18 @@ public:
       }
    };
 
+   struct ParserConfig
+   {
+      std::string program;
+
+   public:
+      ParserConfig& prog( std::string_view program )
+      {
+         this->program = program;
+         return *this;
+      }
+   };
+
    // Errors known by the parser
    enum EError {
       UNKNOWN_OPTION,
@@ -608,6 +620,7 @@ private:
    };
 
 private:
+   ParserConfig mConfig;
    std::vector<Option> mOptions;
    std::vector<Option> mPositional;
    std::shared_ptr<Options> mpTargets;
@@ -658,6 +671,16 @@ public:
                "The create_safe factory method requires a pointer to an Options structure." );
 
       return create_unsafe( pOptions );
+   }
+
+   ParserConfig& config()
+   {
+      return mConfig;
+   }
+
+   const ParserConfig& getConfig() const
+   {
+      return mConfig;
    }
 
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value> >

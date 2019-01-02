@@ -31,6 +31,7 @@ int main( int argc, char** argv )
    // outlive those variables. We signal this by using the create_unsafe() 
    // factory method.
    auto parser = ArgumentParser::create_unsafe();
+   parser.config().prog( argv[0] );
    parser.add_argument( stringValue, "-s", "--string" ).nargs( 1 );
    parser.add_argument( intValue, "-i", "--int" ).nargs( 1 );
    parser.add_argument( floatValue, "-f", "--float" ).nargs( 1 );
