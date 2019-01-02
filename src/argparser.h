@@ -585,7 +585,7 @@ public:
     * all the registered variables are in the memory space used by *pOptions
     * the variables will outlive the parser.
     */
-   static ArgumentParser unsafe( std::shared_ptr<Options> pOptions=nullptr )
+   static ArgumentParser create_unsafe( std::shared_ptr<Options> pOptions=nullptr )
    {
       auto parser = ArgumentParser( pOptions );
       if ( pOptions )
@@ -605,20 +605,20 @@ public:
     * variables are in the memory space used by *pOptions the variables will
     * outlive the parser.
     *
-    * NOTE: This method is essentially the same as unsafe().  The safety of the
-    * memory usage is not checked (it can not be because of possible custom
-    * Value arguments).  It is still the programmer's responsibility to check
-    * that valid memory space is being used.  The naming is just a way of
+    * NOTE: This method is essentially the same as create_unsafe().  The safety
+    * of the memory usage is not checked (it can not be because of possible
+    * custom Value arguments).  It is still the programmer's responsibility to
+    * check that valid memory space is being used.  The naming is just a way of
     * documenting that the programmer made an effort to make the use of the
     * parser safe.
     */
-   static ArgumentParser create_safer( std::shared_ptr<Options> pOptions )
+   static ArgumentParser create( std::shared_ptr<Options> pOptions )
    {
       if ( !pOptions )
          throw std::invalid_argument(
                "The create_safe factory method requires a pointer to an Options structure." );
 
-      return unsafe( pOptions );
+      return create_unsafe( pOptions );
    }
 
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value> >

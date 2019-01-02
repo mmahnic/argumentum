@@ -28,8 +28,9 @@ int main( int argc, char** argv )
    vector<string> params;
 
    // Note: the argument parser will take references to the variables so it must
-   // outlive those variables. We signal this by using the unsafe() factory method.
-   auto parser = ArgumentParser::unsafe();
+   // outlive those variables. We signal this by using the create_unsafe() 
+   // factory method.
+   auto parser = ArgumentParser::create_unsafe();
    parser.add_argument( stringValue, "-s", "--string" ).nargs( 1 );
    parser.add_argument( intValue, "-i", "--int" ).nargs( 1 );
    parser.add_argument( floatValue, "-f", "--float" ).nargs( 1 );
