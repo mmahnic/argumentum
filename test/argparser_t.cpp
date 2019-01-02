@@ -871,3 +871,27 @@ TEST( ArgumentParserTest, shouldRequireSharedOptionStructureInSaferVersion )
    EXPECT_EQ( "str", pOpt->str );
    EXPECT_EQ( 3274, pOpt->count );
 }
+
+TEST( ArgumentParserTest, shouldAcceptArgumentHelpStrings )
+{
+   std::string str;
+   std::vector<std::string> args;
+
+   auto parser = ArgumentParser::create_unsafe();
+   parser.add_argument( str, "-s" ).nargs( 1 ).help( "some value" );
+   parser.add_argument( args, "args" ).minargs( 0 ).help( "some arguments" );
+
+   auto res = parser.describe_argument( "-s" );
+   EXPECT_EQ( "-s", res.short_name );
+   EXPECT_EQ( "", res.long_name );
+   EXPECT_EQ( "some value", res.help );
+   EXPECT_FALSE( res.isPositional() );
+
+   res = parser.describe_argument( "args" );
+   EXPECT_EQ( "", res.short_name );
+   EXPECT_EQ( "args", res.long_name );
+   EXPECT_EQ( "some arguments", res.help );
+   EXPECT_TRUE( res.isPositional() );
+
+   EXPECT_THROW( parser.describe_argument( "--unknown" ), std::invalid_argument );
+}

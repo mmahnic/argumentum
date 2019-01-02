@@ -135,6 +135,7 @@ public:
       std::unique_ptr<Value> mpValue;
       std::string mShortName;
       std::string mLongName;
+      std::string mHelp;
       std::string mFlagValue = "1";
       std::vector<std::string> mChoices;
       int mMinArgs = 0;
@@ -210,6 +211,11 @@ public:
          mLongName = name;
       }
 
+      void setHelp( std::string_view help )
+      {
+         mHelp = help;
+      }
+
       void setNArgs( int count )
       {
          mMinArgs = std::max( 0, count );
@@ -253,9 +259,24 @@ public:
          return mLongName.empty() ? mShortName : mLongName;
       }
 
+      const std::string& getShortName() const
+      {
+         return mShortName;
+      }
+
+      const std::string& getLongName() const
+      {
+         return mLongName;
+      }
+
       bool hasName( std::string_view name ) const
       {
          return name == mShortName || name == mLongName;
+      }
+
+      const std::string& getRawHelp() const
+      {
+         return mHelp;
       }
 
       void setValue( const std::string& value )
@@ -330,6 +351,12 @@ public:
       OptionConfig& setLongName( std::string_view name )
       {
          mOptions[mIndex].setLongName( name );
+         return *this;
+      }
+
+      OptionConfig& help( std::string_view help )
+      {
+         mOptions[mIndex].setHelp( help );
          return *this;
       }
 
@@ -411,6 +438,18 @@ public:
       {
          ignoredArguments.clear();
          errors.clear();
+      }
+   };
+
+   struct ArgumentHelpResult
+   {
+      std::string short_name;
+      std::string long_name;
+      std::string help;
+
+      bool isPositional() const
+      {
+         return short_name.substr( 0, 1 ) != "-" && long_name.substr( 0, 1 ) != "-";
       }
    };
 
@@ -641,6 +680,22 @@ public:
       auto result = parser.parse( args );
       reportMissingOptions( result );
       return result;
+   }
+
+   ArgumentHelpResult describe_argument( std::string_view name )
+   {
+      const auto& args = (name.substr( 0, 1 ) == "-") ? mOptions : mPositional;
+      for ( auto& opt : args ) {
+         if ( opt.hasName( name ) ) {
+            ArgumentHelpResult help;
+            help.short_name = opt.getShortName();
+            help.long_name = opt.getLongName();
+            help.help = opt.getRawHelp();
+            return help;
+         }
+      }
+
+      throw std::invalid_argument( "Unknown option" );
    }
 
 private:
