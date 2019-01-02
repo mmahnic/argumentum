@@ -913,3 +913,12 @@ TEST( ArgumentParserTest, shouldSetProgramDescription )
    auto& config = parser.getConfig();
    EXPECT_EQ( "An example.", config.description );
 }
+
+TEST( ArgumentParserTest, shouldSetProgramUsage )
+{
+   auto parser = ArgumentParser::create_unsafe();
+   parser.config().usage( "example [options] [arguments]" );
+
+   auto& config = parser.getConfig();
+   EXPECT_EQ( "example [options] [arguments]", config.usage );
+}

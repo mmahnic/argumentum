@@ -416,6 +416,7 @@ public:
       struct Data
       {
          std::string program;
+         std::string usage;
          std::string description;
       };
 
@@ -431,6 +432,12 @@ public:
       ParserConfig& prog( std::string_view program )
       {
          mData.program = program;
+         return *this;
+      }
+
+      ParserConfig& usage( std::string_view usage )
+      {
+         mData.usage = usage;
          return *this;
       }
 
