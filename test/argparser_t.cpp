@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Marko Mahnič
+// Copyright (c) 2018, 2019 Marko Mahnič
 // License: MIT. See LICENSE in the root of the project.
 
 #include "../src/argparser.h"
@@ -826,4 +826,25 @@ TEST( ArgumentParserTest, shouldNotAcceptOptionsWithWhitespace )
    EXPECT_THROW( parser.add_argument( strvalue, "--a string" ), std::invalid_argument );
    EXPECT_THROW( parser.add_argument( strvalue, "- string" ), std::invalid_argument );
    EXPECT_THROW( parser.add_argument( strvalue, "-- string" ), std::invalid_argument );
+}
+
+TEST( ArgumentParserTest, shouldAcceptSharedOptionStructure )
+{
+   struct Options: public argparse::Options
+   {
+      std::string str;
+      long count;
+
+      void add_arguments( ArgumentParser& parser ) override
+      {
+         parser.add_argument( str, "-s" ).nargs( 1 );
+         parser.add_argument( count, "-n" ).nargs( 1 );
+      }
+   };
+
+   auto pOpt = std::make_shared<Options>();
+   auto parser = ArgumentParser::create_checked( pOpt );
+   auto res = parser.parse_args( { "-s", "str", "-n", "3274" } );
+   EXPECT_EQ( "str", pOpt->str );
+   EXPECT_EQ( 3274, pOpt->count );
 }

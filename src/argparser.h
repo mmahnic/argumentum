@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Marko Mahnič
+// Copyright (c) 2018, 2019 Marko Mahnič
 // License: MIT. See LICENSE in the root of the project.
 
 #pragma once
@@ -10,6 +10,7 @@
 #include <functional>
 #include <algorithm>
 #include <cctype>
+#include <iostream>
 
 namespace argparse {
 
@@ -37,6 +38,18 @@ public:
    InvalidChoiceError( const std::string& value )
       : std::invalid_argument( value )
    {}
+};
+
+class ArgumentParser;
+
+class Options
+{
+public:
+   virtual void add_arguments( ArgumentParser& parser ) = 0;
+   virtual void argument_warning( std::string_view message ) const
+   {
+      std::cerr << message << "\n";
+   }
 };
 
 class ArgumentParser
@@ -562,6 +575,8 @@ private:
 private:
    std::vector<Option> mOptions;
    std::vector<Option> mPositional;
+   std::shared_ptr<Options> mpTargets;
+   size_t mTargetSize = 0;
 
 public:
    // TODO: Create a constructor that takes a shared pointer to a structure and
@@ -573,6 +588,12 @@ public:
    static ArgumentParser unsafe()
    {
       return ArgumentParser();
+   }
+
+   template<typename TOptions>
+   static ArgumentParser create_checked( std::shared_ptr<TOptions> pOptions )
+   {
+      return ArgumentParser( pOptions, sizeof( TOptions ) );
    }
 
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value> >
@@ -599,6 +620,13 @@ public:
 
 private:
    ArgumentParser() = default;
+
+   ArgumentParser( std::shared_ptr<Options> pOptions, size_t size )
+      : mpTargets( pOptions ), mTargetSize( size )
+   {
+      if ( mpTargets )
+         mpTargets->add_arguments( *this );
+   }
 
    void reportMissingOptions( ParseResult& result )
    {
