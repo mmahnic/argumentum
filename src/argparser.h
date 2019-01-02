@@ -589,7 +589,7 @@ public:
       return tryAddArgument( option, { name, altName } );
    }
 
-   ParseResult parseArguments( const std::vector<std::string>& args )
+   ParseResult parse_args( const std::vector<std::string>& args )
    {
       Parser parser( *this );
       auto result = parser.parse( args );

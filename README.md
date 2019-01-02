@@ -40,7 +40,7 @@ int main( int argc, char** argv )
    for ( int i = 1; i < argc; ++i )
       args.emplace_back( argv[i] );
 
-   auto res = parser.parseArguments( args );
+   auto res = parser.parse_args( args );
 
    cout << "stringValue: "
       << ( bool(stringValue) ? stringValue.value() : "not set" ) << "\n";
