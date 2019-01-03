@@ -485,7 +485,7 @@ public:
       std::string long_name;
       std::string help;
 
-      bool isPositional() const
+      bool is_positional() const
       {
          return short_name.substr( 0, 1 ) != "-" && long_name.substr( 0, 1 ) != "-";
       }
@@ -731,20 +731,27 @@ public:
       return result;
    }
 
-   ArgumentHelpResult describe_argument( std::string_view name )
+   ArgumentHelpResult describe_argument( std::string_view name ) const
    {
       const auto& args = (name.substr( 0, 1 ) == "-") ? mOptions : mPositional;
-      for ( auto& opt : args ) {
-         if ( opt.hasName( name ) ) {
-            ArgumentHelpResult help;
-            help.short_name = opt.getShortName();
-            help.long_name = opt.getLongName();
-            help.help = opt.getRawHelp();
-            return help;
-         }
-      }
+      for ( auto& opt : args )
+         if ( opt.hasName( name ) )
+            return describeOption( opt );
 
       throw std::invalid_argument( "Unknown option" );
+   }
+
+   std::vector<ArgumentHelpResult> describe_arguments() const
+   {
+      std::vector<ArgumentHelpResult> descriptions;
+
+      for ( auto& opt : mOptions )
+         descriptions.push_back( describeOption( opt ) );
+
+      for ( auto& opt : mPositional )
+         descriptions.push_back( describeOption( opt ) );
+
+      return descriptions;
    }
 
 private:
@@ -829,6 +836,50 @@ private:
 
       if ( option.getName().empty() )
             throw std::invalid_argument( "An option must have a name." );
+   }
+
+   ArgumentHelpResult describeOption( const Option& option ) const
+   {
+      ArgumentHelpResult help;
+      help.short_name = option.getShortName();
+      help.long_name = option.getLongName();
+      help.help = option.getRawHelp();
+      return help;
+   }
+
+};
+
+class HelpFormatter
+{
+public:
+   void format( const ArgumentParser& parser, std::ostream& out )
+   {
+      auto config = parser.getConfig();
+      auto args = parser.describe_arguments();
+      auto iopt = std::stable_partition(  std::begin(args), std::end(args),
+            []( auto&& d ) { return d.is_positional(); } );
+      auto hasPositional = iopt != std::begin( args );
+      auto hasOptional = iopt != std::end( args );
+
+      if ( !config.usage.empty() )
+         out << "usage: " << config.usage << "\n\n";
+
+      if ( !config.description.empty() )
+         out << config.description << "\n\n";
+
+      if ( hasPositional ) {
+         out << "positional arguments:\n";
+         for ( auto it = std::begin( args ); it != iopt; ++it )
+            out << " " << it->long_name << " " << it->help << "\n";
+         out << "\n";
+      }
+
+      if ( hasOptional ) {
+         out << "optional arguments:\n";
+         for ( auto it = iopt; it != std::end( args ); ++it )
+            out << " " << it->short_name << ", " << it->long_name << " " << it->help << "\n";
+         out << "\n";
+      }
    }
 };
 
