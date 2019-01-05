@@ -2,6 +2,7 @@
 // License: MIT. See LICENSE in the root of the project.
 
 #include "../src/argparser.h"
+#include "../src/helpformatter.h"
 
 #include <gtest/gtest.h>
 #include <algorithm>

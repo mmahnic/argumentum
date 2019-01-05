@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "helpformatter_i.h"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -479,18 +481,6 @@ public:
       }
    };
 
-   struct ArgumentHelpResult
-   {
-      std::string short_name;
-      std::string long_name;
-      std::string help;
-
-      bool is_positional() const
-      {
-         return short_name.substr( 0, 1 ) != "-" && long_name.substr( 0, 1 ) != "-";
-      }
-   };
-
 private:
    class Parser
    {
@@ -847,40 +837,6 @@ private:
       return help;
    }
 
-};
-
-class HelpFormatter
-{
-public:
-   void format( const ArgumentParser& parser, std::ostream& out )
-   {
-      auto config = parser.getConfig();
-      auto args = parser.describe_arguments();
-      auto iopt = std::stable_partition(  std::begin(args), std::end(args),
-            []( auto&& d ) { return d.is_positional(); } );
-      auto hasPositional = iopt != std::begin( args );
-      auto hasOptional = iopt != std::end( args );
-
-      if ( !config.usage.empty() )
-         out << "usage: " << config.usage << "\n\n";
-
-      if ( !config.description.empty() )
-         out << config.description << "\n\n";
-
-      if ( hasPositional ) {
-         out << "positional arguments:\n";
-         for ( auto it = std::begin( args ); it != iopt; ++it )
-            out << " " << it->long_name << " " << it->help << "\n";
-         out << "\n";
-      }
-
-      if ( hasOptional ) {
-         out << "optional arguments:\n";
-         for ( auto it = iopt; it != std::end( args ); ++it )
-            out << " " << it->short_name << ", " << it->long_name << " " << it->help << "\n";
-         out << "\n";
-      }
-   }
 };
 
 }
