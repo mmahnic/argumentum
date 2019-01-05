@@ -40,6 +40,9 @@ inline void HelpFormatter::format( const ArgumentParser& parser, std::ostream& o
             << formatArgument( *it ) << " " << it->help << "\n";
       out << "\n";
    }
+
+   if ( !config.epilog.empty() )
+      out << config.epilog << "\n\n";
 }
 
 }

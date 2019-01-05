@@ -115,7 +115,8 @@ TEST( ArgumentParserHelpTest, shouldOutputHelpToStream )
    parser.config()
       .prog( "testing-format" )
       .description( "Format testing." )
-      .usage( "testing-format [options]" );
+      .usage( "testing-format [options]" )
+      .epilog( "More about testing." );
 
    parser.add_argument( str, "-s" ).nargs( 1 ).help( "some string" );
    parser.add_argument( depth, "-d", "--depth" ).nargs( 1 ).help( "some depth" );
@@ -128,7 +129,7 @@ TEST( ArgumentParserHelpTest, shouldOutputHelpToStream )
 
    auto parts = std::vector<std::string>{ "testing-format", "Format testing.",
       "testing-format [options]", "-s", "some string", "-d", "--depth",
-      "some depth", "args", "some arguments" };
+      "some depth", "args", "some arguments", "More about testing." };
 
    for ( auto& p : parts )
       EXPECT_NE( std::string::npos, help.find( p ) ) << "Missing: " << p;
