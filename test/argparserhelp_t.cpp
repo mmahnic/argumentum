@@ -10,6 +10,33 @@
 
 using namespace argparse;
 
+namespace {
+std::vector<std::string_view> splitLines( std::string_view text )
+{
+    std::vector<std::string_view> output;
+    size_t start = 0;
+    auto delims = "\n\r";
+
+    auto isWinEol = [&text]( auto pos ) {
+       return text[pos] == '\r' && text[pos+1] == '\n';
+    };
+
+    while ( start < text.size() ) {
+       const auto stop = text.find_first_of( delims, start );
+
+       if ( start != stop )
+          output.emplace_back( text.substr( start, stop-start ) );
+
+       if ( stop == std::string_view::npos )
+          break;
+
+       start = stop + ( isWinEol( stop ) ? 2 : 1 );
+    }
+
+    return output;
+}
+}
+
 TEST( ArgumentParserHelpTest, shouldAcceptArgumentHelpStrings )
 {
    std::string str;
@@ -105,4 +132,46 @@ TEST( ArgumentParserHelpTest, shouldOutputHelpToStream )
 
    for ( auto& p : parts )
       EXPECT_NE( std::string::npos, help.find( p ) ) << "Missing: " << p;
+}
+
+TEST( ArgumentParserHelpTest, shouldFormatDescriptionsToTheSameColumn )
+{
+   std::string str;
+   long depth;
+   long width;
+   std::vector<std::string> args;
+
+   auto parser = ArgumentParser::create_unsafe();
+   parser.config()
+      .prog( "testing-format" )
+      .description( "Format testing." )
+      .usage( "testing-format [options]" );
+
+   parser.add_argument( str, "-s" ).nargs( 1 ).help( "some string" );
+   parser.add_argument( depth, "-d", "--depth" ).nargs( 1 ).help( "some depth" );
+   parser.add_argument( width, "", "--width" ).nargs( 1 ).help( "some width" );
+   parser.add_argument( args, "somestuff" ).minargs( 0 ).help( "some arguments" );
+
+   std::stringstream strout;
+   auto formatter = HelpFormatter();
+   formatter.format( parser, strout );
+   auto help = strout.str();
+   auto helpLines = splitLines(help);
+
+   auto parts = std::vector<std::string>{ "some string", "some depth", "some width",
+      "some arguments" };
+
+   auto findColumn = [&helpLines]( auto&& text ) -> size_t {
+      for ( auto&& l : helpLines ) {
+         auto pos = l.find( text );
+         if ( pos != std::string::npos )
+            return pos;
+      }
+      return std::string::npos;
+   };
+
+   auto column = findColumn( parts[0] );
+   ASSERT_NE( std::string::npos, column );
+   for ( auto& p : parts )
+      EXPECT_EQ( column, findColumn( p ) ) << "Not aligned: " << p;
 }
