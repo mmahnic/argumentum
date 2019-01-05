@@ -420,6 +420,7 @@ public:
          std::string program;
          std::string usage;
          std::string description;
+         std::string epilog;
       };
 
    private:
@@ -446,6 +447,12 @@ public:
       ParserConfig& description( std::string_view description )
       {
          mData.description = description;
+         return *this;
+      }
+
+      ParserConfig& epilog( std::string_view epilog )
+      {
+         mData.epilog = epilog;
          return *this;
       }
    };

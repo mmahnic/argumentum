@@ -175,3 +175,13 @@ TEST( ArgumentParserHelpTest, shouldFormatDescriptionsToTheSameColumn )
    for ( auto& p : parts )
       EXPECT_EQ( column, findColumn( p ) ) << "Not aligned: " << p;
 }
+
+TEST( ArgumentParserHelpTest, shouldSetHelpEpilog )
+{
+   auto parser = ArgumentParser::create_unsafe();
+   parser.config().epilog( "This comes after help." );
+
+   auto& config = parser.getConfig();
+   EXPECT_EQ( "This comes after help.", config.epilog );
+}
+
