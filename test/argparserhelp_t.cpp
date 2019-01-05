@@ -105,31 +105,51 @@ TEST( ArgumentParserHelpTest, shouldReturnDescriptionsOfAllArguments )
             []( auto&& d ) { return d.is_positional(); } ) );
 }
 
-TEST( ArgumentParserHelpTest, shouldOutputHelpToStream )
+namespace {
+
+class TestOptions: public argparse::Options
 {
+public:
    std::string str;
    long depth;
+   long width;
    std::vector<std::string> args;
 
-   auto parser = ArgumentParser::create_unsafe();
-   parser.config()
-      .prog( "testing-format" )
-      .description( "Format testing." )
-      .usage( "testing-format [options]" )
-      .epilog( "More about testing." );
+public:
+   void add_arguments( ArgumentParser& parser ) override
+   {
+      parser.config()
+         .prog( "testing-format" )
+         .description( "Format testing." )
+         .usage( "testing-format [options]" )
+         .epilog( "More about testing." );
 
-   parser.add_argument( str, "-s" ).nargs( 1 ).help( "some string" );
-   parser.add_argument( depth, "-d", "--depth" ).nargs( 1 ).help( "some depth" );
-   parser.add_argument( args, "args" ).minargs( 0 ).help( "some arguments" );
+      parser.add_argument( str, "-s" ).nargs( 1 ).help( "some string" );
+      parser.add_argument( depth, "-d", "--depth" ).nargs( 1 ).help( "some depth" );
+      parser.add_argument( width, "", "--width" ).nargs( 1 ).help( "some width" );
+      parser.add_argument( args, "args" ).minargs( 0 ).help( "some arguments" );
+   }
+};
+
+std::string getTestHelp()
+{
+   auto pOpt = std::make_shared<TestOptions>();
+   auto parser = ArgumentParser::create( pOpt );
 
    std::stringstream strout;
    auto formatter = HelpFormatter();
    formatter.format( parser, strout );
-   auto help = strout.str();
+   return strout.str();
+}
+
+TEST( ArgumentParserHelpTest, shouldOutputHelpToStream )
+{
+   auto help = getTestHelp();
 
    auto parts = std::vector<std::string>{ "testing-format", "Format testing.",
       "testing-format [options]", "-s", "some string", "-d", "--depth",
-      "some depth", "args", "some arguments", "More about testing." };
+      "some depth", "--width", "some width", "args", "some arguments",
+      "More about testing." };
 
    for ( auto& p : parts )
       EXPECT_NE( std::string::npos, help.find( p ) ) << "Missing: " << p;
@@ -137,27 +157,8 @@ TEST( ArgumentParserHelpTest, shouldOutputHelpToStream )
 
 TEST( ArgumentParserHelpTest, shouldFormatDescriptionsToTheSameColumn )
 {
-   std::string str;
-   long depth;
-   long width;
-   std::vector<std::string> args;
-
-   auto parser = ArgumentParser::create_unsafe();
-   parser.config()
-      .prog( "testing-format" )
-      .description( "Format testing." )
-      .usage( "testing-format [options]" );
-
-   parser.add_argument( str, "-s" ).nargs( 1 ).help( "some string" );
-   parser.add_argument( depth, "-d", "--depth" ).nargs( 1 ).help( "some depth" );
-   parser.add_argument( width, "", "--width" ).nargs( 1 ).help( "some width" );
-   parser.add_argument( args, "somestuff" ).minargs( 0 ).help( "some arguments" );
-
-   std::stringstream strout;
-   auto formatter = HelpFormatter();
-   formatter.format( parser, strout );
-   auto help = strout.str();
-   auto helpLines = splitLines(help);
+   auto help = getTestHelp();
+   auto helpLines = splitLines( help );
 
    auto parts = std::vector<std::string>{ "some string", "some depth", "some width",
       "some arguments" };
@@ -175,6 +176,7 @@ TEST( ArgumentParserHelpTest, shouldFormatDescriptionsToTheSameColumn )
    ASSERT_NE( std::string::npos, column );
    for ( auto& p : parts )
       EXPECT_EQ( column, findColumn( p ) ) << "Not aligned: " << p;
+}
 }
 
 TEST( ArgumentParserHelpTest, shouldSetHelpEpilog )
