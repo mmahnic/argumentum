@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/mmahnic/argparse.svg?branch=master)](https://travis-ci.com/mmahnic/argparse)
+[![Build Status](https://travis-ci.com/mmahnic/cpp-argparse.svg?branch=master)](https://travis-ci.com/mmahnic/cpp-argparse)
 
 # Argparse
 
