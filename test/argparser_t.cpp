@@ -872,3 +872,19 @@ TEST( ArgumentParserTest, shouldRequireSharedOptionStructureInSaferVersion )
    EXPECT_EQ( 3274, pOpt->count );
 }
 
+TEST( ArgumentParserTest, shouldTakeLongOptionArgumentsWithEquals )
+{
+   double floatvalue = .0;
+   long longvalue = 0;
+   std::string strvalue;
+   auto parser = ArgumentParser::create_unsafe();
+   parser.add_argument( strvalue, "--string" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
+   parser.add_argument( longvalue, "--long" ).nargs( 1 );
+   parser.add_argument( floatvalue, "--float" ).nargs( 1 );
+
+   auto res = parser.parse_args( { "--string=alpha", "--long=124", "--float=3.5" } );
+   EXPECT_EQ( "alpha", strvalue );
+   EXPECT_EQ( 124, longvalue );
+   EXPECT_NEAR( 3.5, floatvalue, 1e-9 );
+   EXPECT_EQ( 0, res.errors.size() );
+}

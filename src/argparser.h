@@ -557,6 +557,13 @@ private:
          if ( haveActiveOption() )
             closeOption();
 
+         std::string_view arg;
+         auto eqpos = name.find( "=" );
+         if ( eqpos != std::string::npos ) {
+            arg = name.substr( eqpos + 1 );
+            name = name.substr( 0, eqpos );
+         }
+
          auto pOption = findOption( name );
          if ( pOption ) {
             auto& option = *pOption;
@@ -565,6 +572,9 @@ private:
                mpActiveOption = pOption;
             else
                setValue( option, option.getFlagValue() );
+
+            if ( !arg.empty() )
+               setValue( option, std::string{ arg } ); // TODO: params should be string_view-s
          }
          else
             addError( name, UNKNOWN_OPTION );
