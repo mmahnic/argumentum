@@ -463,7 +463,10 @@ public:
       MISSING_OPTION,
       MISSING_ARGUMENT,
       CONVERSION_ERROR,
-      INVALID_CHOICE
+      INVALID_CHOICE,
+      // Flags do not accept parameters
+      FLAG_PARAMETER
+
    };
 
    struct ParseError
@@ -573,8 +576,12 @@ private:
             else
                setValue( option, option.getFlagValue() );
 
-            if ( !arg.empty() )
-               setValue( option, std::string{ arg } ); // TODO: params should be string_view-s
+            if ( !arg.empty() ) {
+               if ( option.willAcceptArgument() )
+                  setValue( option, std::string{ arg } ); // TODO: params should be string_view-s
+               else
+                  addError( name, FLAG_PARAMETER );
+            }
          }
          else
             addError( name, UNKNOWN_OPTION );

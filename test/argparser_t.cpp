@@ -888,3 +888,16 @@ TEST( ArgumentParserTest, shouldTakeLongOptionArgumentsWithEquals )
    EXPECT_NEAR( 3.5, floatvalue, 1e-9 );
    EXPECT_EQ( 0, res.errors.size() );
 }
+
+TEST( ArgumentParserTest, shouldFailIfArgumentFollowsFlagWithEquals )
+{
+   std::string strvalue;
+   auto parser = ArgumentParser::create_unsafe();
+   parser.add_argument( strvalue, "--string" );
+
+   auto res = parser.parse_args( { "--string=alpha" } );
+   EXPECT_EQ( "1", strvalue );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( "--string", res.errors.front().option );
+   EXPECT_EQ( ArgumentParser::FLAG_PARAMETER, res.errors.front().errorCode );
+}
