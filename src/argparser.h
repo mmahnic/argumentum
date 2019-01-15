@@ -34,6 +34,76 @@ struct convert_result<std::vector<TItem>>
    using type = TItem;
 };
 
+template<typename T>
+struct from_string {
+};
+
+template<typename T>
+struct from_string<std::optional<T>> {
+   static T convert(const std::string& s) { return from_string<T>::convert( s ); }
+};
+
+template<>
+struct from_string<std::string> {
+   static std::string convert(const std::string& s) { return s; }
+};
+
+template<>
+struct from_string<int8_t> {
+   static int8_t convert(const std::string& s) { return stoi( s ); }
+};
+
+template<>
+struct from_string<uint8_t> {
+   static uint8_t convert(const std::string& s) { return stoi( s ); }
+};
+
+template<>
+struct from_string<short> {
+   static short convert(const std::string& s) { return stoi( s ); }
+};
+
+template<>
+struct from_string<unsigned short> {
+   static unsigned short convert(const std::string& s) { return stoi( s ); }
+};
+
+template<>
+struct from_string<int> {
+   static int convert(const std::string& s) { return stoi( s ); }
+};
+
+template<>
+struct from_string<unsigned int> {
+   static unsigned int convert(const std::string& s) { return stoi( s ); }
+};
+
+template<>
+struct from_string<long> {
+   static long convert(const std::string& s) { return stol( s ); }
+};
+
+template<>
+struct from_string<unsigned long> {
+   static unsigned long convert(const std::string& s) { return stoul( s ); }
+};
+
+template<>
+struct from_string<long long> {
+   static long long convert(const std::string& s) { return stoll( s ); }
+};
+
+template<>
+struct from_string<unsigned long long> {
+   static unsigned long long convert(const std::string& s) { return stoull( s ); }
+};
+
+template<>
+struct from_string<double> {
+   static double convert(const std::string& s) { return stod( s ); }
+};
+
+
 class InvalidChoiceError: public std::invalid_argument
 {
 public:
@@ -152,24 +222,9 @@ public:
          if constexpr ( std::is_base_of<Value, TValue>::value ) {
             mpValue = std::make_unique<TValue>( value );
          }
-         else if constexpr ( std::is_same<std::string, TValue>::value
-               || std::is_same<std::optional<std::string>, TValue>::value ) {
-            using wrap_type = ConvertedValue<TValue>;
-            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return s; } );
-         }
-         else if constexpr ( std::is_same<long, TValue>::value
-               || std::is_same<std::optional<long>, TValue>::value ) {
-            using wrap_type = ConvertedValue<TValue>;
-            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return stol( s ); } );
-         }
-         else if constexpr ( std::is_same<double, TValue>::value
-               || std::is_same<std::optional<double>, TValue>::value ) {
-            using wrap_type = ConvertedValue<TValue>;
-            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return stod( s ); } );
-         }
          else {
-            using wrap_type = ConvertedValue<std::string>;
-            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return s; } );
+            using wrap_type = ConvertedValue<TValue>;
+            mpValue = std::make_unique<wrap_type>( value, from_string<TValue>::convert );
          }
       }
 
@@ -180,24 +235,9 @@ public:
          if constexpr ( std::is_base_of<Value, TValue>::value ) {
             mpValue = std::make_unique<val_vector>( value );
          }
-         else if constexpr ( std::is_same<std::string, TValue>::value
-               || std::is_same<std::optional<std::string>, TValue>::value ) {
-            using wrap_type = ConvertedValue<val_vector>;
-            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return s; } );
-         }
-         else if constexpr ( std::is_same<long, TValue>::value
-               || std::is_same<std::optional<long>, TValue>::value ) {
-            using wrap_type = ConvertedValue<val_vector>;
-            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return stol( s ); } );
-         }
-         else if constexpr ( std::is_same<double, TValue>::value
-               || std::is_same<std::optional<double>, TValue>::value ) {
-            using wrap_type = ConvertedValue<val_vector>;
-            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return stod( s ); } );
-         }
          else {
-            using wrap_type = ConvertedValue<std::string>;
-            mpValue = std::make_unique<wrap_type>( value, []( const std::string& s ) { return s; } );
+            using wrap_type = ConvertedValue<val_vector>;
+            mpValue = std::make_unique<wrap_type>( value, from_string<TValue>::convert );
          }
 
          mIsVectorValue = true;

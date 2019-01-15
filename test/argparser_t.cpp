@@ -901,3 +901,78 @@ TEST( ArgumentParserTest, shouldFailIfArgumentFollowsFlagWithEquals )
    EXPECT_EQ( "--string", res.errors.front().option );
    EXPECT_EQ( ArgumentParser::FLAG_PARAMETER, res.errors.front().errorCode );
 }
+
+namespace {
+enum ETypeError {
+   OK,
+   VALUE_CONTENT,
+   MAYBEVALUE_EMPTY,
+   MAYBEVALUE_CONTENT,
+   VECTOR_SIZE,
+   VECTOR_CONTENT,
+};
+
+template<typename TValue>
+ETypeError testType(const std::string& example, const TValue& result)
+{
+   TValue value;
+   std::optional<TValue> maybeValue;
+   std::vector<TValue> vectorValue;
+   auto parser = ArgumentParser::create_unsafe();
+
+   parser.add_argument( value, "--value" ).nargs( 1 );
+   parser.add_argument( maybeValue, "--maybe" ).nargs( 1 );
+   parser.add_argument( vectorValue, "--vector" ).nargs( 1 );
+
+   auto res = parser.parse_args( { "--value=" + example, "--maybe=" + example,
+      "--vector=" + example } );
+
+   if ( value != result )
+      return VALUE_CONTENT;
+   if ( !maybeValue )
+      return MAYBEVALUE_EMPTY;
+   if ( maybeValue.value() != result )
+      return MAYBEVALUE_CONTENT;
+   if ( vectorValue.empty() )
+      return VECTOR_SIZE;
+   if ( vectorValue.front() != result )
+      return VECTOR_CONTENT;
+
+   return OK;
+}
+}
+
+TEST( ArgumentParserTest, shouldSupportIntegralNumericTypes )
+{
+   EXPECT_EQ( OK, testType<int8_t>( "123", 123 ) );
+   EXPECT_EQ( OK, testType<int8_t>( "-123", -123 ) );
+   EXPECT_EQ( OK, testType<uint8_t>( "234", 234 ) );
+
+   EXPECT_EQ( OK, testType<int16_t>( "123", 123 ) );
+   EXPECT_EQ( OK, testType<int16_t>( "-123", -123 ) );
+   EXPECT_EQ( OK, testType<uint16_t>( "234", 234 ) );
+
+   EXPECT_EQ( OK, testType<short>( "123", 123 ) );
+   EXPECT_EQ( OK, testType<short>( "-123", -123 ) );
+   EXPECT_EQ( OK, testType<unsigned short>( "234", 234 ) );
+
+   EXPECT_EQ( OK, testType<int32_t>( "2123", 2123 ) );
+   EXPECT_EQ( OK, testType<int32_t>( "-2123", -2123 ) );
+   EXPECT_EQ( OK, testType<uint32_t>( "3234", 3234 ) );
+
+   EXPECT_EQ( OK, testType<int>( "2123", 2123 ) );
+   EXPECT_EQ( OK, testType<int>( "-2123", -2123 ) );
+   EXPECT_EQ( OK, testType<unsigned int>( "3234", 3234 ) );
+
+   EXPECT_EQ( OK, testType<long>( "32123", 32123 ) );
+   EXPECT_EQ( OK, testType<long>( "-32123", -32123 ) );
+   EXPECT_EQ( OK, testType<unsigned long>( "43234", 43234 ) );
+
+   EXPECT_EQ( OK, testType<int64_t>( "432123", 432123 ) );
+   EXPECT_EQ( OK, testType<int64_t>( "-432123", -432123 ) );
+   EXPECT_EQ( OK, testType<uint64_t>( "543234", 543234 ) );
+
+   EXPECT_EQ( OK, testType<long long>( "432123", 432123 ) );
+   EXPECT_EQ( OK, testType<long long>( "-432123", -432123 ) );
+   EXPECT_EQ( OK, testType<unsigned long long>( "543234", 543234 ) );
+}
