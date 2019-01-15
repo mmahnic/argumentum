@@ -99,8 +99,18 @@ struct from_string<unsigned long long> {
 };
 
 template<>
+struct from_string<float> {
+   static float convert(const std::string& s) { return stof( s ); }
+};
+
+template<>
 struct from_string<double> {
    static double convert(const std::string& s) { return stod( s ); }
+};
+
+template<>
+struct from_string<long double> {
+   static long double convert(const std::string& s) { return stold( s ); }
 };
 
 

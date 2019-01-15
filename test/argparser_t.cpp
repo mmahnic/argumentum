@@ -913,7 +913,9 @@ enum ETypeError {
 };
 
 template<typename TValue>
-ETypeError testType(const std::string& example, const TValue& result)
+ETypeError testType(const std::string& example, const TValue result,
+      std::function<bool(const TValue&, const TValue&)> equal =
+      []( const TValue& a, const TValue& b ) { return a == b; } )
 {
    TValue value;
    std::optional<TValue> maybeValue;
@@ -927,15 +929,15 @@ ETypeError testType(const std::string& example, const TValue& result)
    auto res = parser.parse_args( { "--value=" + example, "--maybe=" + example,
       "--vector=" + example } );
 
-   if ( value != result )
+   if ( !equal( value, result ) )
       return VALUE_CONTENT;
    if ( !maybeValue )
       return MAYBEVALUE_EMPTY;
-   if ( maybeValue.value() != result )
+   if ( !equal( maybeValue.value(), result ) )
       return MAYBEVALUE_CONTENT;
    if ( vectorValue.empty() )
       return VECTOR_SIZE;
-   if ( vectorValue.front() != result )
+   if ( !equal( vectorValue.front(), result ) )
       return VECTOR_CONTENT;
 
    return OK;
@@ -975,4 +977,19 @@ TEST( ArgumentParserTest, shouldSupportIntegralNumericTypes )
    EXPECT_EQ( OK, testType<long long>( "432123", 432123 ) );
    EXPECT_EQ( OK, testType<long long>( "-432123", -432123 ) );
    EXPECT_EQ( OK, testType<unsigned long long>( "543234", 543234 ) );
+}
+
+TEST( ArgumentParserTest, shouldSupportFloatingNumericTypes )
+{
+   auto near = []( const auto& a, const auto& b ) {
+      return abs(a - b) < 1e-4;
+   };
+   EXPECT_EQ( OK, testType<float>( "123.45", 123.45, near ) );
+   EXPECT_EQ( OK, testType<float>( "-123.45", -123.45, near ) );
+
+   EXPECT_EQ( OK, testType<double>( "2123.45", 2123.45, near ) );
+   EXPECT_EQ( OK, testType<double>( "-2123.45", -2123.45, near ) );
+
+   EXPECT_EQ( OK, testType<long double>( "32123.45", 32123.45, near ) );
+   EXPECT_EQ( OK, testType<long double>( "-32123.45", -32123.45, near ) );
 }
