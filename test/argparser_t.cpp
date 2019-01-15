@@ -993,3 +993,11 @@ TEST( ArgumentParserTest, shouldSupportFloatingNumericTypes )
    EXPECT_EQ( OK, testType<long double>( "32123.45", 32123.45, near ) );
    EXPECT_EQ( OK, testType<long double>( "-32123.45", -32123.45, near ) );
 }
+
+TEST( ArgumentParserTest, shouldSupportBoolType )
+{
+   EXPECT_EQ( OK, testType<bool>( "1", true ) );
+   EXPECT_EQ( OK, testType<bool>( "111", true ) );
+   EXPECT_EQ( OK, testType<bool>( "-111", true ) );
+   EXPECT_EQ( OK, testType<bool>( "0", false ) );
+}

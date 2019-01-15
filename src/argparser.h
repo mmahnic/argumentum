@@ -49,6 +49,11 @@ struct from_string<std::string> {
 };
 
 template<>
+struct from_string<bool> {
+   static bool convert(const std::string& s) { return stoi( s ) != 0; }
+};
+
+template<>
 struct from_string<int8_t> {
    static int8_t convert(const std::string& s) { return stoi( s ); }
 };
@@ -112,7 +117,6 @@ template<>
 struct from_string<long double> {
    static long double convert(const std::string& s) { return stold( s ); }
 };
-
 
 class InvalidChoiceError: public std::invalid_argument
 {
