@@ -14,17 +14,25 @@ class Writer
    std::ostream& stream;
    size_t position = 0;
    size_t width = 80;
+   std::string indent;
 
 public:
    Writer( std::ostream& outStream, size_t widthBytes=80 )
       : stream( outStream ), width( widthBytes )
    {}
 
+   void setIndent( size_t indentBytes )
+   {
+      if ( indentBytes > width )
+         indentBytes = width;
+      indent = indentBytes == 0 ? "" : std::string( indentBytes, ' ' );
+   }
+
    void write( std::string_view text )
    {
       auto words = splitIntoWords( text );
       for ( auto word : words ) {
-         auto newpos = position + ( position == 0 ? 0 : 1 ) + word.size();
+         auto newpos = position + ( position == 0 ? indent.size() : 1 ) + word.size();
          if ( newpos > width ) {
             stream << "\n";
             position = 0;
@@ -33,12 +41,18 @@ public:
             stream << " ";
             ++position;
          }
+
+         if ( position == 0 && indent.size() > 0 ) {
+            stream << indent;
+            position = indent.size();
+         }
+
          stream << word;
          position += word.size();
       }
    }
 
-   std::vector<std::string_view> splitIntoWords( std::string_view text )
+   static std::vector<std::string_view> splitIntoWords( std::string_view text )
    {
       std::vector<std::string_view> words;
 

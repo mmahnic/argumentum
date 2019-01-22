@@ -46,7 +46,6 @@ std::string loremIpsum123_19w =
 TEST( WriterTest, shouldSplitTextIntoWordsAtWhitespace )
 {
    std::string text = loremIpsum123_19w;
-
    std::stringstream strout;
    Writer writer( strout );
    auto words = writer.splitIntoWords( text );
@@ -57,7 +56,6 @@ TEST( WriterTest, shouldSplitTextIntoWordsAtWhitespace )
 TEST( WriterTest, shouldReformatText )
 {
    std::string text = loremIpsum123_19w;
-
    std::stringstream strout;
    Writer writer( strout, 27 );
 
@@ -69,4 +67,26 @@ TEST( WriterTest, shouldReformatText )
 
    for ( auto line : lines )
       EXPECT_GE( 27, line.size() );
+}
+
+TEST( WriterTest, shouldIndentFormattedText )
+{
+   std::string text = loremIpsum123_19w;
+   std::stringstream strout;
+   Writer writer( strout, 27 );
+   writer.setIndent( 3 );
+
+   writer.write( text );
+   auto written = strout.str();
+   auto lines = splitLines( written );
+
+   EXPECT_LT( 4, lines.size() );
+
+   for ( auto line : lines )
+      EXPECT_GE( 27, line.size() );
+
+   for ( auto line : lines ) {
+      EXPECT_EQ( "   ", line.substr(0, 3) );
+      EXPECT_NE( "    ", line.substr(0, 4) );
+   }
 }
