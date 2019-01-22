@@ -9,6 +9,42 @@
 
 namespace argparse {
 
+class Writer
+{
+   std::ostream& stream;
+   size_t position = 0;
+   size_t width = 80;
+
+public:
+   Writer( std::ostream& outStream, size_t widthBytes=80 )
+      : stream( outStream ), width( widthBytes )
+   {}
+
+   void write( std::string_view text );
+
+   std::vector<std::string_view> splitIntoWords( std::string_view text )
+   {
+      std::vector<std::string_view> words;
+
+      size_t pos = 0;
+      while ( pos < text.size() ) {
+         while ( pos < text.size() && iswspace( text[pos] ) )
+            ++pos;
+
+         size_t end = pos;
+         while ( end < text.size() && !iswspace( text[end] ) )
+            ++end;
+
+         if ( end > pos )
+            words.push_back( text.substr( pos, end - pos ) );
+
+         pos = end;
+      }
+
+      return words;
+   }
+};
+
 inline void HelpFormatter::format( const ArgumentParser& parser, std::ostream& out )
 {
    auto config = parser.getConfig();

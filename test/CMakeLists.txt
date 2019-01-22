@@ -8,6 +8,7 @@ add_executable( runUnitTests
    runtest.cpp
    argparser_t.cpp
    argparserhelp_t.cpp
+   helpwriter_t.cpp
    ${PARSER_SOURCES}
    )
 
