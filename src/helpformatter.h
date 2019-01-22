@@ -20,7 +20,23 @@ public:
       : stream( outStream ), width( widthBytes )
    {}
 
-   void write( std::string_view text );
+   void write( std::string_view text )
+   {
+      auto words = splitIntoWords( text );
+      for ( auto word : words ) {
+         auto newpos = position + ( position == 0 ? 0 : 1 ) + word.size();
+         if ( newpos > width ) {
+            stream << "\n";
+            position = 0;
+         }
+         else if ( position > 0 )  {
+            stream << " ";
+            ++position;
+         }
+         stream << word;
+         position += word.size();
+      }
+   }
 
    std::vector<std::string_view> splitIntoWords( std::string_view text )
    {

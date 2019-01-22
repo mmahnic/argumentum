@@ -37,16 +37,36 @@ std::vector<std::string_view> splitLines( std::string_view text )
 }
 }
 
+namespace {
+std::string loremIpsum123_19w =
+   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed "
+   "do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+}
+
 TEST( WriterTest, shouldSplitTextIntoWordsAtWhitespace )
 {
-   std::string text =
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
-      "sed do eiusmod tempor incididunt ut labore et dolore magna "
-      "aliqua.";
+   std::string text = loremIpsum123_19w;
 
    std::stringstream strout;
    Writer writer( strout );
    auto words = writer.splitIntoWords( text );
 
    EXPECT_EQ( 19, words.size() );
+}
+
+TEST( WriterTest, shouldReformatText )
+{
+   std::string text = loremIpsum123_19w;
+
+   std::stringstream strout;
+   Writer writer( strout, 27 );
+
+   writer.write( text );
+   auto written = strout.str();
+   auto lines = splitLines( written );
+
+   EXPECT_LT( 4, lines.size() );
+
+   for ( auto line : lines )
+      EXPECT_GE( 27, line.size() );
 }
