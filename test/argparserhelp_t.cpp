@@ -208,5 +208,32 @@ TEST( ArgumentParserHelpTest, shouldReformatLongDescriptions )
    auto lines = splitLines( help );
 
    for ( auto line : lines )
-      EXPECT_GT( 60, line.size() );
+      EXPECT_GE( 60, line.size() );
+}
+
+TEST( ArgumentParserHelpTest, shouldLimitTheWidthOfReformattedDescriptions )
+{
+   std::string loremipsum;
+   auto parser = ArgumentParser::create_unsafe();
+   parser.add_argument( loremipsum, "--lorem-ipsum-x-with-a-longer-name" )
+      .nargs( 1 ).help(
+            "xxxxx xxxxx xxxxx xxx xxxx, xxxxxxxxxxx xxxxxxxxxx xxxx, "
+            "xxx xx xxxxxxx xxxxxx xxxxxxxxxx xx xxxxxx xx xxxxxx xxxxx "
+            "xxxxxx. xx xxxx xx xxxxx xxxxxx, xxxx xxxxxxx xxxxxxxxxxxx "
+            "xxxxxxx xxxxxxx xxxx xx xxxxxxx xx xx xxxxxxx xxxxxxxxx." );
+
+   auto formatter = HelpFormatter();
+   formatter.setTextWidth( 60 );
+   formatter.setMaxDescriptionIndent( 20 );
+   auto help = getTestHelp( parser, formatter );
+   auto lines = splitLines( help );
+
+   for ( auto line : lines ) {
+      EXPECT_GE( 60, line.size() );
+      auto pos = line.find( "xx" );
+      if ( pos != std::string::npos ) {
+         EXPECT_LE( 20, pos );
+         EXPECT_GT( 22, pos );
+      }
+   }
 }

@@ -105,14 +105,15 @@ inline void HelpFormatter::format( const ArgumentParser& parser, std::ostream& o
    auto hasPositional = iopt != std::begin( args );
    auto hasOptional = iopt != std::end( args );
    auto argWidth = deriveMaxArgumentWidth( args );
+   auto desctiptionIndent =  argWidth > mMaxDescriptionIndent ? mMaxDescriptionIndent : argWidth;
 
    auto writeArguments = [&]( auto&& writer, auto&& start, auto &&end ) {
       writer.startLine();
       for ( auto it = start; it != end; ++it ) {
-         writer.setIndent( 2 );
+         writer.setIndent( mArgumentIndent );
          writer.write( formatArgument( *it ) );
-         writer.skipToColumnOrNewLine( argWidth );
-         writer.setIndent( argWidth + 1 );
+         writer.skipToColumnOrNewLine( desctiptionIndent );
+         writer.setIndent( desctiptionIndent + 1 );
          writer.write( it->help );
          writer.startLine();
       }

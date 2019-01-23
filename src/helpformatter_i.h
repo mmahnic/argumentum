@@ -28,10 +28,15 @@ struct ArgumentHelpResult
 
 class HelpFormatter
 {
+   // The number of spaces before the argument names.
    size_t mArgumentIndent = 2;
 
    // The width of the formatted text in bytes.
    size_t mTextWidth = 80;
+
+   // The maximum width of an argument at which the description of the argument
+   // can start in the same line.
+   size_t mMaxDescriptionIndent = 30;
 
 public:
    void format( const ArgumentParser& parser, std::ostream& out );
@@ -39,6 +44,11 @@ public:
    void setTextWidth( size_t widthBytes )
    {
       mTextWidth = widthBytes;
+   }
+
+   void setMaxDescriptionIndent( size_t widthBytes )
+   {
+      mMaxDescriptionIndent = widthBytes;
    }
 
 private:
