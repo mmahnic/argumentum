@@ -30,8 +30,16 @@ class HelpFormatter
 {
    size_t mArgumentIndent = 2;
 
+   // The width of the formatted text in bytes.
+   size_t mTextWidth = 80;
+
 public:
    void format( const ArgumentParser& parser, std::ostream& out );
+
+   void setTextWidth( size_t widthBytes )
+   {
+      mTextWidth = widthBytes;
+   }
 
 private:
    std::string formatArgument( const ArgumentHelpResult& arg ) const

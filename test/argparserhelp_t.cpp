@@ -131,15 +131,19 @@ public:
    }
 };
 
+auto getTestHelp( auto&& parser, auto&& formatter )
+{
+   std::stringstream strout;
+   formatter.format( parser, strout );
+   return strout.str();
+}
+
 std::string getTestHelp()
 {
    auto pOpt = std::make_shared<TestOptions>();
    auto parser = ArgumentParser::create( pOpt );
 
-   std::stringstream strout;
-   auto formatter = HelpFormatter();
-   formatter.format( parser, strout );
-   return strout.str();
+   return getTestHelp( parser, HelpFormatter() );
 }
 
 TEST( ArgumentParserHelpTest, shouldOutputHelpToStream )
@@ -188,3 +192,21 @@ TEST( ArgumentParserHelpTest, shouldSetHelpEpilog )
    EXPECT_EQ( "This comes after help.", config.epilog );
 }
 
+TEST( ArgumentParserHelpTest, shouldReformatLongDescriptions )
+{
+   std::string loremipsum;
+   auto parser = ArgumentParser::create_unsafe();
+   parser.add_argument( loremipsum, "--lorem-ipsum" ).nargs( 1 ).help(
+         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
+         "sed do eiusmod tempor incididunt ut labore et dolore magna "
+         "aliqua. Ut enim ad minim veniam, quis nostrud exercitation "
+         "ullamco laboris nisi ut aliquip ex ea commodo consequat." );
+
+   auto formatter = HelpFormatter();
+   formatter.setTextWidth( 60 );
+   auto help = getTestHelp( parser, formatter );
+   auto lines = splitLines( help );
+
+   for ( auto line : lines )
+      EXPECT_GT( 60, line.size() );
+}

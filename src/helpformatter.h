@@ -33,10 +33,8 @@ public:
       auto words = splitIntoWords( text );
       for ( auto word : words ) {
          auto newpos = position + ( position == 0 ? indent.size() : 1 ) + word.size();
-         if ( newpos > width ) {
-            stream << "\n";
-            position = 0;
-         }
+         if ( newpos > width )
+            startLine();
          else if ( position > 0 )  {
             stream << " ";
             ++position;
@@ -50,6 +48,29 @@ public:
          stream << word;
          position += word.size();
       }
+   }
+
+   void startLine()
+   {
+      if ( position > 0 )
+         stream << "\n";
+      position = 0;
+   }
+
+   void skipToColumnOrNewLine( size_t column )
+   {
+      if ( column >= width || column < position )
+         startLine();
+      else if ( column > position ) {
+         stream << std::string( column - position, ' ' );
+         position = column;
+      }
+   }
+
+   void startParagraph()
+   {
+      startLine();
+      stream << "\n";
    }
 
    static std::vector<std::string_view> splitIntoWords( std::string_view text )
@@ -85,30 +106,46 @@ inline void HelpFormatter::format( const ArgumentParser& parser, std::ostream& o
    auto hasOptional = iopt != std::end( args );
    auto argWidth = deriveMaxArgumentWidth( args );
 
-   if ( !config.usage.empty() )
-      out << "usage: " << config.usage << "\n\n";
+   auto writeArguments = [&]( auto&& writer, auto&& start, auto &&end ) {
+      writer.startLine();
+      for ( auto it = start; it != end; ++it ) {
+         writer.setIndent( 2 );
+         writer.write( formatArgument( *it ) );
+         writer.skipToColumnOrNewLine( argWidth );
+         writer.setIndent( argWidth + 1 );
+         writer.write( it->help );
+         writer.startLine();
+      }
+      writer.startParagraph();
+      writer.setIndent( 0 );
+   };
 
-   if ( !config.description.empty() )
-      out << config.description << "\n\n";
+   Writer writer( out, mTextWidth );
+   if ( !config.usage.empty() ) {
+      writer.write( "usage: " );
+      writer.write( config.usage );
+      writer.startParagraph();
+   }
+
+   if ( !config.description.empty() ) {
+      writer.write( config.description );
+      writer.startParagraph();
+   }
 
    if ( hasPositional ) {
-      out << "positional arguments:\n";
-      for ( auto it = std::begin( args ); it != iopt; ++it )
-         out << " " << std::left << std::setw( argWidth )
-            << formatArgument( *it ) << " " << it->help << "\n";
-      out << "\n";
+      writer.write( "positional arguments:" );
+      writeArguments( writer, std::begin( args ), iopt );
    }
 
    if ( hasOptional ) {
-      out << "optional arguments:\n";
-      for ( auto it = iopt; it != std::end( args ); ++it )
-         out << " " << std::left << std::setw( argWidth )
-            << formatArgument( *it ) << " " << it->help << "\n";
-      out << "\n";
+      writer.write( "optional arguments:" );
+      writeArguments( writer, iopt, std::end( args ) );
    }
 
-   if ( !config.epilog.empty() )
-      out << config.epilog << "\n\n";
+   if ( !config.epilog.empty() ) {
+      writer.write( config.epilog );
+      writer.startParagraph();
+   }
 }
 
 }
