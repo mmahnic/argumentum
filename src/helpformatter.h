@@ -13,6 +13,7 @@ class Writer
 {
    std::ostream& stream;
    size_t position = 0;
+   size_t lastWritePosition = 0;
    size_t width = 80;
    std::string indent;
 
@@ -35,7 +36,7 @@ public:
          auto newpos = position + ( position == 0 ? indent.size() : 1 ) + word.size();
          if ( newpos > width )
             startLine();
-         else if ( position > 0 )  {
+         else if ( position > 0 && position == lastWritePosition )  {
             stream << " ";
             ++position;
          }
@@ -47,6 +48,7 @@ public:
 
          stream << word;
          position += word.size();
+         lastWritePosition = position;
       }
    }
 
@@ -55,6 +57,7 @@ public:
       if ( position > 0 )
          stream << "\n";
       position = 0;
+      lastWritePosition = 0;
    }
 
    void skipToColumnOrNewLine( size_t column )
@@ -113,7 +116,7 @@ inline void HelpFormatter::format( const ArgumentParser& parser, std::ostream& o
          writer.setIndent( mArgumentIndent );
          writer.write( formatArgument( *it ) );
          writer.skipToColumnOrNewLine( desctiptionIndent );
-         writer.setIndent( desctiptionIndent + 1 );
+         writer.setIndent( desctiptionIndent );
          writer.write( it->help );
          writer.startLine();
       }

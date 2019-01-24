@@ -69,7 +69,7 @@ TEST( WriterTest, shouldReformatText )
       EXPECT_GE( 27, line.size() );
 }
 
-TEST( WriterTest, shouldIndentFormattedText )
+TEST( WriterIndentTest, shouldIndentFormattedText )
 {
    std::string text = loremIpsum123_19w;
    std::stringstream strout;
@@ -91,7 +91,7 @@ TEST( WriterTest, shouldIndentFormattedText )
    }
 }
 
-TEST( WriterTest, shouldStartANewLine )
+TEST( WriterStartLineTest, shouldStartANewLine )
 {
    std::stringstream strout;
    Writer writer( strout, 80 );
@@ -108,7 +108,7 @@ TEST( WriterTest, shouldStartANewLine )
    EXPECT_EQ( "cccc", lines[1] );
 }
 
-TEST( WriterTest, shouldNotStartANewLineAtBol )
+TEST( WriterStartLineTest, shouldNotStartANewLineAtBol )
 {
    std::stringstream strout;
    Writer writer( strout, 80 );
@@ -118,6 +118,62 @@ TEST( WriterTest, shouldNotStartANewLineAtBol )
    writer.write( "bbbb" );
    writer.startLine();
    writer.startLine();
+   writer.startLine();
+   writer.write( "cccc" );
+
+   auto written = strout.str();
+   auto lines = splitLines( written );
+
+   ASSERT_EQ( 2, lines.size() );
+   EXPECT_EQ( "aaaa bbbb", lines[0] );
+   EXPECT_EQ( "cccc", lines[1] );
+}
+
+TEST( WriterSkipToColumnTest, shouldSkipToRequestedColumn )
+{
+   std::stringstream strout;
+   Writer writer( strout, 80 );
+   writer.write( "aaaa" );
+   writer.skipToColumnOrNewLine( 31 );
+   writer.write( "bbbb" );
+   writer.startLine();
+   writer.write( "cccc" );
+
+   auto written = strout.str();
+   auto lines = splitLines( written );
+
+   ASSERT_EQ( 2, lines.size() );
+   EXPECT_EQ( 0, lines[0].find( "aaaa" ) );
+   EXPECT_EQ( 31, lines[0].find( "bbbb" ) );
+   EXPECT_EQ( 0, lines[1].find( "cccc" ) );
+}
+
+TEST( WriterSkipToColumnTest, shouldSkipToNewLineIfPastRequestedColumn )
+{
+   std::stringstream strout;
+   Writer writer( strout, 80 );
+   writer.write( "aaaa" );
+   writer.skipToColumnOrNewLine( 3 );
+   writer.write( "bbbb" );
+   writer.startLine();
+   writer.write( "cccc" );
+
+   auto written = strout.str();
+   auto lines = splitLines( written );
+
+   ASSERT_EQ( 3, lines.size() );
+   EXPECT_EQ( "aaaa", lines[0] );
+   EXPECT_EQ( "bbbb", lines[1] );
+   EXPECT_EQ( "cccc", lines[2] );
+}
+
+TEST( WriterSkipToColumnTest, shouldContinueWritingIfAtRequestedColumn )
+{
+   std::stringstream strout;
+   Writer writer( strout, 80 );
+   writer.write( "aaaa" );
+   writer.skipToColumnOrNewLine( 4 );
+   writer.write( "bbbb" );
    writer.startLine();
    writer.write( "cccc" );
 
