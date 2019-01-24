@@ -90,3 +90,41 @@ TEST( WriterTest, shouldIndentFormattedText )
       EXPECT_NE( "    ", line.substr(0, 4) );
    }
 }
+
+TEST( WriterTest, shouldStartANewLine )
+{
+   std::stringstream strout;
+   Writer writer( strout, 80 );
+   writer.write( "aaaa" );
+   writer.write( "bbbb" );
+   writer.startLine();
+   writer.write( "cccc" );
+
+   auto written = strout.str();
+   auto lines = splitLines( written );
+
+   ASSERT_EQ( 2, lines.size() );
+   EXPECT_EQ( "aaaa bbbb", lines[0] );
+   EXPECT_EQ( "cccc", lines[1] );
+}
+
+TEST( WriterTest, shouldNotStartANewLineAtBol )
+{
+   std::stringstream strout;
+   Writer writer( strout, 80 );
+   writer.startLine();
+   writer.startLine();
+   writer.write( "aaaa" );
+   writer.write( "bbbb" );
+   writer.startLine();
+   writer.startLine();
+   writer.startLine();
+   writer.write( "cccc" );
+
+   auto written = strout.str();
+   auto lines = splitLines( written );
+
+   ASSERT_EQ( 2, lines.size() );
+   EXPECT_EQ( "aaaa bbbb", lines[0] );
+   EXPECT_EQ( "cccc", lines[1] );
+}
