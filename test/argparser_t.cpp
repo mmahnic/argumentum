@@ -333,6 +333,21 @@ TEST( ArgumentParserTest, shouldSupportOptionalCustomOptionTypesWith_from_string
    EXPECT_FALSE( static_cast<bool>( ignored ) );
 }
 
+TEST( ArgumentParserTest, shouldSupportVectorOfCustomTypesWith_from_string )
+{
+   std::vector<CustomType_fromstring_test> custom;
+
+   auto parser = ArgumentParser::create_unsafe();
+   parser.add_argument( custom, "-c" ).minargs( 1 );
+
+   auto res = parser.parse_args( { "-c", "value", "sator" } );
+   ASSERT_EQ( 2, custom.size() );
+   EXPECT_EQ( "value", custom[0].value );
+   EXPECT_EQ( "eulav", custom[0].reversed );
+   EXPECT_EQ( "sator", custom[1].value );
+   EXPECT_EQ( "rotas", custom[1].reversed );
+}
+
 TEST( ArgumentParserTest, shouldSupportFlagValues )
 {
    std::optional<std::string> flag;
