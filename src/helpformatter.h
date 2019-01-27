@@ -15,6 +15,7 @@ class Writer
    size_t position = 0;
    size_t lastWritePosition = 0;
    size_t width = 80;
+   bool startOfParagraph = true;
    std::string indent;
 
 public:
@@ -50,6 +51,7 @@ public:
          position += word.size();
          lastWritePosition = position;
       }
+      startOfParagraph = false;
    }
 
    void startLine()
@@ -58,6 +60,7 @@ public:
          stream << "\n";
       position = 0;
       lastWritePosition = 0;
+      startOfParagraph = false;
    }
 
    void skipToColumnOrNewLine( size_t column )
@@ -68,12 +71,16 @@ public:
          stream << std::string( column - position, ' ' );
          position = column;
       }
+      startOfParagraph = false;
    }
 
    void startParagraph()
    {
-      startLine();
-      stream << "\n";
+      if ( !startOfParagraph ) {
+         startLine();
+         stream << "\n";
+         startOfParagraph = true;
+      }
    }
 
    static std::vector<std::string_view> splitIntoWords( std::string_view text )

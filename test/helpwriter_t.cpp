@@ -11,7 +11,11 @@
 using namespace argparse;
 
 namespace {
-std::vector<std::string_view> splitLines( std::string_view text )
+enum class  EKeepEmpty : bool {
+   no = false, yes = true
+};
+
+std::vector<std::string_view> splitLines( std::string_view text, EKeepEmpty keepEmpty = EKeepEmpty::no )
 {
     std::vector<std::string_view> output;
     size_t start = 0;
@@ -24,7 +28,7 @@ std::vector<std::string_view> splitLines( std::string_view text )
     while ( start < text.size() ) {
        const auto stop = text.find_first_of( delims, start );
 
-       if ( start != stop )
+       if ( keepEmpty == EKeepEmpty::yes || start != stop )
           output.emplace_back( text.substr( start, stop-start ) );
 
        if ( stop == std::string_view::npos )
@@ -184,3 +188,78 @@ TEST( WriterSkipToColumnTest, shouldContinueWritingIfAtRequestedColumn )
    EXPECT_EQ( "aaaa bbbb", lines[0] );
    EXPECT_EQ( "cccc", lines[1] );
 }
+
+TEST( WriterParagraphTest, shouldStartParagraph )
+{
+   std::stringstream strout;
+   Writer writer( strout, 80 );
+   writer.write( "aaaa" );
+   writer.startParagraph();
+   writer.write( "bbbb" );
+
+   auto written = strout.str();
+   auto lines = splitLines( written, EKeepEmpty::yes );
+
+   ASSERT_EQ( 3, lines.size() );
+   EXPECT_EQ( "aaaa", lines[0] );
+   EXPECT_EQ( "", lines[1] );
+   EXPECT_EQ( "bbbb", lines[2] );
+}
+
+TEST( WriterParagraphTest, shouldStartParagraphWhenAtBol )
+{
+   std::stringstream strout;
+   Writer writer( strout, 80 );
+   writer.write( "aaaa" );
+   writer.startLine();
+   writer.startParagraph();
+   writer.write( "bbbb" );
+
+   auto written = strout.str();
+   auto lines = splitLines( written, EKeepEmpty::yes );
+
+   ASSERT_EQ( 3, lines.size() );
+   EXPECT_EQ( "aaaa", lines[0] );
+   EXPECT_EQ( "", lines[1] );
+   EXPECT_EQ( "bbbb", lines[2] );
+}
+
+TEST( WriterParagraphTest, shouldNotStartConsecutiveParagraphs )
+{
+   std::stringstream strout;
+   Writer writer( strout, 80 );
+   writer.write( "aaaa" );
+   writer.startParagraph();
+   writer.startParagraph();
+   writer.startParagraph();
+   writer.startParagraph();
+   writer.write( "bbbb" );
+
+   auto written = strout.str();
+   auto lines = splitLines( written, EKeepEmpty::yes );
+
+   ASSERT_EQ( 3, lines.size() );
+   EXPECT_EQ( "aaaa", lines[0] );
+   EXPECT_EQ( "", lines[1] );
+   EXPECT_EQ( "bbbb", lines[2] );
+}
+
+TEST( WriterParagraphTest, shouldStartParagraphWithoutNextWrite )
+{
+   std::stringstream strout;
+   Writer writer( strout, 80 );
+   writer.write( "aaaa" );
+   writer.startParagraph();
+   writer.write( "bbbb" );
+   writer.startParagraph(); // no write() after this
+
+   auto written = strout.str();
+   auto lines = splitLines( written, EKeepEmpty::yes );
+
+   ASSERT_EQ( 4, lines.size() );
+   EXPECT_EQ( "aaaa", lines[0] );
+   EXPECT_EQ( "", lines[1] );
+   EXPECT_EQ( "bbbb", lines[2] );
+   EXPECT_EQ( "", lines[3] );
+}
+
