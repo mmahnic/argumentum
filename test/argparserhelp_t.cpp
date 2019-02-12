@@ -11,7 +11,8 @@
 using namespace argparse;
 
 namespace {
-std::vector<std::string_view> splitLines( std::string_view text )
+static const bool KEEPEMPTY = true;
+std::vector<std::string_view> splitLines( std::string_view text, bool keepEmpty = false )
 {
     std::vector<std::string_view> output;
     size_t start = 0;
@@ -24,7 +25,7 @@ std::vector<std::string_view> splitLines( std::string_view text )
     while ( start < text.size() ) {
        const auto stop = text.find_first_of( delims, start );
 
-       if ( start != stop )
+       if ( keepEmpty || start != stop )
           output.emplace_back( text.substr( start, stop-start ) );
 
        if ( stop == std::string_view::npos )
@@ -237,3 +238,31 @@ TEST( ArgumentParserHelpTest, shouldLimitTheWidthOfReformattedDescriptions )
       }
    }
 }
+
+TEST( ArgumentParserHelpTest, shouldKeepSourceParagraphsInDescriptions )
+{
+   std::string loremipsum;
+   auto parser = ArgumentParser::create_unsafe();
+   parser.add_argument( loremipsum, "--paragraph" )
+      .nargs( 1 ).help( "xxxxx.\n\nyyyy" );
+
+   auto formatter = HelpFormatter();
+   formatter.setTextWidth( 60 );
+   formatter.setMaxDescriptionIndent( 20 );
+   auto help = getTestHelp( parser, formatter );
+   auto lines = splitLines( help, KEEPEMPTY );
+
+   int lx = -1;
+   int ly = -1;
+   int i = 0;
+   for ( auto line : lines ) {
+      if ( line.find( "xxxx" ) != std::string::npos )
+         lx = i;
+      if ( line.find( "yyyy" ) != std::string::npos )
+         ly = i;
+      ++i;
+   }
+
+   EXPECT_EQ( ly, lx + 2 );
+}
+
