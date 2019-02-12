@@ -7,6 +7,8 @@
 
 #include "argparser.h"
 
+#include <regex>
+
 namespace argparse {
 
 class Writer
@@ -32,26 +34,15 @@ public:
 
    void write( std::string_view text )
    {
-      auto words = splitIntoWords( text );
-      for ( auto word : words ) {
-         auto newpos = position + ( position == 0 ? indent.size() : 1 ) + word.size();
-         if ( newpos > width )
-            startLine();
-         else if ( position > 0 && position == lastWritePosition )  {
-            stream << " ";
-            ++position;
+      auto blocks = splitIntoParagraphs( text );
+      for ( auto block : blocks ) {
+         if ( block.empty() )
+            startParagraph();
+         else {
+            write_paragraph( block );
+            startOfParagraph = false;
          }
-
-         if ( position == 0 && indent.size() > 0 ) {
-            stream << indent;
-            position = indent.size();
-         }
-
-         stream << word;
-         position += word.size();
-         lastWritePosition = position;
       }
-      startOfParagraph = false;
    }
 
    void startLine()
@@ -104,6 +95,57 @@ public:
 
       return words;
    }
+
+   // Paragraphs are delimited by two or more consecutive newlines intermixed
+   // with other whitespace. The paragraph delimiters are returned as empty blocks.
+   static std::vector<std::string_view> splitIntoParagraphs( std::string_view text )
+   {
+      auto rxParagraph = std::regex( "[ \t]*\n[ \t]*\n\\s*" );
+      std::vector<std::string_view> res;
+
+      auto it = std::cregex_iterator( text.data(), text.data() + text.size(), rxParagraph );
+      auto iend = std::cregex_iterator();
+      auto lastPosition = 0;
+      for ( ; it != iend; ++it ) {
+         auto match = std::cmatch( *it );
+         if ( match.position() == 0 )
+            res.emplace_back();
+         else {
+            res.push_back( text.substr( lastPosition, match.position() - lastPosition ) );
+            res.emplace_back();
+         }
+         lastPosition = match.position() + match.length();
+      }
+
+      if ( lastPosition < text.size() )
+         res.push_back( text.substr( lastPosition ) );
+      return res;
+   }
+
+private:
+   void write_paragraph( std::string_view text )
+   {
+      auto words = splitIntoWords( text );
+      for ( auto word : words ) {
+         auto newpos = position + ( position == 0 ? indent.size() : 1 ) + word.size();
+         if ( newpos > width )
+            startLine();
+         else if ( position > 0 && position == lastWritePosition )  {
+            stream << " ";
+            ++position;
+         }
+
+         if ( position == 0 && indent.size() > 0 ) {
+            stream << indent;
+            position = indent.size();
+         }
+
+         stream << word;
+         position += word.size();
+         lastWritePosition = position;
+      }
+   }
+
 };
 
 inline void HelpFormatter::format( const ArgumentParser& parser, std::ostream& out )

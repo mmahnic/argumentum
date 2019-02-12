@@ -263,3 +263,52 @@ TEST( WriterParagraphTest, shouldStartParagraphWithoutNextWrite )
    EXPECT_EQ( "", lines[3] );
 }
 
+TEST( WriterInputParagraphTest, shouldBreakTextIntoParagraphs )
+{
+   auto text = "Two.\n\nParagraphs.";
+   auto paras = Writer::splitIntoParagraphs( text );
+
+   // Two "full" paragraphs, one empty paragraph.
+   ASSERT_EQ( 3, paras.size() );
+   EXPECT_EQ( "Two.", paras[0] );
+   EXPECT_EQ( "", paras[1] );
+   EXPECT_EQ( "Paragraphs.", paras[2] );
+}
+
+TEST( WriterInputParagraphTest, shouldBreakTextIntoParagraphsWithMixedParagraphBreaks )
+{
+   auto text = "Two. \n \n   \n \t  \n Paragraphs.";
+   auto paras = Writer::splitIntoParagraphs( text );
+
+   // Two "full" paragraphs, one empty paragraph.
+   ASSERT_EQ( 3, paras.size() );
+   EXPECT_EQ( "Two.", paras[0] );
+   EXPECT_EQ( "", paras[1] );
+   EXPECT_EQ( "Paragraphs.", paras[2] );
+}
+
+TEST( WriterInputParagraphTest, shouldRecognizeLeadingParagraphBreaks )
+{
+   auto text = "  \n \n Two.\n\nParagraphs.";
+   auto paras = Writer::splitIntoParagraphs( text );
+
+   // Two "full" paragraphs, two empty paragraphs.
+   ASSERT_EQ( 4, paras.size() );
+   EXPECT_EQ( "", paras[0] );
+   EXPECT_EQ( "Two.", paras[1] );
+   EXPECT_EQ( "", paras[2] );
+   EXPECT_EQ( "Paragraphs.", paras[3] );
+}
+
+TEST( WriterInputParagraphTest, shouldRecognizeTrailingParagraphBreaks )
+{
+   auto text = "Two.\n\nParagraphs.\n\n";
+   auto paras = Writer::splitIntoParagraphs( text );
+
+   // Two "full" paragraphs, two empty paragraphs.
+   ASSERT_EQ( 4, paras.size() );
+   EXPECT_EQ( "Two.", paras[0] );
+   EXPECT_EQ( "", paras[1] );
+   EXPECT_EQ( "Paragraphs.", paras[2] );
+   EXPECT_EQ( "", paras[3] );
+}
