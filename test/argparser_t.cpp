@@ -913,7 +913,7 @@ TEST( ArgumentParserTest, shouldAcceptSharedOptionStructure )
    EXPECT_EQ( 3274, pOpt->count );
 }
 
-TEST( ArgumentParserTest, shouldRequireSharedOptionStructureInSaferVersion )
+TEST( ArgumentParserTest, shouldAcceptMultipleSharedOptionStructures )
 {
    struct Options: public argparse::Options
    {
@@ -927,14 +927,30 @@ TEST( ArgumentParserTest, shouldRequireSharedOptionStructureInSaferVersion )
       }
    };
 
-   EXPECT_THROW( ArgumentParser::create( nullptr ), std::invalid_argument );
+   struct MoreOptions: public argparse::Options
+   {
+      std::string str;
+      long count;
+
+      void add_arguments( ArgumentParser& parser ) override
+      {
+         parser.add_argument( str, "-S" ).nargs( 1 );
+         parser.add_argument( count, "-N" ).nargs( 1 );
+      }
+   };
 
    auto pOpt = std::make_shared<Options>();
    auto parser = ArgumentParser::create( pOpt );
-   auto res = parser.parse_args( { "-s", "str", "-n", "3274" } );
+   auto pMoreOpt = std::make_shared<MoreOptions>();
+   parser.add_arguments( pMoreOpt );
+
+   auto res = parser.parse_args( { "-s", "str", "-n", "3274", "-S", "Str", "-N", "4723" } );
    EXPECT_EQ( "str", pOpt->str );
    EXPECT_EQ( 3274, pOpt->count );
+   EXPECT_EQ( "Str", pMoreOpt->str );
+   EXPECT_EQ( 4723, pMoreOpt->count );
 }
+
 
 TEST( ArgumentParserTest, shouldTakeLongOptionArgumentsWithEquals )
 {
@@ -1065,3 +1081,4 @@ TEST( ArgumentParserTest, shouldSupportBoolType )
    EXPECT_EQ( OK, testType<bool>( "-111", true ) );
    EXPECT_EQ( OK, testType<bool>( "0", false ) );
 }
+

@@ -616,7 +616,7 @@ private:
    ParserConfig mConfig;
    std::vector<Option> mOptions;
    std::vector<Option> mPositional;
-   std::shared_ptr<Options> mpTargets;
+   std::vector<std::shared_ptr<Options>> mTargets;
 
 public:
    /**
@@ -690,6 +690,14 @@ public:
       return tryAddArgument( option, { name, altName } );
    }
 
+   void add_arguments( std::shared_ptr<Options> pOptions )
+   {
+      if ( pOptions ) {
+         mTargets.push_back( pOptions );
+         pOptions->add_arguments( *this );
+      }
+   }
+
    ParseResult parse_args( const std::vector<std::string>& args )
    {
       Parser parser( *this );
@@ -725,8 +733,10 @@ private:
    ArgumentParser() = default;
 
    ArgumentParser( std::shared_ptr<Options> pOptions )
-      : mpTargets( pOptions )
-   {}
+   {
+      if ( pOptions )
+         mTargets.push_back( pOptions );
+   }
 
    void reportMissingOptions( ParseResult& result )
    {
