@@ -4,7 +4,7 @@
 
 A C++ library for parsing command line parameters.
 
-This is the result of a weekend TDD practice. The library is still under construction.
+The library is still under construction.
 
 Example:
 
