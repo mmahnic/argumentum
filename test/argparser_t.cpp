@@ -1084,3 +1084,21 @@ TEST( ArgumentParserTest, shouldSupportBoolType )
    EXPECT_EQ( OK, testType<bool>( "0", false ) );
 }
 
+// The program name must be set explicitly with parser.config().prog().
+TEST( ArgumentParserTest, shouldNotSetProgramNameFromParameter0 )
+{
+   std::string strvalue;
+   long intvalue = 1;
+   double floatvalue = 2.0;
+
+   auto parser = ArgumentParser::create();
+   parser.add_argument( intvalue, "--int" ).nargs( 1 );
+   parser.add_argument( floatvalue, "--float" ).nargs( 1 );
+   parser.add_argument( strvalue, "params" ).nargs( 1 );
+
+   auto res = parser.parse_args( { "testName", "--int", "2134", "--float", "32.4" } );
+
+   EXPECT_TRUE( parser.getConfig().program.empty() );
+   EXPECT_EQ( "testName", strvalue );
+   ASSERT_EQ( 0, res.errors.size() );
+}
