@@ -43,7 +43,7 @@ TEST( ArgumentParserHelpTest, shouldAcceptArgumentHelpStrings )
    std::string str;
    std::vector<std::string> args;
 
-   auto parser = ArgumentParser::create_unsafe();
+   auto parser = ArgumentParser::create();
    parser.add_argument( str, "-s" ).nargs( 1 ).help( "some value" );
    parser.add_argument( args, "args" ).minargs( 0 ).help( "some arguments" );
 
@@ -64,7 +64,7 @@ TEST( ArgumentParserHelpTest, shouldAcceptArgumentHelpStrings )
 
 TEST( ArgumentParserHelpTest, shouldSetProgramName )
 {
-   auto parser = ArgumentParser::create_unsafe();
+   auto parser = ArgumentParser::create();
    parser.config().prog( "testing-testing" );
 
    auto& config = parser.getConfig();
@@ -73,7 +73,7 @@ TEST( ArgumentParserHelpTest, shouldSetProgramName )
 
 TEST( ArgumentParserHelpTest, shouldSetProgramDescription )
 {
-   auto parser = ArgumentParser::create_unsafe();
+   auto parser = ArgumentParser::create();
    parser.config().description( "An example." );
 
    auto& config = parser.getConfig();
@@ -82,7 +82,7 @@ TEST( ArgumentParserHelpTest, shouldSetProgramDescription )
 
 TEST( ArgumentParserHelpTest, shouldSetProgramUsage )
 {
-   auto parser = ArgumentParser::create_unsafe();
+   auto parser = ArgumentParser::create();
    parser.config().usage( "example [options] [arguments]" );
 
    auto& config = parser.getConfig();
@@ -95,7 +95,7 @@ TEST( ArgumentParserHelpTest, shouldReturnDescriptionsOfAllArguments )
    long depth;
    std::vector<std::string> args;
 
-   auto parser = ArgumentParser::create_unsafe();
+   auto parser = ArgumentParser::create();
    parser.add_argument( str, "-s" ).nargs( 1 ).help( "some string" );
    parser.add_argument( depth, "-d", "--depth" ).nargs( 1 ).help( "some depth" );
    parser.add_argument( args, "args" ).minargs( 0 ).help( "some arguments" );
@@ -141,8 +141,9 @@ auto getTestHelp( auto&& parser, auto&& formatter )
 
 std::string getTestHelp()
 {
+   auto parser = ArgumentParser::create();
    auto pOpt = std::make_shared<TestOptions>();
-   auto parser = ArgumentParser::create( pOpt );
+   parser.add_arguments( pOpt );
 
    return getTestHelp( parser, HelpFormatter() );
 }
@@ -186,7 +187,7 @@ TEST( ArgumentParserHelpTest, shouldFormatDescriptionsToTheSameColumn )
 
 TEST( ArgumentParserHelpTest, shouldSetHelpEpilog )
 {
-   auto parser = ArgumentParser::create_unsafe();
+   auto parser = ArgumentParser::create();
    parser.config().epilog( "This comes after help." );
 
    auto& config = parser.getConfig();
@@ -196,7 +197,7 @@ TEST( ArgumentParserHelpTest, shouldSetHelpEpilog )
 TEST( ArgumentParserHelpTest, shouldReformatLongDescriptions )
 {
    std::string loremipsum;
-   auto parser = ArgumentParser::create_unsafe();
+   auto parser = ArgumentParser::create();
    parser.add_argument( loremipsum, "--lorem-ipsum" ).nargs( 1 ).help(
          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
          "sed do eiusmod tempor incididunt ut labore et dolore magna "
@@ -215,7 +216,7 @@ TEST( ArgumentParserHelpTest, shouldReformatLongDescriptions )
 TEST( ArgumentParserHelpTest, shouldLimitTheWidthOfReformattedDescriptions )
 {
    std::string loremipsum;
-   auto parser = ArgumentParser::create_unsafe();
+   auto parser = ArgumentParser::create();
    parser.add_argument( loremipsum, "--lorem-ipsum-x-with-a-longer-name" )
       .nargs( 1 ).help(
             "xxxxx xxxxx xxxxx xxx xxxx, xxxxxxxxxxx xxxxxxxxxx xxxx, "
@@ -242,7 +243,7 @@ TEST( ArgumentParserHelpTest, shouldLimitTheWidthOfReformattedDescriptions )
 TEST( ArgumentParserHelpTest, shouldKeepSourceParagraphsInDescriptions )
 {
    std::string loremipsum;
-   auto parser = ArgumentParser::create_unsafe();
+   auto parser = ArgumentParser::create();
    parser.add_argument( loremipsum, "--paragraph" )
       .nargs( 1 ).help( "xxxxx.\n\nyyyy" );
 

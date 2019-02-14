@@ -620,57 +620,25 @@ private:
 
 public:
    /**
-    * Create and return an argument parser.  If @p pOptions is not nullptr
-    * the arguments will be registered by calling its add_arguments method.
-    *
-    * The argument parser takes references to the variables that will hold the
-    * parsed values.  The variables must outlive the argument parser.
-    *
-    * The parser stores the pointer to @p pOptions. If it is not nullptr and
-    * all the registered variables are in the memory space used by *pOptions
-    * the variables will outlive the parser.
+    * Create and return an argument parser.
     */
-   static ArgumentParser create_unsafe( std::shared_ptr<Options> pOptions=nullptr )
+   static ArgumentParser create()
    {
-      auto parser = ArgumentParser( pOptions );
-      if ( pOptions )
-         pOptions->add_arguments( parser );
-      return parser;
+      return ArgumentParser{};
    }
 
    /**
-    * Create and return an argument parser.  The arguments will be registered
-    * by calling the add_arguments method of @p pOptions which must not be
-    * nullptr.
-    *
-    * The argument parser takes references to the variables that will hold the
-    * parsed values.  The variables must outlive the argument parser.
-    *
-    * The parser stores the pointer to @p pOptions. If all the registered
-    * variables are in the memory space used by *pOptions the variables will
-    * outlive the parser.
-    *
-    * NOTE: This method is essentially the same as create_unsafe().  The safety
-    * of the memory usage is not checked (it can not be because of possible
-    * custom Value arguments).  It is still the programmer's responsibility to
-    * check that valid memory space is being used.  The naming is just a way of
-    * documenting that the programmer made an effort to make the use of the
-    * parser safe.
+    * Get a reference to the parser configuration through which the parser can
+    * be configured.
     */
-   static ArgumentParser create( std::shared_ptr<Options> pOptions )
-   {
-      if ( !pOptions )
-         throw std::invalid_argument(
-               "The create_safe factory method requires a pointer to an Options structure." );
-
-      return create_unsafe( pOptions );
-   }
-
    ParserConfig& config()
    {
       return mConfig;
    }
 
+   /**
+    * Get a reference to the parser configuration for inspection.
+    */
    const ParserConfig::Data& getConfig() const
    {
       return mConfig.data();
@@ -683,6 +651,10 @@ public:
       return tryAddArgument( option, { name, altName } );
    }
 
+   /**
+    * Add an argument with names @p name and @p altName and store the reference
+    * to @p value that will receive the parsed parameter(s).
+    */
    template<typename TValue, typename = std::enable_if_t<!std::is_base_of<Value, TValue>::value> >
    OptionConfig add_argument( TValue &value, const std::string& name="", const std::string& altName="" )
    {
@@ -690,6 +662,11 @@ public:
       return tryAddArgument( option, { name, altName } );
    }
 
+   /**
+    * Add the @p pOptions structure and call its add_arguments method to add
+    * the arguments to the parser.  The pointer to @p pOptions is stored in the
+    * parser so that the structure outlives the parser.
+    */
    void add_arguments( std::shared_ptr<Options> pOptions )
    {
       if ( pOptions ) {

@@ -24,18 +24,15 @@ int main( int argc, char** argv )
    optional<string> stringValue;
    optional<long> intValue;
    optional<double> floatValue;
-   long intValue2 = 0;
+   long flag = 0;
    vector<string> params;
 
-   // Note: the argument parser will take references to the variables so it must
-   // outlive those variables. We signal this by using the create_unsafe() 
-   // factory method.
-   auto parser = ArgumentParser::create_unsafe();
+   auto parser = ArgumentParser::create();
    parser.config().prog( argv[0] );
    parser.add_argument( stringValue, "-s", "--string" ).nargs( 1 );
    parser.add_argument( intValue, "-i", "--int" ).nargs( 1 );
    parser.add_argument( floatValue, "-f", "--float" ).nargs( 1 );
-   parser.add_argument( intValue2, "-v", "--verbose" );
+   parser.add_argument( flag, "-g", "--flag" );
    parser.add_argument( params, "params" );
 
    vector<string> args;
@@ -44,13 +41,10 @@ int main( int argc, char** argv )
 
    auto res = parser.parse_args( args );
 
-   cout << "stringValue: "
-      << ( bool(stringValue) ? stringValue.value() : "not set" ) << "\n";
-   cout << "intValue:    "
-      << ( bool(intValue) ? to_string(intValue.value()) : "not set" ) << "\n";
-   cout << "floatValue:  "
-      << ( bool(floatValue) ? to_string(floatValue.value()) : "not set" ) << "\n";
-   cout << "intValue2:   " << intValue2 << "\n";
+   cout << "stringValue: " << stringValue.value_or( "not set" ) << "\n";
+   cout << "intValue:    " << ( intValue ? to_string(*intValue) : "not set" ) << "\n";
+   cout << "floatValue:  " << ( floatValue ? to_string(*floatValue) : "not set" ) << "\n";
+   cout << "flag:        " << flag << "\n";
 
    cout << "Positional parameters: ";
    for ( auto& param : params )
