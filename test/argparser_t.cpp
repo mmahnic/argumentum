@@ -1084,7 +1084,7 @@ TEST( ArgumentParserTest, shouldSupportBoolType )
    EXPECT_EQ( OK, testType<bool>( "0", false ) );
 }
 
-// The program name must be set explicitly with parser.config().prog().
+// The program name must be set explicitly with parser.config().program().
 TEST( ArgumentParserTest, shouldNotSetProgramNameFromParameter0 )
 {
    std::string strvalue;

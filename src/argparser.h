@@ -385,7 +385,7 @@ public:
          return mData;
       }
 
-      ParserConfig& prog( std::string_view program )
+      ParserConfig& program( std::string_view program )
       {
          mData.program = program;
          return *this;

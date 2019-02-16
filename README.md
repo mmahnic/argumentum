@@ -28,7 +28,7 @@ int main( int argc, char** argv )
    vector<string> params;
 
    auto parser = ArgumentParser::create();
-   parser.config().prog( argv[0] );
+   parser.config().program( argv[0] );
    parser.add_argument( stringValue, "-s", "--string" ).nargs( 1 );
    parser.add_argument( intValue, "-i", "--int" ).nargs( 1 );
    parser.add_argument( floatValue, "-f", "--float" ).nargs( 1 );

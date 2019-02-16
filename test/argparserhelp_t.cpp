@@ -65,7 +65,7 @@ TEST( ArgumentParserHelpTest, shouldAcceptArgumentHelpStrings )
 TEST( ArgumentParserHelpTest, shouldSetProgramName )
 {
    auto parser = ArgumentParser::create();
-   parser.config().prog( "testing-testing" );
+   parser.config().program( "testing-testing" );
 
    auto& config = parser.getConfig();
    EXPECT_EQ( "testing-testing", config.program );
@@ -120,7 +120,7 @@ public:
    void add_arguments( ArgumentParser& parser ) override
    {
       parser.config()
-         .prog( "testing-format" )
+         .program( "testing-format" )
          .description( "Format testing." )
          .usage( "testing-format [options]" )
          .epilog( "More about testing." );

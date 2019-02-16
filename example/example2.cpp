@@ -41,7 +41,7 @@ struct OptionsB: public argparse::Options
 int main( int argc, char** argv )
 {
    auto parser = ArgumentParser::create();
-   parser.config().prog( argv[0] );
+   parser.config().program( argv[0] );
    auto pOptionsA = std::make_shared<OptionsA>();
    parser.add_arguments( pOptionsA );
    auto pOptionsB = std::make_shared<OptionsB>();
