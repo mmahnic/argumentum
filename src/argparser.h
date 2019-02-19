@@ -81,6 +81,13 @@ public:
       virtual void doSetValue( const std::string& value ) = 0;
    };
 
+   class VoidValue : public Value
+   {
+   protected:
+      void doSetValue( const std::string& value ) override
+      {}
+   };
+
    template<typename TValue>
    class ConvertedValue: public Value
    {
@@ -673,6 +680,13 @@ public:
          mTargets.push_back( pOptions );
          pOptions->add_arguments( *this );
       }
+   }
+
+   OptionConfig add_help()
+   {
+      auto value = VoidValue{};
+      auto option = Option( value );
+      return tryAddArgument( option, {"-h", "--help"} );
    }
 
    ParseResult parse_args( const std::vector<std::string>& args )

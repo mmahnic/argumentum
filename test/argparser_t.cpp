@@ -1102,3 +1102,19 @@ TEST( ArgumentParserTest, shouldNotSetProgramNameFromParameter0 )
    EXPECT_EQ( "testName", strvalue );
    ASSERT_EQ( 0, res.errors.size() );
 }
+
+TEST( ArgumentParserTest, shouldAddDefaultHelpOptions )
+{
+   auto parser = ArgumentParser::create();
+
+   auto res = parser.parse_args( { "-h" } );
+   EXPECT_NE( 0, res.errors.size() );
+
+   parser.add_help();
+
+   res = parser.parse_args( { "-h" } );
+   EXPECT_EQ( 0, res.errors.size() );
+
+   res = parser.parse_args( { "--help" } );
+   EXPECT_EQ( 0, res.errors.size() );
+}
