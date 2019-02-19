@@ -1118,3 +1118,14 @@ TEST( ArgumentParserTest, shouldAddDefaultHelpOptions )
    res = parser.parse_args( { "--help" } );
    EXPECT_EQ( 0, res.errors.size() );
 }
+
+TEST( ArgumentParserTest, shouldSetParserOutputToStream )
+{
+   std::stringstream strout;
+   auto parser = ArgumentParser::create();
+   EXPECT_EQ( nullptr, parser.getConfig().pStdOut );
+
+   parser.config().cout( strout );
+
+   EXPECT_NE( nullptr, parser.getConfig().pStdOut );
+}

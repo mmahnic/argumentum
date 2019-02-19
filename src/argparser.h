@@ -381,6 +381,7 @@ public:
          std::string usage;
          std::string description;
          std::string epilog;
+         std::ostream* pStdOut = nullptr;
       };
 
    private:
@@ -413,6 +414,13 @@ public:
       ParserConfig& epilog( std::string_view epilog )
       {
          mData.epilog = epilog;
+         return *this;
+      }
+
+      // NOTE: The @p stream must outlive the parser.
+      ParserConfig& cout( std::ostream& stream )
+      {
+         mData.pStdOut = &stream;
          return *this;
       }
    };
