@@ -1107,7 +1107,7 @@ TEST( ArgumentParserTest, shouldAddDefaultHelpOptions )
 {
    std::stringstream strout;
    auto parser = ArgumentParser::create();
-   parser.config().cout( strout );
+   parser.config().cout( strout ).on_exit_return();
 
    auto res = parser.parse_args( { "-h" } );
    EXPECT_NE( 0, res.errors.size() );
@@ -1140,7 +1140,7 @@ TEST( ArgumentParserTest, shouldWriteHelpAndExitWhenHelpOptionIsPresent )
 
    std::stringstream strout;
    auto parser = ArgumentParser::create();
-   parser.config().cout( strout );
+   parser.config().cout( strout ).on_exit_return();
    parser.add_argument( maybeInt, "--maybe" ).nargs( 1 );
    parser.add_help().help( "Print this test help message and exit!" );
 
@@ -1150,4 +1150,45 @@ TEST( ArgumentParserTest, shouldWriteHelpAndExitWhenHelpOptionIsPresent )
    EXPECT_NE( std::string::npos, text.find( "Print this test help message and exit!" ) );
 
    EXPECT_FALSE( bool(maybeInt) );
+}
+
+TEST( ArgumentParserTest, shouldConfigureExitMode_Return )
+{
+   std::stringstream strout;
+   auto parser = ArgumentParser::create();
+   parser.config().cout( strout ).on_exit_return();
+   parser.add_help();
+
+   auto res = parser.parse_args( { "-h" } );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( ArgumentParser::HELP_REQUESTED, res.errors[0].errorCode );
+}
+
+TEST( ArgumentParserTest, shouldConfigureExitMode_Throw )
+{
+   std::stringstream strout;
+   auto parser = ArgumentParser::create();
+   parser.config().cout( strout ).on_exit_throw();
+   parser.add_help();
+
+   try {
+      auto res = parser.parse_args( { "-h" } );
+      EXPECT_TRUE( false );
+   }
+   catch ( const argparse::ParserTerminated& e ) {
+      EXPECT_TRUE( true );
+      EXPECT_EQ( ArgumentParser::HELP_REQUESTED, e.errorCode );
+      return;
+   }
+   EXPECT_TRUE( false );
+}
+
+TEST( ArgumentParserTest, shouldConfigureExitMode_Terminate )
+{
+   std::stringstream strout;
+   auto parser = ArgumentParser::create();
+   parser.config().cout( strout ).on_exit_terminate();
+   parser.add_help();
+
+   // The parser must not be executed because it would terminate the test program.
 }

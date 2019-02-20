@@ -25,6 +25,23 @@ public:
    {}
 };
 
+class ParserTerminated: public std::exception
+{
+public:
+   const std::string arg;
+   const int errorCode;
+
+public:
+   ParserTerminated( const std::string& arg, int code )
+      : arg( arg ), errorCode( code )
+   {}
+
+   const char* what() const noexcept override
+   {
+      return "Parsing terminated.";
+   }
+};
+
 class ArgumentParser;
 
 class Options
@@ -372,6 +389,10 @@ public:
       }
    };
 
+   enum EExitMode {
+      EXIT_TERMINATE, EXIT_THROW, EXIT_RETURN
+   };
+
    class ParserConfig
    {
    public:
@@ -382,6 +403,7 @@ public:
          std::string description;
          std::string epilog;
          std::ostream* pOutStream = nullptr;
+         EExitMode exitMode = EXIT_TERMINATE;
       };
 
    private:
@@ -423,6 +445,24 @@ public:
          mData.pOutStream = &stream;
          return *this;
       }
+
+      ParserConfig& on_exit_terminate()
+      {
+         mData.exitMode = EXIT_TERMINATE;
+         return *this;
+      }
+
+      ParserConfig& on_exit_throw()
+      {
+         mData.exitMode = EXIT_THROW;
+         return *this;
+      }
+
+      ParserConfig& on_exit_return()
+      {
+         mData.exitMode = EXIT_RETURN;
+         return *this;
+      }
    };
 
    // Errors known by the parser
@@ -439,8 +479,8 @@ public:
 
    struct ParseError
    {
-      std::string option;
-      int errorCode;
+      const std::string option;
+      const int errorCode;
       ParseError( std::string_view optionName, int code )
          : option( optionName ), errorCode( code )
       {}
@@ -702,9 +742,7 @@ public:
       for ( auto&& arg : args ) {
          if ( arg == "-h" || arg == "--help" ) {
             generate_help();
-            ParseResult res;
-            res.errors.emplace_back( arg, HELP_REQUESTED );
-            return res;
+            return exit_parser( arg, HELP_REQUESTED );
          }
       }
 
@@ -841,6 +879,24 @@ private:
          pStream = &std::cout;
 
       formatter.format( *this, *pStream );
+   }
+
+   ParseResult exit_parser( const std::string& arg, EError errorCode )
+   {
+      switch ( getConfig().exitMode ) {
+         default:
+         case EXIT_TERMINATE:
+            exit( 0 );
+         case EXIT_THROW:
+            throw ParserTerminated( arg, errorCode );
+         case EXIT_RETURN: {
+            ParseResult res;
+            res.errors.emplace_back( arg, errorCode );
+            return res;
+         }
+      }
+
+      return {};
    }
 };
 
