@@ -1105,7 +1105,9 @@ TEST( ArgumentParserTest, shouldNotSetProgramNameFromParameter0 )
 
 TEST( ArgumentParserTest, shouldAddDefaultHelpOptions )
 {
+   std::stringstream strout;
    auto parser = ArgumentParser::create();
+   parser.config().cout( strout );
 
    auto res = parser.parse_args( { "-h" } );
    EXPECT_NE( 0, res.errors.size() );
@@ -1113,19 +1115,39 @@ TEST( ArgumentParserTest, shouldAddDefaultHelpOptions )
    parser.add_help();
 
    res = parser.parse_args( { "-h" } );
-   EXPECT_EQ( 0, res.errors.size() );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( ArgumentParser::HELP_REQUESTED, res.errors[0].errorCode );
 
    res = parser.parse_args( { "--help" } );
-   EXPECT_EQ( 0, res.errors.size() );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( ArgumentParser::HELP_REQUESTED, res.errors[0].errorCode );
 }
 
 TEST( ArgumentParserTest, shouldSetParserOutputToStream )
 {
    std::stringstream strout;
    auto parser = ArgumentParser::create();
-   EXPECT_EQ( nullptr, parser.getConfig().pStdOut );
+   EXPECT_EQ( nullptr, parser.getConfig().pOutStream );
 
    parser.config().cout( strout );
 
-   EXPECT_NE( nullptr, parser.getConfig().pStdOut );
+   EXPECT_NE( nullptr, parser.getConfig().pOutStream );
+}
+
+TEST( ArgumentParserTest, shouldWriteHelpAndExitWhenHelpOptionIsPresent )
+{
+   std::optional<int> maybeInt;
+
+   std::stringstream strout;
+   auto parser = ArgumentParser::create();
+   parser.config().cout( strout );
+   parser.add_argument( maybeInt, "--maybe" ).nargs( 1 );
+   parser.add_help().help( "Print this test help message and exit!" );
+
+   auto res = parser.parse_args( { "--maybe", "123", "-h" } );
+
+   auto text = strout.str();
+   EXPECT_NE( std::string::npos, text.find( "Print this test help message and exit!" ) );
+
+   EXPECT_FALSE( bool(maybeInt) );
 }

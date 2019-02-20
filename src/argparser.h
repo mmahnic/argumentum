@@ -381,7 +381,7 @@ public:
          std::string usage;
          std::string description;
          std::string epilog;
-         std::ostream* pStdOut = nullptr;
+         std::ostream* pOutStream = nullptr;
       };
 
    private:
@@ -420,7 +420,7 @@ public:
       // NOTE: The @p stream must outlive the parser.
       ParserConfig& cout( std::ostream& stream )
       {
-         mData.pStdOut = &stream;
+         mData.pOutStream = &stream;
          return *this;
       }
    };
@@ -433,8 +433,8 @@ public:
       CONVERSION_ERROR,
       INVALID_CHOICE,
       // Flags do not accept parameters
-      FLAG_PARAMETER
-
+      FLAG_PARAMETER,
+      HELP_REQUESTED
    };
 
    struct ParseError
@@ -694,11 +694,20 @@ public:
    {
       auto value = VoidValue{};
       auto option = Option( value );
-      return tryAddArgument( option, {"-h", "--help"} );
+      return tryAddArgument( option, {"-h", "--help"} ).help( "Print this help message and exit." );
    }
 
    ParseResult parse_args( const std::vector<std::string>& args )
    {
+      for ( auto&& arg : args ) {
+         if ( arg == "-h" || arg == "--help" ) {
+            generate_help();
+            ParseResult res;
+            res.errors.emplace_back( arg, HELP_REQUESTED );
+            return res;
+         }
+      }
+
       Parser parser( *this );
       auto result = parser.parse( args );
       reportMissingOptions( result );
@@ -823,6 +832,18 @@ private:
       return help;
    }
 
+   void generate_help()
+   {
+      // TODO: The formatter should be configurable
+      auto formatter = HelpFormatter();
+      auto pStream = getConfig().pOutStream;
+      if ( !pStream )
+         pStream = &std::cout;
+
+      formatter.format( *this, *pStream );
+   }
 };
 
 }
+
+#include "helpformatter.h"
