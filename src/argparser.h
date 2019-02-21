@@ -138,10 +138,29 @@ public:
       }
    };
 
+   /**
+    * The action is executed before Value::setValue is called.
+    *
+    * Value::setValue will be called if exec returns a non-empty value.
+    */
+   class Action
+   {
+   public:
+      /**
+       * Set the the @p value on @p target or return a new string that will be set
+       * on @p target the normal way.
+       */
+      virtual std::optional<std::string> exec( Value& target, const std::string& value )
+      {
+         return value;
+      }
+   };
+
    class Option
    {
    private:
       std::unique_ptr<Value> mpValue;
+      std::shared_ptr<Action> mpAction;
       std::string mShortName;
       std::string mLongName;
       std::string mHelp;
@@ -228,6 +247,11 @@ public:
          mChoices = choices;
       }
 
+      void setAction( const std::shared_ptr<Action>& pAction )
+      {
+         mpAction = pAction;
+      }
+
       bool isRequired() const
       {
          return mIsRequired;
@@ -265,6 +289,13 @@ public:
          {
             mpValue->markBadArgument();
             throw InvalidChoiceError( value );
+         }
+
+         if ( mpAction ) {
+            auto newValue = mpAction->exec( *mpValue, value );
+            if ( newValue )
+               mpValue->setValue( *newValue );
+            return;
          }
 
          mpValue->setValue( value );
@@ -378,6 +409,12 @@ public:
       OptionConfig& choices( const std::vector<std::string>& choices )
       {
          mOptions[mIndex].setChoices( choices );
+         return *this;
+      }
+
+      OptionConfig& action( const std::shared_ptr<Action>& pAction )
+      {
+         mOptions[mIndex].setAction( pAction );
          return *this;
       }
 
