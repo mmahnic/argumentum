@@ -38,3 +38,24 @@ TEST( ArgumentParserActionTest, shouldModifyArgumentWithAction )
    EXPECT_EQ( "212 Has One", result );
 }
 
+TEST( ArgumentParserActionTest, shouldNotSetValueIfActionReturnsEmptyOptional )
+{
+   class TestAction: public argparse::ArgumentParser::Action
+   {
+      std::optional<std::string> exec( argparse::ArgumentParser::Value& target,
+            const std::string &value ) override
+      {
+         return {};
+      }
+   };
+
+   std::string result;
+   std::stringstream strout;
+   auto parser = ArgumentParser::create();
+   parser.add_argument( result, "-v" ).maxargs(1).action( std::make_shared<TestAction>() );
+
+   auto res = parser.parse_args( { "-v", "1" } );
+   EXPECT_TRUE( res.errors.empty() );
+   EXPECT_TRUE( result.empty() );
+}
+
