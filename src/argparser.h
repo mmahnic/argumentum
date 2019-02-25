@@ -711,16 +711,6 @@ private:
    std::vector<std::shared_ptr<Options>> mTargets;
 
 public:
-   argument_parser() = default;
-
-   /**
-    * Create and return an argument parser.
-    */
-   static argument_parser create()
-   {
-      return argument_parser{};
-   }
-
    /**
     * Get a reference to the parser configuration through which the parser can
     * be configured.
@@ -815,12 +805,6 @@ public:
    }
 
 private:
-   //argument_parser( std::shared_ptr<Options> pOptions )
-   //{
-   //   if ( pOptions )
-   //      mTargets.push_back( pOptions );
-   //}
-
    void reportMissingOptions( ParseResult& result )
    {
       for ( auto& option : mOptions )

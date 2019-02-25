@@ -22,7 +22,7 @@ TEST( ArgumentParserActionTest, shouldModifyArgumentWithAction )
 
    std::string result;
    std::stringstream strout;
-   auto parser = argument_parser::create();
+   auto parser = argument_parser{};
    parser.add_argument( result, "-v" ).nargs(1).action( std::make_shared<TestAction>() );
 
    auto res = parser.parse_args( { "-v", "1" } );
@@ -51,7 +51,7 @@ TEST( ArgumentParserActionTest, shouldNotSetValueIfActionReturnsEmptyOptional )
 
    std::string result;
    std::stringstream strout;
-   auto parser = argument_parser::create();
+   auto parser = argument_parser{};
    parser.add_argument( result, "-v" ).maxargs(1).action( std::make_shared<TestAction>() );
 
    auto res = parser.parse_args( { "-v", "1" } );
@@ -76,7 +76,7 @@ TEST( ArgumentParserActionTest, shouldSetValueOnTargetFromAction )
 
    std::string result;
    std::stringstream strout;
-   auto parser = argument_parser::create();
+   auto parser = argument_parser{};
    parser.add_argument( result, "-v" ).maxargs(1).action( std::make_shared<TestAction>() );
 
    auto res = parser.parse_args( { "-v", "31" } );
