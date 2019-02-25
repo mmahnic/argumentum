@@ -148,7 +148,7 @@ private:
 
 };
 
-inline void HelpFormatter::format( const ArgumentParser& parser, std::ostream& out )
+inline void HelpFormatter::format( const argument_parser& parser, std::ostream& out )
 {
    auto config = parser.getConfig();
    auto args = parser.describe_arguments();

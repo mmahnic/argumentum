@@ -17,7 +17,7 @@ struct OptionsA: public argparse::Options
    optional<string> stringValue;
    vector<long> intValues;
 
-   void add_arguments( ArgumentParser& parser ) override
+   void add_arguments( argument_parser& parser ) override
    {
       parser.add_argument( stringValue, "-s", "--string" ).nargs( 1 );
       parser.add_argument( intValues, "-i", "--int" ).minargs( 0 );
@@ -30,7 +30,7 @@ struct OptionsB: public argparse::Options
    long flag = 0;
    vector<string> params;
 
-   void add_arguments( ArgumentParser& parser ) override
+   void add_arguments( argument_parser& parser ) override
    {
       parser.add_argument( floatValue, "-f", "--float" ).nargs( 1 );
       parser.add_argument( flag, "-g", "--flag" );
@@ -40,7 +40,7 @@ struct OptionsB: public argparse::Options
 
 int main( int argc, char** argv )
 {
-   auto parser = ArgumentParser::create();
+   auto parser = argument_parser::create();
    parser.config().program( argv[0] );
    auto pOptionsA = std::make_shared<OptionsA>();
    parser.add_arguments( pOptionsA );

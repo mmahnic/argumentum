@@ -42,15 +42,15 @@ public:
    }
 };
 
-class ArgumentParser;
+class argument_parser;
 
 class Options
 {
 public:
-   virtual void add_arguments( ArgumentParser& parser ) = 0;
+   virtual void add_arguments( argument_parser& parser ) = 0;
 };
 
-class ArgumentParser
+class argument_parser
 {
 public:
    class Value
@@ -539,7 +539,7 @@ public:
 private:
    class Parser
    {
-      ArgumentParser& mArgParser;
+      argument_parser& mArgParser;
       bool mIgnoreOptions = false;
       int mPosition = 0;
       // The active option will receive additional argument(s)
@@ -547,7 +547,7 @@ private:
       ParseResult mResult;
 
    public:
-      Parser( ArgumentParser& argParser )
+      Parser( argument_parser& argParser )
          : mArgParser( argParser )
       {}
 
@@ -711,12 +711,14 @@ private:
    std::vector<std::shared_ptr<Options>> mTargets;
 
 public:
+   argument_parser() = default;
+
    /**
     * Create and return an argument parser.
     */
-   static ArgumentParser create()
+   static argument_parser create()
    {
-      return ArgumentParser{};
+      return argument_parser{};
    }
 
    /**
@@ -813,13 +815,11 @@ public:
    }
 
 private:
-   ArgumentParser() = default;
-
-   ArgumentParser( std::shared_ptr<Options> pOptions )
-   {
-      if ( pOptions )
-         mTargets.push_back( pOptions );
-   }
+   //argument_parser( std::shared_ptr<Options> pOptions )
+   //{
+   //   if ( pOptions )
+   //      mTargets.push_back( pOptions );
+   //}
 
    void reportMissingOptions( ParseResult& result )
    {

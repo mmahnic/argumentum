@@ -11,7 +11,7 @@
 
 namespace argparse {
 
-class ArgumentParser;
+class argument_parser;
 
 struct ArgumentHelpResult
 {
@@ -39,7 +39,7 @@ class HelpFormatter
    size_t mMaxDescriptionIndent = 30;
 
 public:
-   void format( const ArgumentParser& parser, std::ostream& out );
+   void format( const argument_parser& parser, std::ostream& out );
 
    void setTextWidth( size_t widthBytes )
    {

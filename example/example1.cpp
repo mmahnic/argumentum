@@ -20,7 +20,7 @@ int main( int argc, char** argv )
    long flag = 0;
    vector<string> params;
 
-   auto parser = ArgumentParser::create();
+   auto parser = argument_parser::create();
    parser.config().program( argv[0] );
    parser.add_argument( stringValue, "-s", "--string" ).nargs( 1 );
    parser.add_argument( intValue, "-i", "--int" ).nargs( 1 );

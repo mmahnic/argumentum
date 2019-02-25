@@ -9,9 +9,9 @@ using namespace argparse;
 
 TEST( ArgumentParserActionTest, shouldModifyArgumentWithAction )
 {
-   class TestAction: public argparse::ArgumentParser::Action
+   class TestAction: public argparse::argument_parser::Action
    {
-      std::optional<std::string> exec( argparse::ArgumentParser::Value& target,
+      std::optional<std::string> exec( argparse::argument_parser::Value& target,
             const std::string &value ) override
       {
          if ( value.find( "1" ) != std::string::npos )
@@ -22,7 +22,7 @@ TEST( ArgumentParserActionTest, shouldModifyArgumentWithAction )
 
    std::string result;
    std::stringstream strout;
-   auto parser = ArgumentParser::create();
+   auto parser = argument_parser::create();
    parser.add_argument( result, "-v" ).nargs(1).action( std::make_shared<TestAction>() );
 
    auto res = parser.parse_args( { "-v", "1" } );
@@ -40,9 +40,9 @@ TEST( ArgumentParserActionTest, shouldModifyArgumentWithAction )
 
 TEST( ArgumentParserActionTest, shouldNotSetValueIfActionReturnsEmptyOptional )
 {
-   class TestAction: public argparse::ArgumentParser::Action
+   class TestAction: public argparse::argument_parser::Action
    {
-      std::optional<std::string> exec( argparse::ArgumentParser::Value& target,
+      std::optional<std::string> exec( argparse::argument_parser::Value& target,
             const std::string &value ) override
       {
          return {};
@@ -51,7 +51,7 @@ TEST( ArgumentParserActionTest, shouldNotSetValueIfActionReturnsEmptyOptional )
 
    std::string result;
    std::stringstream strout;
-   auto parser = ArgumentParser::create();
+   auto parser = argument_parser::create();
    parser.add_argument( result, "-v" ).maxargs(1).action( std::make_shared<TestAction>() );
 
    auto res = parser.parse_args( { "-v", "1" } );
@@ -61,9 +61,9 @@ TEST( ArgumentParserActionTest, shouldNotSetValueIfActionReturnsEmptyOptional )
 
 TEST( ArgumentParserActionTest, shouldSetValueOnTargetFromAction )
 {
-   class TestAction: public argparse::ArgumentParser::Action
+   class TestAction: public argparse::argument_parser::Action
    {
-      std::optional<std::string> exec( argparse::ArgumentParser::Value& target,
+      std::optional<std::string> exec( argparse::argument_parser::Value& target,
             const std::string &value ) override
       {
          if ( value.find( "1" ) != std::string::npos )
@@ -76,7 +76,7 @@ TEST( ArgumentParserActionTest, shouldSetValueOnTargetFromAction )
 
    std::string result;
    std::stringstream strout;
-   auto parser = ArgumentParser::create();
+   auto parser = argument_parser::create();
    parser.add_argument( result, "-v" ).maxargs(1).action( std::make_shared<TestAction>() );
 
    auto res = parser.parse_args( { "-v", "31" } );
