@@ -267,3 +267,32 @@ TEST( ArgumentParserHelpTest, shouldKeepSourceParagraphsInDescriptions )
    EXPECT_EQ( ly, lx + 2 );
 }
 
+TEST( ArgumentParserHelpTest, shouldDescribeOptionArgumentCounts )
+{
+   std::string str;
+   auto parser = argument_parser{};
+   parser.add_argument( str, "-a" ).nargs( 2 );
+   parser.add_argument( str, "--bees" ).minargs( 1 );
+   parser.add_argument( str, "-c" ).minargs( 0 );
+   parser.add_argument( str, "-d" ).minargs( 2 );
+   parser.add_argument( str, "-e" ).maxargs( 3 );
+   parser.add_argument( str, "-f" ).maxargs( 1 );
+
+   auto res = parser.describe_argument( "-a" );
+   EXPECT_EQ( "A A", res.arguments );
+
+   res = parser.describe_argument( "--bees" );
+   EXPECT_EQ( "BEES [BEES ...]", res.arguments );
+
+   res = parser.describe_argument( "-c" );
+   EXPECT_EQ( "[C ...]", res.arguments );
+
+   res = parser.describe_argument( "-d" );
+   EXPECT_EQ( "D D [D ...]", res.arguments );
+
+   res = parser.describe_argument( "-e" );
+   EXPECT_EQ( "[E ...{3}]", res.arguments );
+
+   res = parser.describe_argument( "-f" );
+   EXPECT_EQ( "[F]", res.arguments );
+}

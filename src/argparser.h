@@ -282,6 +282,15 @@ public:
          return mHelp;
       }
 
+      std::string getMetavar() const
+      {
+         auto& name = getName();
+         auto pos = name.find_first_not_of( "-" );
+         auto metavar = name.substr( pos );
+         std::transform( metavar.begin(), metavar.end(), metavar.begin(), toupper );
+         return metavar;
+      }
+
       void setValue( const std::string& value )
       {
          if ( !mChoices.empty() && std::none_of( mChoices.begin(), mChoices.end(),
@@ -304,6 +313,11 @@ public:
       void onOptionStarted()
       {
          mpValue->onOptionStarted();
+      }
+
+      bool acceptsAnyArguments() const
+      {
+         return mMinArgs > 0 || mMaxArgs != 0;
       }
 
       bool willAcceptArgument() const
@@ -338,6 +352,11 @@ public:
       const std::string& getFlagValue() const
       {
          return mFlagValue;
+      }
+
+      std::tuple<int, int> getArgumentCounts() const
+      {
+         return std::make_tuple( mMinArgs, mMaxArgs );
       }
    };
 
@@ -888,6 +907,31 @@ private:
       help.short_name = option.getShortName();
       help.long_name = option.getLongName();
       help.help = option.getRawHelp();
+
+      if ( option.acceptsAnyArguments() ) {
+         const auto& metavar = option.getMetavar();
+         auto [ mmin, mmax ] = option.getArgumentCounts();
+         std::string res;
+         if ( mmin > 0 ) {
+            res = metavar;
+            for ( int i = 1; i < mmin; ++i )
+               res = res + " " + metavar;
+         }
+         if ( mmax < mmin ) {
+            auto opt = ( res.empty() ? "[" : " [" ) + metavar + " ...]";
+            res += opt;
+         }
+         else if ( mmax - mmin == 1 )
+            res += "[" + metavar + "]";
+         else if ( mmax > mmin ) {
+            auto opt = ( res.empty() ? "[" : " [" ) + metavar + " ...{"
+               + std::to_string( mmax - mmin ) + "}]";
+            res += opt;
+         }
+
+         help.arguments = std::move( res );
+      }
+
       return help;
    }
 

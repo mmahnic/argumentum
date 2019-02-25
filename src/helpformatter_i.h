@@ -17,6 +17,7 @@ struct ArgumentHelpResult
 {
    std::string short_name;
    std::string long_name;
+   std::string arguments;
    std::string help;
 
    bool is_positional() const
