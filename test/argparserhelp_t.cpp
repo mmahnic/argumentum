@@ -296,3 +296,26 @@ TEST( ArgumentParserHelpTest, shouldDescribeOptionArgumentCounts )
    res = parser.describe_argument( "-f" );
    EXPECT_EQ( "[F]", res.arguments );
 }
+
+TEST( ArgumentParserHelpTest, shouldOutputArgumentCounts )
+{
+   std::string str;
+   auto parser = argument_parser{};
+   parser.add_argument( str, "--bees" ).minargs( 1 );
+
+   auto formatter = HelpFormatter();
+   formatter.setTextWidth( 60 );
+   formatter.setMaxDescriptionIndent( 20 );
+   auto help = getTestHelp( parser, formatter );
+   auto lines = splitLines( help, KEEPEMPTY );
+
+   for ( auto line : lines ) {
+      auto optpos = line.find( "--bees" );
+      if ( optpos == std::string::npos )
+         continue;
+
+      auto argspos = line.find( "BEES [BEES ...]" );
+      ASSERT_NE( std::string::npos, argspos );
+      EXPECT_LT( optpos, argspos );
+   }
+}

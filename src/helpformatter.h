@@ -156,8 +156,9 @@ inline void HelpFormatter::format( const argument_parser& parser, std::ostream& 
          []( auto&& d ) { return d.is_positional(); } );
    auto hasPositional = iopt != std::begin( args );
    auto hasOptional = iopt != std::end( args );
-   auto argWidth = deriveMaxArgumentWidth( args );
-   auto desctiptionIndent = argWidth > mMaxDescriptionIndent ? mMaxDescriptionIndent : argWidth;
+   auto desctiptionIndent = deriveMaxArgumentWidth( args ) + mArgumentIndent + 1;
+   if ( desctiptionIndent > mMaxDescriptionIndent )
+      desctiptionIndent = mMaxDescriptionIndent;
 
    auto writeArguments = [&]( auto&& writer, auto&& start, auto &&end ) {
       writer.startLine();
