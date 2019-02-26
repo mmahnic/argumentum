@@ -163,6 +163,7 @@ public:
       std::shared_ptr<Action> mpAction;
       std::string mShortName;
       std::string mLongName;
+      std::string mMetavar;
       std::string mHelp;
       std::string mFlagValue = "1";
       std::vector<std::string> mChoices;
@@ -207,6 +208,11 @@ public:
       void setLongName( std::string_view name )
       {
          mLongName = name;
+      }
+
+      void setMetavar( std::string_view varname )
+      {
+         mMetavar = varname;
       }
 
       void setHelp( std::string_view help )
@@ -284,6 +290,9 @@ public:
 
       std::string getMetavar() const
       {
+         if ( !mMetavar.empty() )
+            return mMetavar;
+
          auto& name = getName();
          auto pos = name.find_first_not_of( "-" );
          auto metavar = name.substr( pos );
@@ -380,6 +389,12 @@ public:
       OptionConfig& setLongName( std::string_view name )
       {
          mOptions[mIndex].setLongName( name );
+         return *this;
+      }
+
+      OptionConfig& metavar( std::string_view varname )
+      {
+         mOptions[mIndex].setMetavar( varname );
          return *this;
       }
 

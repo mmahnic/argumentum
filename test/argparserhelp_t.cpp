@@ -326,3 +326,26 @@ TEST( ArgumentParserHelpTest, shouldOutputOptionArguments )
       EXPECT_LT( optpos, argspos );
    }
 }
+
+TEST( ArgumentParserHelpTest, shouldChangeOptionMetavarName )
+{
+   std::string str;
+   auto parser = argument_parser{};
+   parser.add_argument( str, "--bees" ).minargs( 1 ).metavar( "WORK" );
+
+   auto formatter = HelpFormatter();
+   formatter.setTextWidth( 60 );
+   formatter.setMaxDescriptionIndent( 20 );
+   auto help = getTestHelp( parser, formatter );
+   auto lines = splitLines( help, KEEPEMPTY );
+
+   for ( auto line : lines ) {
+      auto optpos = line.find( "--bees" );
+      if ( optpos == std::string::npos )
+         continue;
+
+      auto argspos = line.find( "WORK [WORK ...]" );
+      ASSERT_NE( std::string::npos, argspos );
+      EXPECT_LT( optpos, argspos );
+   }
+}
