@@ -939,7 +939,7 @@ private:
          else if ( mmax - mmin == 1 )
             res += "[" + metavar + "]";
          else if ( mmax > mmin ) {
-            auto opt = ( res.empty() ? "[" : " [" ) + metavar + " ...{"
+            auto opt = ( res.empty() ? "[" : " [" ) + metavar + " {0.."
                + std::to_string( mmax - mmin ) + "}]";
             res += opt;
          }

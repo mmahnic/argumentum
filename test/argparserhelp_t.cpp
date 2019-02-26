@@ -298,7 +298,7 @@ TEST( ArgumentParserHelpTest, shouldDescribeOptionArguments )
    EXPECT_EQ( "D D [D ...]", res.arguments );
 
    res = parser.describe_argument( "-e" );
-   EXPECT_EQ( "[E ...{3}]", res.arguments );
+   EXPECT_EQ( "[E {0..3}]", res.arguments );
 
    res = parser.describe_argument( "-f" );
    EXPECT_EQ( "[F]", res.arguments );
