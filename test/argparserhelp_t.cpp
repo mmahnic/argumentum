@@ -163,7 +163,14 @@ TEST( ArgumentParserHelpTest, shouldOutputHelpToStream )
 
 TEST( ArgumentParserHelpTest, shouldFormatDescriptionsToTheSameColumn )
 {
-   auto help = getTestHelp();
+   int dummy;
+   auto parser = argument_parser{};
+   parser.add_argument( dummy, "-s", "--parameter" ).nargs( 0 ).help( "some string" );
+   parser.add_argument( dummy, "-x", "--parameterX" ).nargs( 0 ).help( "some depth" );
+   parser.add_argument( dummy, "-y", "--parameterXX" ).nargs( 0 ).help( "some width" );
+   parser.add_argument( dummy, "args" ).nargs( 0 ).help( "some arguments" );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help );
 
    auto parts = std::vector<std::string>{ "some string", "some depth", "some width",
@@ -267,7 +274,7 @@ TEST( ArgumentParserHelpTest, shouldKeepSourceParagraphsInDescriptions )
    EXPECT_EQ( ly, lx + 2 );
 }
 
-TEST( ArgumentParserHelpTest, shouldDescribeOptionArgumentCounts )
+TEST( ArgumentParserHelpTest, shouldDescribeOptionArguments )
 {
    std::string str;
    auto parser = argument_parser{};
@@ -297,7 +304,7 @@ TEST( ArgumentParserHelpTest, shouldDescribeOptionArgumentCounts )
    EXPECT_EQ( "[F]", res.arguments );
 }
 
-TEST( ArgumentParserHelpTest, shouldOutputArgumentCounts )
+TEST( ArgumentParserHelpTest, shouldOutputOptionArguments )
 {
    std::string str;
    auto parser = argument_parser{};
