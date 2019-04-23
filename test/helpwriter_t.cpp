@@ -4,47 +4,44 @@
 #include "../src/argparser.h"
 #include "../src/helpformatter.h"
 
-#include <gtest/gtest.h>
 #include <algorithm>
+#include <gtest/gtest.h>
 #include <sstream>
 
 using namespace argparse;
 
 namespace {
-enum class  EKeepEmpty : bool {
-   no = false, yes = true
-};
+enum class EKeepEmpty : bool { no = false, yes = true };
 
-std::vector<std::string_view> splitLines( std::string_view text, EKeepEmpty keepEmpty = EKeepEmpty::no )
+std::vector<std::string_view> splitLines(
+      std::string_view text, EKeepEmpty keepEmpty = EKeepEmpty::no )
 {
-    std::vector<std::string_view> output;
-    size_t start = 0;
-    auto delims = "\n\r";
+   std::vector<std::string_view> output;
+   size_t start = 0;
+   auto delims = "\n\r";
 
-    auto isWinEol = [&text]( auto pos ) {
-       return text[pos] == '\r' && text[pos+1] == '\n';
-    };
+   auto isWinEol = [&text]( auto pos ) { return text[pos] == '\r' && text[pos + 1] == '\n'; };
 
-    while ( start < text.size() ) {
-       const auto stop = text.find_first_of( delims, start );
+   while ( start < text.size() ) {
+      const auto stop = text.find_first_of( delims, start );
 
-       if ( keepEmpty == EKeepEmpty::yes || start != stop )
-          output.emplace_back( text.substr( start, stop-start ) );
+      if ( keepEmpty == EKeepEmpty::yes || start != stop )
+         output.emplace_back( text.substr( start, stop - start ) );
 
-       if ( stop == std::string_view::npos )
-          break;
+      if ( stop == std::string_view::npos )
+         break;
 
-       start = stop + ( isWinEol( stop ) ? 2 : 1 );
-    }
+      start = stop + ( isWinEol( stop ) ? 2 : 1 );
+   }
 
-    return output;
+   return output;
 }
-}
+}   // namespace
 
 namespace {
 std::string loremIpsum123_19w =
-   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed "
-   "do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed "
+      "do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
 }
 
 TEST( WriterTest, shouldSplitTextIntoWordsAtWhitespace )
@@ -90,8 +87,8 @@ TEST( WriterIndentTest, shouldIndentFormattedText )
       EXPECT_GE( 27, line.size() );
 
    for ( auto line : lines ) {
-      EXPECT_EQ( "   ", line.substr(0, 3) );
-      EXPECT_NE( "    ", line.substr(0, 4) );
+      EXPECT_EQ( "   ", line.substr( 0, 3 ) );
+      EXPECT_NE( "    ", line.substr( 0, 4 ) );
    }
 }
 
@@ -251,7 +248,7 @@ TEST( WriterParagraphTest, shouldStartParagraphWithoutNextWrite )
    writer.write( "aaaa" );
    writer.startParagraph();
    writer.write( "bbbb" );
-   writer.startParagraph(); // no write() after this
+   writer.startParagraph();   // no write() after this
 
    auto written = strout.str();
    auto lines = splitLines( written, EKeepEmpty::yes );

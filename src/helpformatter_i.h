@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include <iostream>
+#include <algorithm>
 #include <iomanip>
+#include <iostream>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 namespace argparse {
 
@@ -25,7 +25,6 @@ struct ArgumentHelpResult
       return short_name.substr( 0, 1 ) != "-" && long_name.substr( 0, 1 ) != "-";
    }
 };
-
 
 class HelpFormatter
 {
@@ -76,8 +75,8 @@ private:
       if ( args.empty() )
          return 0U;
 
-      auto imax = std::max_element( std::begin( args ), std::end( args ),
-            [this]( auto&& a, auto&& b ) {
+      auto imax =
+            std::max_element( std::begin( args ), std::end( args ), [this]( auto&& a, auto&& b ) {
                return formatArgument( a ).size() < formatArgument( b ).size();
             } );
 
@@ -85,4 +84,4 @@ private:
    }
 };
 
-}
+}   // namespace argparse

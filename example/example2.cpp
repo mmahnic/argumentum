@@ -4,19 +4,18 @@
 
 #include "../src/argparser.h"
 
-#include <vector>
-#include <string>
-#include <optional>
 #include <iostream>
+#include <optional>
+#include <string>
+#include <vector>
 
 using namespace argparse;
 using namespace std;
 
-struct OptionsA: public argparse::Options
+struct OptionsA : public argparse::Options
 {
    optional<string> stringValue;
    vector<long> intValues;
-
    void add_arguments( argument_parser& parser ) override
    {
       parser.add_argument( stringValue, "-s", "--string" ).nargs( 1 );
@@ -24,7 +23,7 @@ struct OptionsA: public argparse::Options
    }
 };
 
-struct OptionsB: public argparse::Options
+struct OptionsB : public argparse::Options
 {
    optional<double> floatValue;
    long flag = 0;
@@ -59,7 +58,7 @@ int main( int argc, char** argv )
       cout << v << " ";
    cout << "\n";
    cout << "B floatValue:  "
-      << ( pOptionsB->floatValue ? to_string(*pOptionsB->floatValue) : "not set" ) << "\n";
+        << ( pOptionsB->floatValue ? to_string( *pOptionsB->floatValue ) : "not set" ) << "\n";
    cout << "B flag:        " << pOptionsB->flag << "\n";
 
    cout << "B Positional parameters: ";

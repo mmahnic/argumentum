@@ -4,8 +4,8 @@
 #include "../src/argparser.h"
 #include "../src/helpformatter.h"
 
-#include <gtest/gtest.h>
 #include <algorithm>
+#include <gtest/gtest.h>
 #include <sstream>
 
 using namespace argparse;
@@ -14,29 +14,27 @@ namespace {
 static const bool KEEPEMPTY = true;
 std::vector<std::string_view> splitLines( std::string_view text, bool keepEmpty = false )
 {
-    std::vector<std::string_view> output;
-    size_t start = 0;
-    auto delims = "\n\r";
+   std::vector<std::string_view> output;
+   size_t start = 0;
+   auto delims = "\n\r";
 
-    auto isWinEol = [&text]( auto pos ) {
-       return text[pos] == '\r' && text[pos+1] == '\n';
-    };
+   auto isWinEol = [&text]( auto pos ) { return text[pos] == '\r' && text[pos + 1] == '\n'; };
 
-    while ( start < text.size() ) {
-       const auto stop = text.find_first_of( delims, start );
+   while ( start < text.size() ) {
+      const auto stop = text.find_first_of( delims, start );
 
-       if ( keepEmpty || start != stop )
-          output.emplace_back( text.substr( start, stop-start ) );
+      if ( keepEmpty || start != stop )
+         output.emplace_back( text.substr( start, stop - start ) );
 
-       if ( stop == std::string_view::npos )
-          break;
+      if ( stop == std::string_view::npos )
+         break;
 
-       start = stop + ( isWinEol( stop ) ? 2 : 1 );
-    }
+      start = stop + ( isWinEol( stop ) ? 2 : 1 );
+   }
 
-    return output;
+   return output;
 }
-}
+}   // namespace
 
 TEST( ArgumentParserHelpTest, shouldAcceptArgumentHelpStrings )
 {
@@ -102,13 +100,14 @@ TEST( ArgumentParserHelpTest, shouldReturnDescriptionsOfAllArguments )
 
    auto descrs = parser.describe_arguments();
    EXPECT_EQ( 3, descrs.size() );
-   EXPECT_EQ( 1, std::count_if( std::begin( descrs ), std::end( descrs ),
-            []( auto&& d ) { return d.is_positional(); } ) );
+   EXPECT_EQ( 1, std::count_if( std::begin( descrs ), std::end( descrs ), []( auto&& d ) {
+      return d.is_positional();
+   } ) );
 }
 
 namespace {
 
-class TestOptions: public argparse::Options
+class TestOptions : public argparse::Options
 {
 public:
    std::string str;
@@ -120,10 +119,10 @@ public:
    void add_arguments( argument_parser& parser ) override
    {
       parser.config()
-         .program( "testing-format" )
-         .description( "Format testing." )
-         .usage( "testing-format [options]" )
-         .epilog( "More about testing." );
+            .program( "testing-format" )
+            .description( "Format testing." )
+            .usage( "testing-format [options]" )
+            .epilog( "More about testing." );
 
       parser.add_argument( str, "-s" ).nargs( 1 ).help( "some string" );
       parser.add_argument( depth, "-d", "--depth" ).nargs( 1 ).help( "some depth" );
@@ -153,9 +152,8 @@ TEST( ArgumentParserHelpTest, shouldOutputHelpToStream )
    auto help = getTestHelp();
 
    auto parts = std::vector<std::string>{ "testing-format", "Format testing.",
-      "testing-format [options]", "-s", "some string", "-d", "--depth",
-      "some depth", "--width", "some width", "args", "some arguments",
-      "More about testing." };
+      "testing-format [options]", "-s", "some string", "-d", "--depth", "some depth", "--width",
+      "some width", "args", "some arguments", "More about testing." };
 
    for ( auto& p : parts )
       EXPECT_NE( std::string::npos, help.find( p ) ) << "Missing: " << p;
@@ -173,8 +171,8 @@ TEST( ArgumentParserHelpTest, shouldFormatDescriptionsToTheSameColumn )
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help );
 
-   auto parts = std::vector<std::string>{ "some string", "some depth", "some width",
-      "some arguments" };
+   auto parts =
+         std::vector<std::string>{ "some string", "some depth", "some width", "some arguments" };
 
    auto findColumn = [&helpLines]( auto&& text ) -> size_t {
       for ( auto&& l : helpLines ) {
@@ -190,7 +188,7 @@ TEST( ArgumentParserHelpTest, shouldFormatDescriptionsToTheSameColumn )
    for ( auto& p : parts )
       EXPECT_EQ( column, findColumn( p ) ) << "Not aligned: " << p;
 }
-}
+}   // namespace
 
 TEST( ArgumentParserHelpTest, shouldSetHelpEpilog )
 {
@@ -205,11 +203,12 @@ TEST( ArgumentParserHelpTest, shouldReformatLongDescriptions )
 {
    std::string loremipsum;
    auto parser = argument_parser{};
-   parser.add_argument( loremipsum, "--lorem-ipsum" ).nargs( 1 ).help(
-         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
-         "sed do eiusmod tempor incididunt ut labore et dolore magna "
-         "aliqua. Ut enim ad minim veniam, quis nostrud exercitation "
-         "ullamco laboris nisi ut aliquip ex ea commodo consequat." );
+   parser.add_argument( loremipsum, "--lorem-ipsum" )
+         .nargs( 1 )
+         .help( "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
+                "sed do eiusmod tempor incididunt ut labore et dolore magna "
+                "aliqua. Ut enim ad minim veniam, quis nostrud exercitation "
+                "ullamco laboris nisi ut aliquip ex ea commodo consequat." );
 
    auto formatter = HelpFormatter();
    formatter.setTextWidth( 60 );
@@ -225,11 +224,11 @@ TEST( ArgumentParserHelpTest, shouldLimitTheWidthOfReformattedDescriptions )
    std::string loremipsum;
    auto parser = argument_parser{};
    parser.add_argument( loremipsum, "--lorem-ipsum-x-with-a-longer-name" )
-      .nargs( 1 ).help(
-            "xxxxx xxxxx xxxxx xxx xxxx, xxxxxxxxxxx xxxxxxxxxx xxxx, "
-            "xxx xx xxxxxxx xxxxxx xxxxxxxxxx xx xxxxxx xx xxxxxx xxxxx "
-            "xxxxxx. xx xxxx xx xxxxx xxxxxx, xxxx xxxxxxx xxxxxxxxxxxx "
-            "xxxxxxx xxxxxxx xxxx xx xxxxxxx xx xx xxxxxxx xxxxxxxxx." );
+         .nargs( 1 )
+         .help( "xxxxx xxxxx xxxxx xxx xxxx, xxxxxxxxxxx xxxxxxxxxx xxxx, "
+                "xxx xx xxxxxxx xxxxxx xxxxxxxxxx xx xxxxxx xx xxxxxx xxxxx "
+                "xxxxxx. xx xxxx xx xxxxx xxxxxx, xxxx xxxxxxx xxxxxxxxxxxx "
+                "xxxxxxx xxxxxxx xxxx xx xxxxxxx xx xx xxxxxxx xxxxxxxxx." );
 
    auto formatter = HelpFormatter();
    formatter.setTextWidth( 60 );
@@ -251,8 +250,7 @@ TEST( ArgumentParserHelpTest, shouldKeepSourceParagraphsInDescriptions )
 {
    std::string loremipsum;
    auto parser = argument_parser{};
-   parser.add_argument( loremipsum, "--paragraph" )
-      .nargs( 1 ).help( "xxxxx.\n\nyyyy" );
+   parser.add_argument( loremipsum, "--paragraph" ).nargs( 1 ).help( "xxxxx.\n\nyyyy" );
 
    auto formatter = HelpFormatter();
    formatter.setTextWidth( 60 );

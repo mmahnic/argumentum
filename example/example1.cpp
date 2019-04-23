@@ -4,10 +4,10 @@
 
 #include "../src/argparser.h"
 
-#include <vector>
-#include <string>
-#include <optional>
 #include <iostream>
+#include <optional>
+#include <string>
+#include <vector>
 
 using namespace argparse;
 using namespace std;
@@ -35,8 +35,8 @@ int main( int argc, char** argv )
    auto res = parser.parse_args( args );
 
    cout << "stringValue: " << stringValue.value_or( "not set" ) << "\n";
-   cout << "intValue:    " << ( intValue ? to_string(*intValue) : "not set" ) << "\n";
-   cout << "floatValue:  " << ( floatValue ? to_string(*floatValue) : "not set" ) << "\n";
+   cout << "intValue:    " << ( intValue ? to_string( *intValue ) : "not set" ) << "\n";
+   cout << "floatValue:  " << ( floatValue ? to_string( *floatValue ) : "not set" ) << "\n";
    cout << "flag:        " << flag << "\n";
 
    cout << "Positional parameters: ";

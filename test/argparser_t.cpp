@@ -3,8 +3,8 @@
 
 #include "../src/argparser.h"
 
-#include <gtest/gtest.h>
 #include <algorithm>
+#include <gtest/gtest.h>
 
 using namespace argparse;
 
@@ -82,7 +82,7 @@ TEST( ArgumentParserTest, shouldNotSetOptionValuesWithoutArguments )
    parser.parse_args( { "--value", "2314" } );
 
    EXPECT_EQ( 2314, value.value() );
-   EXPECT_FALSE( bool(unused) );
+   EXPECT_FALSE( bool( unused ) );
 }
 
 TEST( ArgumentParserTest, shouldOnlyAddOptionValueIfRequired )
@@ -115,7 +115,7 @@ TEST( ArgumentParserTest, shouldSkipParsingOptionsAfterDashDash )
    parser.parse_args( { "--value", "2314", "--", "--skipped" } );
 
    EXPECT_EQ( 2314, value.value() );
-   EXPECT_FALSE( bool(flag) );
+   EXPECT_FALSE( bool( flag ) );
 }
 
 TEST( ArgumentParserTest, shouldSupportShortOptionGroups )
@@ -135,7 +135,7 @@ TEST( ArgumentParserTest, shouldSupportShortOptionGroups )
 
    EXPECT_EQ( 1, flagA.value() );
    EXPECT_EQ( "1", flagB.value() );
-   EXPECT_FALSE( bool(flagC) );
+   EXPECT_FALSE( bool( flagC ) );
    EXPECT_EQ( 1, flagD.value() );
 }
 
@@ -156,7 +156,7 @@ TEST( ArgumentParserTest, shouldReadArgumentForLastOptionInGroup )
 
    EXPECT_EQ( 1, flagA.value() );
    EXPECT_EQ( "1", flagB.value() );
-   EXPECT_FALSE( bool(flagC) );
+   EXPECT_FALSE( bool( flagC ) );
    EXPECT_EQ( 4213, flagD.value() );
 }
 
@@ -220,14 +220,16 @@ TEST( ArgumentParserTest, shouldReportMissingRequiredOptionError )
 
 TEST( ArgumentParserTest, shouldSupportCustomOptionTypes )
 {
-   struct CustomType {
+   struct CustomType
+   {
       std::string value;
       std::string reversed;
    };
 
-   class CustomValue: public argument_parser::Value
+   class CustomValue : public argument_parser::Value
    {
       CustomType& mValue;
+
    public:
       CustomValue( CustomType& value )
          : mValue( value )
@@ -254,23 +256,23 @@ TEST( ArgumentParserTest, shouldSupportCustomOptionTypes )
 
 TEST( ArgumentParserTest, shouldSupportCustomOptionTypes_WithConvertedValue )
 {
-   struct CustomType {
+   struct CustomType
+   {
       std::optional<std::string> value;
       std::string reversed;
    };
 
-   class CustomValue: public argument_parser::ConvertedValue<CustomType>
+   class CustomValue : public argument_parser::ConvertedValue<CustomType>
    {
    public:
       CustomValue( CustomType& value )
-         : ConvertedValue( value,
-               []( const std::string& value ) {
-                  CustomType custom;
-                  custom.value = value;
-                  custom.reversed = value;
-                  std::reverse( custom.reversed.begin(), custom.reversed.end() );
-                  return custom;
-               } )
+         : ConvertedValue( value, []( const std::string& value ) {
+            CustomType custom;
+            custom.value = value;
+            custom.reversed = value;
+            std::reverse( custom.reversed.begin(), custom.reversed.end() );
+            return custom;
+         } )
       {}
    };
 
@@ -285,16 +287,19 @@ TEST( ArgumentParserTest, shouldSupportCustomOptionTypes_WithConvertedValue )
 }
 
 namespace {
-struct CustomType_fromstring_test {
+struct CustomType_fromstring_test
+{
    std::string value;
    std::string reversed;
 };
-}
+}   // namespace
 
 namespace argparse {
 template<>
-struct from_string<CustomType_fromstring_test> {
-   static CustomType_fromstring_test convert(const std::string& s) {
+struct from_string<CustomType_fromstring_test>
+{
+   static CustomType_fromstring_test convert( const std::string& s )
+   {
       CustomType_fromstring_test custom;
       custom.value = s;
       custom.reversed = s;
@@ -302,7 +307,7 @@ struct from_string<CustomType_fromstring_test> {
       return custom;
    }
 };
-}
+}   // namespace argparse
 
 TEST( ArgumentParserTest, shouldSupportCustomOptionTypesWith_from_string )
 {
@@ -526,8 +531,8 @@ TEST( ArgumentParserTest, shouldFailWhenOptionArgumentCountsAreWrong )
    parser.add_argument( texts, "-t" ).nargs( 2 );
    parser.add_argument( files, "-f" ).nargs( 2 );
 
-   auto res = parser.parse_args( { "-t", "the", "-f", "file1", "file2",
-      "not-file3", "-s", "string" } );
+   auto res =
+         parser.parse_args( { "-t", "the", "-f", "file1", "file2", "not-file3", "-s", "string" } );
    EXPECT_EQ( "string", strvalue );
    EXPECT_TRUE( vector_eq( { "the" }, texts ) );
    EXPECT_TRUE( vector_eq( { "file1", "file2" }, files ) );
@@ -549,8 +554,8 @@ TEST( ArgumentParserTest, shouldSupportPositionalArgumentCounts )
    parser.add_argument( strvalue, "-s" ).nargs( 1 );
    parser.add_argument( texts, "text" ).nargs( 2 );
    parser.add_argument( files, "file" ).nargs( 2 );
-   auto res = parser.parse_args( { "the", "-s", "string1", "text", "file1", "file2",
-      "not-file3", "-s", "string2" } );
+   auto res = parser.parse_args(
+         { "the", "-s", "string1", "text", "file1", "file2", "not-file3", "-s", "string2" } );
 
    EXPECT_EQ( "string2", strvalue );
    EXPECT_TRUE( vector_eq( { "the", "text" }, texts ) );
@@ -813,12 +818,18 @@ TEST( ArgumentParserTest, shouldSetArgumentCountAtMostOnce )
    EXPECT_NO_THROW( parser.add_argument( texts, "-b" ).minargs( 1 ) );
    EXPECT_NO_THROW( parser.add_argument( texts, "-c" ).maxargs( 1 ) );
 
-   EXPECT_THROW( parser.add_argument( texts, "-d" ).nargs( 1 ).minargs( 1 ), std::invalid_argument );
-   EXPECT_THROW( parser.add_argument( texts, "-e" ).nargs( 1 ).maxargs( 1 ), std::invalid_argument );
-   EXPECT_THROW( parser.add_argument( texts, "-f" ).minargs( 1 ).nargs( 1 ), std::invalid_argument );
-   EXPECT_THROW( parser.add_argument( texts, "-g" ).minargs( 1 ).maxargs( 1 ), std::invalid_argument );
-   EXPECT_THROW( parser.add_argument( texts, "-h" ).maxargs( 1 ).nargs( 1 ), std::invalid_argument );
-   EXPECT_THROW( parser.add_argument( texts, "-i" ).maxargs( 1 ).minargs( 1 ), std::invalid_argument );
+   EXPECT_THROW(
+         parser.add_argument( texts, "-d" ).nargs( 1 ).minargs( 1 ), std::invalid_argument );
+   EXPECT_THROW(
+         parser.add_argument( texts, "-e" ).nargs( 1 ).maxargs( 1 ), std::invalid_argument );
+   EXPECT_THROW(
+         parser.add_argument( texts, "-f" ).minargs( 1 ).nargs( 1 ), std::invalid_argument );
+   EXPECT_THROW(
+         parser.add_argument( texts, "-g" ).minargs( 1 ).maxargs( 1 ), std::invalid_argument );
+   EXPECT_THROW(
+         parser.add_argument( texts, "-h" ).maxargs( 1 ).nargs( 1 ), std::invalid_argument );
+   EXPECT_THROW(
+         parser.add_argument( texts, "-i" ).maxargs( 1 ).minargs( 1 ), std::invalid_argument );
 }
 
 TEST( ArgumentParserTest, shouldSetOptionChoices )
@@ -894,7 +905,7 @@ TEST( ArgumentParserTest, shouldNotAcceptOptionsWithWhitespace )
 
 TEST( ArgumentParserTest, shouldAcceptSharedOptionStructure )
 {
-   struct Options: public argparse::Options
+   struct Options : public argparse::Options
    {
       std::string str;
       long count;
@@ -916,7 +927,7 @@ TEST( ArgumentParserTest, shouldAcceptSharedOptionStructure )
 
 TEST( ArgumentParserTest, shouldAcceptMultipleSharedOptionStructures )
 {
-   struct Options: public argparse::Options
+   struct Options : public argparse::Options
    {
       std::string str;
       long count;
@@ -928,7 +939,7 @@ TEST( ArgumentParserTest, shouldAcceptMultipleSharedOptionStructures )
       }
    };
 
-   struct MoreOptions: public argparse::Options
+   struct MoreOptions : public argparse::Options
    {
       std::string str;
       long count;
@@ -952,7 +963,6 @@ TEST( ArgumentParserTest, shouldAcceptMultipleSharedOptionStructures )
    EXPECT_EQ( "Str", pMoreOpt->str );
    EXPECT_EQ( 4723, pMoreOpt->count );
 }
-
 
 TEST( ArgumentParserTest, shouldTakeLongOptionArgumentsWithEquals )
 {
@@ -995,9 +1005,9 @@ enum ETypeError {
 };
 
 template<typename TValue>
-ETypeError testType(const std::string& example, const TValue result,
-      std::function<bool(const TValue&, const TValue&)> equal =
-      []( const TValue& a, const TValue& b ) { return a == b; } )
+ETypeError testType( const std::string& example, const TValue result,
+      std::function<bool( const TValue&, const TValue& )> equal =
+            []( const TValue& a, const TValue& b ) { return a == b; } )
 {
    TValue value;
    std::optional<TValue> maybeValue;
@@ -1008,8 +1018,8 @@ ETypeError testType(const std::string& example, const TValue result,
    parser.add_argument( maybeValue, "--maybe" ).nargs( 1 );
    parser.add_argument( vectorValue, "--vector" ).nargs( 1 );
 
-   auto res = parser.parse_args( { "--value=" + example, "--maybe=" + example,
-      "--vector=" + example } );
+   auto res =
+         parser.parse_args( { "--value=" + example, "--maybe=" + example, "--vector=" + example } );
 
    if ( !equal( value, result ) )
       return VALUE_CONTENT;
@@ -1024,7 +1034,7 @@ ETypeError testType(const std::string& example, const TValue result,
 
    return OK;
 }
-}
+}   // namespace
 
 TEST( ArgumentParserTest, shouldSupportIntegralNumericTypes )
 {
@@ -1063,9 +1073,7 @@ TEST( ArgumentParserTest, shouldSupportIntegralNumericTypes )
 
 TEST( ArgumentParserTest, shouldSupportFloatingNumericTypes )
 {
-   auto near = []( const auto& a, const auto& b ) {
-      return abs(a - b) < 1e-4;
-   };
+   auto near = []( const auto& a, const auto& b ) { return abs( a - b ) < 1e-4; };
    EXPECT_EQ( OK, testType<float>( "123.45", 123.45, near ) );
    EXPECT_EQ( OK, testType<float>( "-123.45", -123.45, near ) );
 
@@ -1149,7 +1157,7 @@ TEST( ArgumentParserTest, shouldWriteHelpAndExitWhenHelpOptionIsPresent )
    auto text = strout.str();
    EXPECT_NE( std::string::npos, text.find( "Print this test help message and exit!" ) );
 
-   EXPECT_FALSE( bool(maybeInt) );
+   EXPECT_FALSE( bool( maybeInt ) );
 }
 
 TEST( ArgumentParserTest, shouldConfigureExitMode_Return )

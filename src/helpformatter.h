@@ -21,8 +21,9 @@ class Writer
    std::string indent;
 
 public:
-   Writer( std::ostream& outStream, size_t widthBytes=80 )
-      : stream( outStream ), width( widthBytes )
+   Writer( std::ostream& outStream, size_t widthBytes = 80 )
+      : stream( outStream )
+      , width( widthBytes )
    {}
 
    void setIndent( size_t indentBytes )
@@ -130,7 +131,7 @@ private:
          auto newpos = position + ( position == 0 ? indent.size() : 1 ) + word.size();
          if ( newpos > width )
             startLine();
-         else if ( position > 0 && position == lastWritePosition )  {
+         else if ( position > 0 && position == lastWritePosition ) {
             stream << " ";
             ++position;
          }
@@ -145,22 +146,21 @@ private:
          lastWritePosition = position;
       }
    }
-
 };
 
 inline void HelpFormatter::format( const argument_parser& parser, std::ostream& out )
 {
    auto config = parser.getConfig();
    auto args = parser.describe_arguments();
-   auto iopt = std::stable_partition(  std::begin(args), std::end(args),
-         []( auto&& d ) { return d.is_positional(); } );
+   auto iopt = std::stable_partition(
+         std::begin( args ), std::end( args ), []( auto&& d ) { return d.is_positional(); } );
    auto hasPositional = iopt != std::begin( args );
    auto hasOptional = iopt != std::end( args );
    auto desctiptionIndent = deriveMaxArgumentWidth( args ) + mArgumentIndent + 1;
    if ( desctiptionIndent > mMaxDescriptionIndent )
       desctiptionIndent = mMaxDescriptionIndent;
 
-   auto writeArguments = [&]( auto&& writer, auto&& start, auto &&end ) {
+   auto writeArguments = [&]( auto&& writer, auto&& start, auto&& end ) {
       writer.startLine();
       for ( auto it = start; it != end; ++it ) {
          writer.setIndent( mArgumentIndent );
@@ -202,4 +202,4 @@ inline void HelpFormatter::format( const argument_parser& parser, std::ostream& 
    }
 }
 
-}
+}   // namespace argparse

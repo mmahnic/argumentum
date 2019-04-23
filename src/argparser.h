@@ -6,18 +6,18 @@
 #include "convert.h"
 #include "helpformatter_i.h"
 
-#include <memory>
-#include <string>
-#include <vector>
-#include <optional>
-#include <functional>
 #include <algorithm>
 #include <cctype>
+#include <functional>
 #include <iostream>
+#include <memory>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace argparse {
 
-class InvalidChoiceError: public std::invalid_argument
+class InvalidChoiceError : public std::invalid_argument
 {
 public:
    InvalidChoiceError( const std::string& value )
@@ -25,7 +25,7 @@ public:
    {}
 };
 
-class ParserTerminated: public std::exception
+class ParserTerminated : public std::exception
 {
 public:
    const std::string arg;
@@ -33,7 +33,8 @@ public:
 
 public:
    ParserTerminated( const std::string& arg, int code )
-      : arg( arg ), errorCode( code )
+      : arg( arg )
+      , errorCode( code )
    {}
 
    const char* what() const noexcept override
@@ -58,6 +59,7 @@ public:
       int mAssignCount = 0;
       int mOptionAssignCount = 0;
       bool mHasErrors = false;
+
    public:
       void setValue( const std::string& value )
       {
@@ -106,17 +108,18 @@ public:
    };
 
    template<typename TValue>
-   class ConvertedValue: public Value
+   class ConvertedValue : public Value
    {
    protected:
       using result_t = typename convert_result<TValue>::type;
-      using converter_t = std::function<result_t(const std::string&)>;
+      using converter_t = std::function<result_t( const std::string& )>;
       TValue& mValue;
       converter_t mConvert = []( const std::string& ) { return {}; };
 
    public:
       ConvertedValue( TValue& value, converter_t converter )
-         : mValue( value ), mConvert( converter )
+         : mValue( value )
+         , mConvert( converter )
       {}
 
    protected:
@@ -238,7 +241,7 @@ public:
          mMaxArgs = std::max( 0, count );
       }
 
-      void setRequired( bool isRequired=true )
+      void setRequired( bool isRequired = true )
       {
          mIsRequired = isRequired;
       }
@@ -302,9 +305,9 @@ public:
 
       void setValue( const std::string& value )
       {
-         if ( !mChoices.empty() && std::none_of( mChoices.begin(), mChoices.end(),
-                  [&value]( auto v ) { return v == value; } ) )
-         {
+         if ( !mChoices.empty()
+               && std::none_of( mChoices.begin(), mChoices.end(),
+                        [&value]( auto v ) { return v == value; } ) ) {
             mpValue->markBadArgument();
             throw InvalidChoiceError( value );
          }
@@ -377,7 +380,8 @@ public:
 
    public:
       OptionConfig( std::vector<Option>& options, size_t index )
-         : mOptions( options ), mIndex( index )
+         : mOptions( options )
+         , mIndex( index )
       {}
 
       OptionConfig& setShortName( std::string_view name )
@@ -428,7 +432,7 @@ public:
          return *this;
       }
 
-      OptionConfig& required( bool isRequired=true )
+      OptionConfig& required( bool isRequired = true )
       {
          mOptions[mIndex].setRequired( isRequired );
          return *this;
@@ -460,9 +464,7 @@ public:
       }
    };
 
-   enum EExitMode {
-      EXIT_TERMINATE, EXIT_THROW, EXIT_RETURN
-   };
+   enum EExitMode { EXIT_TERMINATE, EXIT_THROW, EXIT_RETURN };
 
    class ParserConfig
    {
@@ -553,7 +555,8 @@ public:
       const std::string option;
       const int errorCode;
       ParseError( std::string_view optionName, int code )
-         : option( optionName ), errorCode( code )
+         : option( optionName )
+         , errorCode( code )
       {}
    };
 
@@ -594,7 +597,7 @@ private:
                continue;
             }
 
-            if ( mIgnoreOptions ){
+            if ( mIgnoreOptions ) {
                addFreeArgument( arg );
                continue;
             }
@@ -606,7 +609,7 @@ private:
                if ( arg.size() == 2 )
                   startOption( arg );
                else {
-                  auto opt = std::string{"--"};
+                  auto opt = std::string{ "--" };
                   for ( int i = 1; i < arg_view.size(); ++i ) {
                      opt[1] = arg_view[i];
                      startOption( opt );
@@ -617,7 +620,7 @@ private:
                if ( haveActiveOption() ) {
                   auto& option = *mpActiveOption;
                   if ( option.willAcceptArgument() ) {
-                     setValue(option, arg );
+                     setValue( option, arg );
                      if ( !option.willAcceptArgument() )
                         closeOption();
                   }
@@ -657,7 +660,7 @@ private:
 
             if ( !arg.empty() ) {
                if ( option.willAcceptArgument() )
-                  setValue( option, std::string{ arg } ); // TODO: params should be string_view-s
+                  setValue( option, std::string{ arg } );   // TODO: params should be string_view-s
                else
                   addError( name, FLAG_PARAMETER );
             }
@@ -726,13 +729,13 @@ private:
          try {
             option.setValue( value );
          }
-         catch( const InvalidChoiceError& ) {
+         catch ( const InvalidChoiceError& ) {
             addError( option.getName(), INVALID_CHOICE );
          }
-         catch( const std::invalid_argument& ) {
+         catch ( const std::invalid_argument& ) {
             addError( option.getName(), CONVERSION_ERROR );
          }
-         catch( const std::out_of_range& ) {
+         catch ( const std::out_of_range& ) {
             addError( option.getName(), CONVERSION_ERROR );
          }
       }
@@ -762,8 +765,9 @@ public:
       return mConfig.data();
    }
 
-   template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value> >
-   OptionConfig add_argument( TValue value, const std::string& name="", const std::string& altName="" )
+   template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value>>
+   OptionConfig add_argument(
+         TValue value, const std::string& name = "", const std::string& altName = "" )
    {
       auto option = Option( value );
       return tryAddArgument( option, { name, altName } );
@@ -773,8 +777,9 @@ public:
     * Add an argument with names @p name and @p altName and store the reference
     * to @p value that will receive the parsed parameter(s).
     */
-   template<typename TValue, typename = std::enable_if_t<!std::is_base_of<Value, TValue>::value> >
-   OptionConfig add_argument( TValue &value, const std::string& name="", const std::string& altName="" )
+   template<typename TValue, typename = std::enable_if_t<!std::is_base_of<Value, TValue>::value>>
+   OptionConfig add_argument(
+         TValue& value, const std::string& name = "", const std::string& altName = "" )
    {
       auto option = Option( value );
       return tryAddArgument( option, { name, altName } );
@@ -797,7 +802,8 @@ public:
    {
       auto value = VoidValue{};
       auto option = Option( value );
-      return tryAddArgument( option, {"-h", "--help"} ).help( "Print this help message and exit." );
+      return tryAddArgument( option, { "-h", "--help" } )
+            .help( "Print this help message and exit." );
    }
 
    ParseResult parse_args( const std::vector<std::string>& args )
@@ -817,7 +823,7 @@ public:
 
    ArgumentHelpResult describe_argument( std::string_view name ) const
    {
-      const auto& args = (name.substr( 0, 1 ) == "-") ? mOptions : mPositional;
+      const auto& args = ( name.substr( 0, 1 ) == "-" ) ? mOptions : mPositional;
       for ( auto& opt : args )
          if ( opt.hasName( name ) )
             return describeOption( opt );
@@ -875,7 +881,7 @@ private:
       };
 
       if ( isPositional( names ) ) {
-         mPositional.push_back( std::move(newOption) );
+         mPositional.push_back( std::move( newOption ) );
          auto& option = mPositional.back();
          option.setLongName( names.empty() ? "arg" : names[0] );
 
@@ -887,7 +893,7 @@ private:
          return { mPositional, mPositional.size() - 1 };
       }
       else if ( isOption( names ) ) {
-         mOptions.push_back( std::move(newOption) );
+         mOptions.push_back( std::move( newOption ) );
          auto& option = mOptions.back();
          trySetNames( option, names );
 
@@ -913,7 +919,7 @@ private:
       }
 
       if ( option.getName().empty() )
-            throw std::invalid_argument( "An option must have a name." );
+         throw std::invalid_argument( "An option must have a name." );
    }
 
    ArgumentHelpResult describeOption( const Option& option ) const
@@ -925,7 +931,7 @@ private:
 
       if ( option.acceptsAnyArguments() ) {
          const auto& metavar = option.getMetavar();
-         auto [ mmin, mmax ] = option.getArgumentCounts();
+         auto [mmin, mmax] = option.getArgumentCounts();
          std::string res;
          if ( mmin > 0 ) {
             res = metavar;
@@ -940,7 +946,7 @@ private:
             res += "[" + metavar + "]";
          else if ( mmax > mmin ) {
             auto opt = ( res.empty() ? "[" : " [" ) + metavar + " {0.."
-               + std::to_string( mmax - mmin ) + "}]";
+                  + std::to_string( mmax - mmin ) + "}]";
             res += opt;
          }
 
@@ -980,6 +986,6 @@ private:
    }
 };
 
-}
+}   // namespace argparse
 
 #include "helpformatter.h"
