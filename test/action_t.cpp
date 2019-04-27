@@ -9,9 +9,9 @@ using namespace argparse;
 
 TEST( ArgumentParserActionTest, shouldModifyArgumentWithAction )
 {
-   class TestAction : public argparse::argument_parser::Action
+   class TestAction : public argparse::argument_parser::AssignAction
    {
-      std::optional<std::string> exec(
+      std::optional<std::string> assign(
             argparse::argument_parser::Value& target, const std::string& value ) override
       {
          if ( value.find( "1" ) != std::string::npos )
@@ -40,9 +40,9 @@ TEST( ArgumentParserActionTest, shouldModifyArgumentWithAction )
 
 TEST( ArgumentParserActionTest, shouldNotSetValueIfActionReturnsEmptyOptional )
 {
-   class TestAction : public argparse::argument_parser::Action
+   class TestAction : public argparse::argument_parser::AssignAction
    {
-      std::optional<std::string> exec(
+      std::optional<std::string> assign(
             argparse::argument_parser::Value& target, const std::string& value ) override
       {
          return {};
@@ -61,9 +61,9 @@ TEST( ArgumentParserActionTest, shouldNotSetValueIfActionReturnsEmptyOptional )
 
 TEST( ArgumentParserActionTest, shouldSetValueOnTargetFromAction )
 {
-   class TestAction : public argparse::argument_parser::Action
+   class TestAction : public argparse::argument_parser::AssignAction
    {
-      std::optional<std::string> exec(
+      std::optional<std::string> assign(
             argparse::argument_parser::Value& target, const std::string& value ) override
       {
          if ( value.find( "1" ) != std::string::npos )
