@@ -142,9 +142,9 @@ public:
    };
 
    /**
-    * The action is executed before Value::setValue is called.
+    * The action is executed before @p target.setValue is called.
     *
-    * Value::setValue will be called if exec returns a non-empty value.
+    * @p target.setValue will be called if exec returns a non-empty value.
     */
    class Action
    {
@@ -372,6 +372,9 @@ public:
       }
    };
 
+   /**
+    * OptionConfig is used to configure an option after an option was created with add_argument.
+    */
    class OptionConfig
    {
       std::vector<Option>& mOptions;
@@ -660,7 +663,7 @@ private:
 
             if ( !arg.empty() ) {
                if ( option.willAcceptArgument() )
-                  setValue( option, std::string{ arg } );   // TODO: params should be string_view-s
+                  setValue( option, std::string{ arg } );
                else
                   addError( name, FLAG_PARAMETER );
             }
@@ -798,11 +801,11 @@ public:
       }
    }
 
-   OptionConfig add_help()
+   OptionConfig add_help( const std::string& name = "--help", const std::string& altName = "-h" )
    {
       auto value = VoidValue{};
       auto option = Option( value );
-      return tryAddArgument( option, { "-h", "--help" } )
+      return tryAddArgument( option, { name, altName } )
             .help( "Print this help message and exit." );
    }
 

@@ -1111,22 +1111,61 @@ TEST( ArgumentParserTest, shouldNotSetProgramNameFromParameter0 )
    ASSERT_EQ( 0, res.errors.size() );
 }
 
+TEST( ArgumentParserTest, shouldNotHaveHelpByDefault )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout ).on_exit_return();
+
+   // -- WHEN
+   auto res = parser.parse_args( { "-h" } );
+
+   // -- THEN
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( argument_parser::UNKNOWN_OPTION, res.errors[0].errorCode );
+
+   // -- WHEN
+   res = parser.parse_args( { "--help" } );
+
+   // -- THEN
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( argument_parser::UNKNOWN_OPTION, res.errors[0].errorCode );
+}
+
 TEST( ArgumentParserTest, shouldAddDefaultHelpOptions )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout ).on_exit_return();
 
-   auto res = parser.parse_args( { "-h" } );
-   EXPECT_NE( 0, res.errors.size() );
-
+   // -- WHEN
    parser.add_help();
 
-   res = parser.parse_args( { "-h" } );
+   // -- THEN
+   auto res = parser.parse_args( { "-h" } );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
 
    res = parser.parse_args( { "--help" } );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+}
+
+TEST( ArgumentParserHelpTest, shouldAddCustomHelpOptions )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout ).on_exit_return();
+
+   // -- WHEN
+   parser.add_help( "--advice", "-a" );
+
+   // -- THEN
+   auto res = parser.parse_args( { "-a" } );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+
+   res = parser.parse_args( { "--advice" } );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
 }

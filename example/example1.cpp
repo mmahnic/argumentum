@@ -22,11 +22,19 @@ int main( int argc, char** argv )
 
    auto parser = argument_parser{};
    parser.config().program( argv[0] );
-   parser.add_argument( stringValue, "-s", "--string" ).nargs( 1 );
-   parser.add_argument( intValue, "-i", "--int" ).nargs( 1 );
-   parser.add_argument( floatValue, "-f", "--float" ).nargs( 1 );
-   parser.add_argument( flag, "-g", "--flag" );
-   parser.add_argument( params, "params" );
+   parser.add_argument( stringValue, "-s", "--string" )
+         .help( "Set the value of a string option." )
+         .nargs( 1 );
+   parser.add_argument( intValue, "-i", "--int" )
+         .help( "Set the value of an integer option." )
+         .nargs( 1 );
+   parser.add_argument( floatValue, "-f", "--float" )
+         .help( "Set the value of a float option." )
+         .nargs( 1 );
+   parser.add_argument( flag, "-g", "--flag" ).help( "Set the flag." );
+   parser.add_argument( params, "params" ).help( "Free parameters." );
+   parser.add_help();
+   parser.add_help( "--extra-help" ).help( "Another way to print help and exit." );
 
    vector<string> args;
    for ( int i = 1; i < argc; ++i )
