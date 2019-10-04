@@ -19,10 +19,16 @@ struct ArgumentHelpResult
    std::string long_name;
    std::string arguments;
    std::string help;
+   bool required = false;
 
    bool is_positional() const
    {
       return short_name.substr( 0, 1 ) != "-" && long_name.substr( 0, 1 ) != "-";
+   }
+
+   bool is_required() const
+   {
+      return required || is_positional();
    }
 };
 
