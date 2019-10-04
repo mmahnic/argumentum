@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+﻿// Copyright (c) 2018, 2019 Marko Mahnič
 // License: MIT. See LICENSE in the root of the project.
 
 #include "../src/argparser.h"
@@ -131,7 +131,8 @@ public:
    }
 };
 
-auto getTestHelp( auto&& parser, auto&& formatter )
+template<typename P, typename F>
+std::string getTestHelp( P&& parser, F&& formatter )
 {
    std::stringstream strout;
    formatter.format( parser, strout );

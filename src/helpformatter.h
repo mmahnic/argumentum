@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+﻿// Copyright (c) 2018, 2019 Marko Mahnič
 // License: MIT. See LICENSE in the root of the project.
 
 #pragma once
@@ -141,7 +141,7 @@ private:
             position = indent.size();
          }
 
-         stream << word;
+         stream.write( word.data(), word.size() );
          position += word.size();
          lastWritePosition = position;
       }

@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+﻿// Copyright (c) 2018, 2019 Marko Mahnič
 // License: MIT. See LICENSE in the root of the project.
 
 #include "../src/argparser.h"
@@ -1178,7 +1178,8 @@ TEST( ArgumentParserTest, shouldSetParserOutputToStream )
 
    parser.config().cout( strout );
 
-   EXPECT_NE( nullptr, parser.getConfig().pOutStream );
+   // NOTE: EXPECT_NE fails to compile with MSVC 2017, 15.9,16
+   EXPECT_TRUE( nullptr != parser.getConfig().pOutStream );
 }
 
 TEST( ArgumentParserTest, shouldWriteHelpAndExitWhenHelpOptionIsPresent )
