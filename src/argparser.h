@@ -931,6 +931,7 @@ private:
       help.short_name = option.getShortName();
       help.long_name = option.getLongName();
       help.help = option.getRawHelp();
+      help.required = option.isRequired();
 
       if ( option.acceptsAnyArguments() ) {
          const auto& metavar = option.getMetavar();

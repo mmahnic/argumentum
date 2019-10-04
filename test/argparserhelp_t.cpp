@@ -348,3 +348,40 @@ TEST( ArgumentParserHelpTest, shouldChangeOptionMetavarName )
       EXPECT_LT( optpos, argspos );
    }
 }
+
+TEST( ArgumentParserHelpTest, shouldSplitOptionalAndMandatoryArguments )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.add_argument( dummy, "--yes" ).nargs( 0 ).required( true ).help( "req:true" );
+   parser.add_argument( dummy, "--no" ).nargs( 0 ).required( false ).help( "req:false" );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help );
+
+   bool hasRequired = false;
+   bool hasOptional = false;
+   enum class EBlock { other, required, optional };
+   auto block = EBlock::required;
+   std::map<std::string, EBlock> found;
+
+   for ( auto line : helpLines ) {
+      if ( line.find( "optional arguments" ) != std::string::npos ) {
+         hasOptional = true;
+         block = EBlock::optional;
+      }
+      if ( line.find( "required arguments" ) != std::string::npos ) {
+         hasRequired = true;
+         block = EBlock::required;
+      }
+      for ( auto param : { "--yes", "--no" } ) {
+         if ( line.find( param ) != std::string::npos )
+            found[param] = block;
+      }
+   }
+
+   EXPECT_TRUE( hasOptional );
+   EXPECT_TRUE( hasRequired );
+   EXPECT_EQ( EBlock::required, found["--yes"] );
+   EXPECT_EQ( EBlock::optional, found["--no"] );
+}

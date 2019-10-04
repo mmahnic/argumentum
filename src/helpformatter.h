@@ -152,10 +152,13 @@ inline void HelpFormatter::format( const argument_parser& parser, std::ostream& 
 {
    auto config = parser.getConfig();
    auto args = parser.describe_arguments();
-   auto iopt = std::stable_partition(
+   auto iendpos = std::stable_partition(
          std::begin( args ), std::end( args ), []( auto&& d ) { return d.is_positional(); } );
-   auto hasPositional = iopt != std::begin( args );
-   auto hasOptional = iopt != std::end( args );
+   auto iendreq = std::stable_partition(
+         iendpos, std::end( args ), []( auto&& d ) { return d.is_required(); } );
+   auto hasPositional = std::begin( args ) != iendpos;
+   auto hasRequired = iendpos != iendreq;
+   auto hasOptional = iendreq != std::end( args );
    auto desctiptionIndent = deriveMaxArgumentWidth( args ) + mArgumentIndent + 1;
    if ( desctiptionIndent > mMaxDescriptionIndent )
       desctiptionIndent = mMaxDescriptionIndent;
@@ -188,12 +191,17 @@ inline void HelpFormatter::format( const argument_parser& parser, std::ostream& 
 
    if ( hasPositional ) {
       writer.write( "positional arguments:" );
-      writeArguments( writer, std::begin( args ), iopt );
+      writeArguments( writer, std::begin( args ), iendpos );
+   }
+
+   if ( hasRequired ) {
+      writer.write( "required arguments:" );
+      writeArguments( writer, iendpos, iendreq );
    }
 
    if ( hasOptional ) {
       writer.write( "optional arguments:" );
-      writeArguments( writer, iopt, std::end( args ) );
+      writeArguments( writer, iendreq, std::end( args ) );
    }
 
    if ( !config.epilog.empty() ) {
