@@ -12,6 +12,7 @@
 #include <iostream>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -748,6 +749,7 @@ private:
    ParserConfig mConfig;
    std::vector<Option> mOptions;
    std::vector<Option> mPositional;
+   std::set<std::string> mHelpOptionNames;
    std::vector<std::shared_ptr<Options>> mTargets;
 
 public:
@@ -801,18 +803,46 @@ public:
       }
    }
 
-   OptionConfig add_help( const std::string& name = "--help", const std::string& altName = "-h" )
+   /**
+    * Add a special option that will display the help and terminate the parser.
+    * If this method is not called, the default help options --help and -h will
+    * be used.
+    */
+   OptionConfig add_help_option()
    {
+      return add_help_option( "--help", "-h" );
+   }
+
+   OptionConfig add_help_option( const std::string& name )
+   {
+      return add_help_option( name, "" );
+   }
+
+   OptionConfig add_help_option( const std::string& name, const std::string& altName )
+   {
+      if ( !name.empty() && name[0] != '-' || !altName.empty() && altName[0] != '-' )
+         throw std::invalid_argument( "A help argument must be an option." );
+
       auto value = VoidValue{};
       auto option = Option( value );
-      return tryAddArgument( option, { name, altName } )
-            .help( "Print this help message and exit." );
+      auto optionConfig =
+            tryAddArgument( option, { name, altName } ).help( "Print this help message and exit." );
+
+      if ( !name.empty() )
+         mHelpOptionNames.insert( name );
+      if ( !altName.empty() )
+         mHelpOptionNames.insert( altName );
+
+      return optionConfig;
    }
 
    ParseResult parse_args( const std::vector<std::string>& args )
    {
+      if ( mHelpOptionNames.empty() )
+         add_help_option();
+
       for ( auto&& arg : args ) {
-         if ( arg == "-h" || arg == "--help" ) {
+         if ( mHelpOptionNames.count( arg ) > 0 ) {
             generate_help();
             return exit_parser( arg, HELP_REQUESTED );
          }
