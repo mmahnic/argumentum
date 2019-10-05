@@ -1,5 +1,5 @@
 // Copyright (c) 2018, 2019 Marko Mahnič
-// License: MIT. See LICENSE in the root of the project.
+// License: MPL2. See LICENSE in the root of the project.
 
 #include "../src/argparser.h"
 #include "../src/helpformatter.h"
