@@ -33,8 +33,8 @@ int main( int argc, char** argv )
          .nargs( 1 );
    parser.add_argument( flag, "-g", "--flag" ).help( "Set the flag." );
    parser.add_argument( params, "params" ).help( "Free parameters." );
-   parser.add_help();
-   parser.add_help( "--extra-help" ).help( "Another way to print help and exit." );
+   parser.add_help_option();
+   parser.add_help_option( "--extra-help" ).help( "Another way to print help and exit." );
 
    vector<string> args;
    for ( int i = 1; i < argc; ++i )
