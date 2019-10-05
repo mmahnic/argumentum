@@ -963,10 +963,8 @@ private:
    {
       std::map<std::string, std::vector<std::string>> counts;
       for ( auto& option : mOptions )
-         if ( option.getGroup() && option.wasAssigned() ) {
-            std::cout << option.getName() << " was assigned\n";
+         if ( option.getGroup() && option.wasAssigned() )
             counts[option.getGroup()->getName()].push_back( option.getName() );
-         }
 
       for ( auto& c : counts )
          if ( c.second.size() > 1 )
