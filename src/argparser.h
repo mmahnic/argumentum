@@ -207,6 +207,11 @@ public:
       {
          return mIsExclusive;
       }
+
+      bool isRequired() const
+      {
+         return mIsRequired;
+      }
    };
 
    class Option
@@ -1041,6 +1046,11 @@ private:
          else
             option.setNArgs( 1 );
 
+         // Positional parameters are required so they can't be in an exclusive
+         // group.
+         if ( mpActiveGroup && !mpActiveGroup->isExclusive() )
+            option.setGroup( mpActiveGroup );
+
          return { mPositional, mPositional.size() - 1 };
       }
       else if ( isOption( names ) ) {
@@ -1126,6 +1136,13 @@ private:
          }
 
          help.arguments = std::move( res );
+      }
+
+      auto pGroup = option.getGroup();
+      if ( pGroup ) {
+         help.group.name = pGroup->getName();
+         help.group.isExclusive = pGroup->isExclusive();
+         help.group.isRequired = pGroup->isRequired();
       }
 
       return help;

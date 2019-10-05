@@ -20,6 +20,12 @@ struct ArgumentHelpResult
    std::string arguments;
    std::string help;
    bool required = false;
+   struct
+   {
+      std::string name;
+      bool isExclusive = false;
+      bool isRequired = false;
+   } group;
 
    bool is_positional() const
    {
