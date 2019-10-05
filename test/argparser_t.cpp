@@ -1373,3 +1373,17 @@ TEST( ArgumentParserTest, shouldAddGroupsForHelpFormatting )
    auto res = parser.parse_args( { "--first", "--second", "--third" } );
    EXPECT_EQ( 0, res.errors.size() );
 }
+
+TEST( ArgumentParserTest, shouldNotMixSimpleAndExclusiveGroups )
+{
+   int first, second, third;
+
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout ).on_exit_return();
+   parser.add_group( "ints" );
+   parser.add_argument( first, "--first" );
+   parser.add_argument( second, "--second" );
+   parser.end_group();
+   EXPECT_THROW( parser.add_exclusive_group( "ints" ), argparse::MixingGroupTypes );
+}
