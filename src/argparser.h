@@ -7,9 +7,11 @@
 #include "helpformatter_i.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <functional>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <optional>
 #include <set>
@@ -42,6 +44,14 @@ public:
    {
       return "Parsing terminated.";
    }
+};
+
+class MixingGroupTypes : public std::runtime_error
+{
+public:
+   MixingGroupTypes( const std::string& groupName )
+      : runtime_error( std::string( "Mixing group types in group " ) + groupName )
+   {}
 };
 
 class argument_parser;
@@ -97,8 +107,18 @@ public:
          mOptionAssignCount = 0;
       }
 
+      void reset()
+      {
+         mAssignCount = 0;
+         mOptionAssignCount = 0;
+         mHasErrors = false;
+         doReset();
+      }
+
    protected:
       virtual void doSetValue( const std::string& value ) = 0;
+      virtual void doReset()
+      {}
    };
 
    class VoidValue : public Value
@@ -127,6 +147,11 @@ public:
       void doSetValue( const std::string& value ) override
       {
          assign( mValue, value );
+      }
+
+      void doReset() override
+      {
+         mValue = {};
       }
 
       template<typename TVar>
@@ -160,6 +185,35 @@ public:
       }
    };
 
+   class OptionGroup
+   {
+   private:
+      std::string mName;
+      bool mIsRequired = false;
+      bool mIsExclusive = false;
+
+   public:
+      OptionGroup( std::string_view name, bool isExclusive )
+         : mName( name )
+         , mIsExclusive( isExclusive )
+      {}
+
+      const std::string& getName() const
+      {
+         return mName;
+      }
+
+      const bool isExclusive() const
+      {
+         return mIsExclusive;
+      }
+
+      bool isRequired() const
+      {
+         return mIsRequired;
+      }
+   };
+
    class Option
    {
    private:
@@ -171,6 +225,7 @@ public:
       std::string mHelp;
       std::string mFlagValue = "1";
       std::vector<std::string> mChoices;
+      std::shared_ptr<OptionGroup> mpGroup;
       int mMinArgs = 0;
       int mMaxArgs = 0;
       bool mIsRequired = false;
@@ -262,6 +317,11 @@ public:
          mpAssignAction = pAction;
       }
 
+      void setGroup( const std::shared_ptr<OptionGroup>& pGroup )
+      {
+         mpGroup = pGroup;
+      }
+
       bool isRequired() const
       {
          return mIsRequired;
@@ -323,6 +383,11 @@ public:
          mpValue->setValue( value );
       }
 
+      void resetValue()
+      {
+         mpValue->reset();
+      }
+
       void onOptionStarted()
       {
          mpValue->onOptionStarted();
@@ -370,6 +435,11 @@ public:
       std::tuple<int, int> getArgumentCounts() const
       {
          return std::make_tuple( mMinArgs, mMaxArgs );
+      }
+
+      std::shared_ptr<OptionGroup> getGroup() const
+      {
+         return mpGroup;
       }
    };
 
@@ -545,6 +615,7 @@ public:
    // Errors known by the parser
    enum EError {
       UNKNOWN_OPTION,
+      EXCLUSIVE_OPTION,
       MISSING_OPTION,
       MISSING_ARGUMENT,
       CONVERSION_ERROR,
@@ -751,6 +822,8 @@ private:
    std::vector<Option> mPositional;
    std::set<std::string> mHelpOptionNames;
    std::vector<std::shared_ptr<Options>> mTargets;
+   std::map<std::string, std::shared_ptr<OptionGroup>> mGroups;
+   std::shared_ptr<OptionGroup> mpActiveGroup;
 
 public:
    /**
@@ -836,10 +909,45 @@ public:
       return optionConfig;
    }
 
+   void add_group( const std::string& name )
+   {
+      auto pGroup = findGroup( name );
+      if ( pGroup ) {
+         if ( pGroup->isExclusive() )
+            throw MixingGroupTypes( name );
+         mpActiveGroup = pGroup;
+      }
+      else
+         mpActiveGroup = addGroup( name, false );
+   }
+
+   void add_exclusive_group( const std::string& name )
+   {
+      auto pGroup = findGroup( name );
+      if ( pGroup ) {
+         if ( !pGroup->isExclusive() )
+            throw MixingGroupTypes( name );
+         mpActiveGroup = pGroup;
+      }
+      else
+         mpActiveGroup = addGroup( name, true );
+   }
+
+   void end_group()
+   {
+      mpActiveGroup = nullptr;
+   }
+
    ParseResult parse_args( const std::vector<std::string>& args )
    {
       if ( mHelpOptionNames.empty() )
          add_help_option();
+
+      for ( auto& option : mOptions )
+         option.resetValue();
+
+      for ( auto& option : mPositional )
+         option.resetValue();
 
       for ( auto&& arg : args ) {
          if ( mHelpOptionNames.count( arg ) > 0 ) {
@@ -851,6 +959,7 @@ public:
       Parser parser( *this );
       auto result = parser.parse( args );
       reportMissingOptions( result );
+      reportExclusiveViolations( result );
       return result;
    }
 
@@ -889,6 +998,20 @@ private:
             result.errors.emplace_back( option.getName(), MISSING_ARGUMENT );
    }
 
+   void reportExclusiveViolations( ParseResult& result )
+   {
+      std::map<std::string, std::vector<std::string>> counts;
+      for ( auto& option : mOptions ) {
+         auto pGroup = option.getGroup();
+         if ( pGroup && pGroup->isExclusive() && option.wasAssigned() )
+            counts[pGroup->getName()].push_back( option.getName() );
+      }
+
+      for ( auto& c : counts )
+         if ( c.second.size() > 1 )
+            result.errors.emplace_back( c.second.front(), EXCLUSIVE_OPTION );
+   }
+
    OptionConfig tryAddArgument( Option& newOption, std::vector<std::string_view> names )
    {
       // Remove empty names
@@ -923,12 +1046,21 @@ private:
          else
             option.setNArgs( 1 );
 
+         // Positional parameters are required so they can't be in an exclusive
+         // group.
+         if ( mpActiveGroup && !mpActiveGroup->isExclusive() )
+            option.setGroup( mpActiveGroup );
+
          return { mPositional, mPositional.size() - 1 };
       }
       else if ( isOption( names ) ) {
          mOptions.push_back( std::move( newOption ) );
          auto& option = mOptions.back();
+
          trySetNames( option, names );
+
+         if ( mpActiveGroup )
+            option.setGroup( mpActiveGroup );
 
          return { mOptions, mOptions.size() - 1 };
       }
@@ -953,6 +1085,25 @@ private:
 
       if ( option.getName().empty() )
          throw std::invalid_argument( "An option must have a name." );
+   }
+
+   std::shared_ptr<OptionGroup> addGroup( std::string name, bool isExclusive )
+   {
+      std::transform( name.begin(), name.end(), name.begin(), tolower );
+      assert( mGroups.count( name ) == 0 );
+
+      auto pGroup = std::make_shared<OptionGroup>( name, isExclusive );
+      mGroups[name] = pGroup;
+      return pGroup;
+   }
+
+   std::shared_ptr<OptionGroup> findGroup( std::string name ) const
+   {
+      std::transform( name.begin(), name.end(), name.begin(), tolower );
+      auto igrp = mGroups.find( name );
+      if ( igrp == mGroups.end() )
+         return {};
+      return igrp->second;
    }
 
    ArgumentHelpResult describeOption( const Option& option ) const
@@ -985,6 +1136,13 @@ private:
          }
 
          help.arguments = std::move( res );
+      }
+
+      auto pGroup = option.getGroup();
+      if ( pGroup ) {
+         help.group.name = pGroup->getName();
+         help.group.isExclusive = pGroup->isExclusive();
+         help.group.isRequired = pGroup->isRequired();
       }
 
       return help;

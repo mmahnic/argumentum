@@ -148,17 +148,76 @@ private:
    }
 };
 
+class OptionSorter
+{
+public:
+   struct GroupLimit
+   {
+      using iterator_t = std::vector<ArgumentHelpResult>::iterator;
+      // Start of group in the reordered ArgumentHelpResult vector.
+      iterator_t ibegin;
+      // End of positional parameters.
+      iterator_t iendpos;
+      // End of requiered parameters.
+      iterator_t iendreq;
+      // End of optional parameters, end of group.
+      iterator_t iend;
+      GroupLimit( iterator_t begin, iterator_t end )
+         : ibegin( begin )
+         , iendpos( begin )
+         , iendreq( begin )
+         , iend( end )
+      {}
+   };
+
+   // 1. required free group
+   // 2. required groups by name
+   // 3. optional free group
+   // 4. optional groups by name
+   std::vector<GroupLimit> reorderGroups( std::vector<ArgumentHelpResult>& args )
+   {
+      auto lowerGroup = []( auto&& a, auto&& b ) {
+         if ( a.group.isRequired == b.group.isRequired )
+            return a.group.name < b.group.name;
+
+         // Required before optional ( false < true => !isRequired(true) < isRequired(true) )
+         return !a.group.isRequired < !b.group.isRequired;
+      };
+
+      std::stable_sort( std::begin( args ), std::end( args ), lowerGroup );
+
+      std::vector<GroupLimit> limits;
+      auto iprev = std::begin( args );
+      for ( auto icur = iprev; icur != std::end( args ); ++icur ) {
+         if ( lowerGroup( *iprev, *icur ) ) {
+            limits.emplace_back( iprev, icur );
+            iprev = icur;
+         }
+      }
+      if ( iprev != std::end( args ) )
+         limits.emplace_back( iprev, std::end( args ) );
+
+      return limits;
+   }
+
+   void reorderOptions( GroupLimit& limit )
+   {
+      limit.iendpos = std::stable_partition(
+            limit.ibegin, limit.iend, []( auto&& opt ) { return opt.is_positional(); } );
+      limit.iendreq = std::stable_partition(
+            limit.iendpos, limit.iend, []( auto&& opt ) { return opt.is_required(); } );
+   }
+};
+
 inline void HelpFormatter::format( const argument_parser& parser, std::ostream& out )
 {
    auto config = parser.getConfig();
    auto args = parser.describe_arguments();
-   auto iendpos = std::stable_partition(
-         std::begin( args ), std::end( args ), []( auto&& d ) { return d.is_positional(); } );
-   auto iendreq = std::stable_partition(
-         iendpos, std::end( args ), []( auto&& d ) { return d.is_required(); } );
-   auto hasPositional = std::begin( args ) != iendpos;
-   auto hasRequired = iendpos != iendreq;
-   auto hasOptional = iendreq != std::end( args );
+   OptionSorter sorter;
+   auto groups = sorter.reorderGroups( args );
+   for ( auto& group : groups )
+      sorter.reorderOptions( group );
+
    auto desctiptionIndent = deriveMaxArgumentWidth( args ) + mArgumentIndent + 1;
    if ( desctiptionIndent > mMaxDescriptionIndent )
       desctiptionIndent = mMaxDescriptionIndent;
@@ -189,19 +248,25 @@ inline void HelpFormatter::format( const argument_parser& parser, std::ostream& 
       writer.startParagraph();
    }
 
-   if ( hasPositional ) {
-      writer.write( "positional arguments:" );
-      writeArguments( writer, std::begin( args ), iendpos );
-   }
+   for ( auto& group : groups ) {
+      auto hasPositional = group.ibegin != group.iendpos;
+      auto hasRequired = group.iendpos != group.iendreq;
+      auto hasOptional = group.iendreq != group.iend;
 
-   if ( hasRequired ) {
-      writer.write( "required arguments:" );
-      writeArguments( writer, iendpos, iendreq );
-   }
+      if ( hasPositional ) {
+         writer.write( "positional arguments:" );
+         writeArguments( writer, group.ibegin, group.iendpos );
+      }
 
-   if ( hasOptional ) {
-      writer.write( "optional arguments:" );
-      writeArguments( writer, iendreq, std::end( args ) );
+      if ( hasRequired ) {
+         writer.write( "required arguments:" );
+         writeArguments( writer, group.iendpos, group.iendreq );
+      }
+
+      if ( hasOptional ) {
+         writer.write( "optional arguments:" );
+         writeArguments( writer, group.iendreq, group.iend );
+      }
    }
 
    if ( !config.epilog.empty() ) {
