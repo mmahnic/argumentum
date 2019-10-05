@@ -1263,6 +1263,23 @@ TEST( ArgumentParserTest, shouldConfigureExitMode_Terminate )
    // The parser must not be executed because it would terminate the test program.
 }
 
+TEST( ArgumentParserTest, shouldResetValuesWhenCalledMultipleTimes )
+{
+   std::string first;
+   std::string second;
+   auto parser = argument_parser{};
+   parser.add_argument( first, "--first" );
+   parser.add_argument( second, "--second" );
+
+   auto res = parser.parse_args( { "--first" } );
+   EXPECT_NE( "", first );
+   EXPECT_EQ( "", second );
+
+   res = parser.parse_args( { "--second" } );
+   EXPECT_EQ( "", first );
+   EXPECT_NE( "", second );
+}
+
 TEST( ArgumentParserTest, shouldDefineExclusiveGroups )
 {
    std::optional<int> maybeInt;
