@@ -7,6 +7,7 @@
 #include "helpformatter_i.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cctype>
 #include <functional>
 #include <iostream>
@@ -43,6 +44,14 @@ public:
    {
       return "Parsing terminated.";
    }
+};
+
+class MixingGroupTypes : public std::runtime_error
+{
+public:
+   MixingGroupTypes( const std::string& groupName )
+      : runtime_error( std::string( "Mixing group types in group " ) + groupName )
+   {}
 };
 
 class argument_parser;
@@ -808,6 +817,7 @@ private:
    std::vector<Option> mPositional;
    std::set<std::string> mHelpOptionNames;
    std::vector<std::shared_ptr<Options>> mTargets;
+   std::map<std::string, std::shared_ptr<OptionGroup>> mGroups;
    std::shared_ptr<OptionGroup> mpActiveGroup;
 
 public:
@@ -896,12 +906,26 @@ public:
 
    void add_group( const std::string& name )
    {
-      mpActiveGroup = std::make_shared<OptionGroup>( name, false );
+      auto pGroup = findGroup( name );
+      if ( pGroup ) {
+         if ( pGroup->isExclusive() )
+            throw MixingGroupTypes( name );
+         mpActiveGroup = pGroup;
+      }
+      else
+         mpActiveGroup = addGroup( name, false );
    }
 
    void add_exclusive_group( const std::string& name )
    {
-      mpActiveGroup = std::make_shared<OptionGroup>( name, true );
+      auto pGroup = findGroup( name );
+      if ( pGroup ) {
+         if ( !pGroup->isExclusive() )
+            throw MixingGroupTypes( name );
+         mpActiveGroup = pGroup;
+      }
+      else
+         mpActiveGroup = addGroup( name, true );
    }
 
    void end_group()
@@ -1051,6 +1075,25 @@ private:
 
       if ( option.getName().empty() )
          throw std::invalid_argument( "An option must have a name." );
+   }
+
+   std::shared_ptr<OptionGroup> addGroup( std::string name, bool isExclusive )
+   {
+      std::transform( name.begin(), name.end(), name.begin(), tolower );
+      assert( mGroups.count( name ) == 0 );
+
+      auto pGroup = std::make_shared<OptionGroup>( name, isExclusive );
+      mGroups[name] = pGroup;
+      return pGroup;
+   }
+
+   std::shared_ptr<OptionGroup> findGroup( std::string name ) const
+   {
+      std::transform( name.begin(), name.end(), name.begin(), tolower );
+      auto igrp = mGroups.find( name );
+      if ( igrp == mGroups.end() )
+         return {};
+      return igrp->second;
    }
 
    ArgumentHelpResult describeOption( const Option& option ) const
