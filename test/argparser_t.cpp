@@ -1355,3 +1355,21 @@ TEST( ArgumentParserTest, shouldStartSameGroupMultipleTimes )
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( argument_parser::EXCLUSIVE_OPTION, res.errors[0].errorCode );
 }
+
+// These groups affect the grouping of the options in the formatted text.
+TEST( ArgumentParserTest, shouldAddGroupsForHelpFormatting )
+{
+   int first, second, third;
+
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout ).on_exit_return();
+   parser.add_group( "ints" );
+   parser.add_argument( first, "--first" );
+   parser.add_argument( second, "--second" );
+   parser.end_group();
+   parser.add_argument( third, "--third" );
+
+   auto res = parser.parse_args( { "--first", "--second", "--third" } );
+   EXPECT_EQ( 0, res.errors.size() );
+}
