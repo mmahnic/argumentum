@@ -193,6 +193,11 @@ public:
       {
          return mName;
       }
+
+      const bool isExclusive() const
+      {
+         return mIsExclusive;
+      }
    };
 
    class Option
@@ -889,6 +894,11 @@ public:
       return optionConfig;
    }
 
+   void add_group( const std::string& name )
+   {
+      mpActiveGroup = std::make_shared<OptionGroup>( name, false );
+   }
+
    void add_exclusive_group( const std::string& name )
    {
       mpActiveGroup = std::make_shared<OptionGroup>( name, true );
@@ -962,9 +972,11 @@ private:
    void reportExclusiveViolations( ParseResult& result )
    {
       std::map<std::string, std::vector<std::string>> counts;
-      for ( auto& option : mOptions )
-         if ( option.getGroup() && option.wasAssigned() )
-            counts[option.getGroup()->getName()].push_back( option.getName() );
+      for ( auto& option : mOptions ) {
+         auto pGroup = option.getGroup();
+         if ( pGroup && pGroup->isExclusive() && option.wasAssigned() )
+            counts[pGroup->getName()].push_back( option.getName() );
+      }
 
       for ( auto& c : counts )
          if ( c.second.size() > 1 )
