@@ -385,3 +385,52 @@ TEST( ArgumentParserHelpTest, shouldSplitOptionalAndMandatoryArguments )
    EXPECT_EQ( EBlock::required, found["--yes"] );
    EXPECT_EQ( EBlock::optional, found["--no"] );
 }
+
+TEST( ArgumentParserHelpTest, shouldSortParametersByGroups )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.add_argument( dummy, "--no" ).nargs( 0 ).required( false ).help( "req:no" );
+   parser.add_argument( dummy, "--yes" ).nargs( 0 ).required( true ).help( "req:yes" );
+   parser.add_group( "simple" );
+   parser.add_argument( dummy, "--first" ).nargs( 0 ).help( "simple:first" );
+   parser.add_argument( dummy, "--second" ).nargs( 0 ).help( "simple:second" );
+   parser.add_argument( dummy, "simplicity" ).help( "simple:simplicity" );
+   parser.add_exclusive_group( "exclusive" );
+   parser.add_argument( dummy, "--on" ).nargs( 0 ).help( "exclusive:on" );
+   parser.add_argument( dummy, "--off" ).nargs( 0 ).help( "exclusive:off" );
+   parser.add_group( "last" );
+   parser.add_argument( dummy, "--last" ).nargs( 0 ).help( "last:last" );
+   parser.end_group();
+   parser.add_argument( dummy, "--maybe" ).nargs( 0 ).required( false ).help( "req:maybe" );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help );
+
+   // Expected group order: Required, Optional; by name: Exclusive, Last, Simple
+   auto opts = std::set<std::string>{ "--no", "--yes", "--first", "--second", "simplicity", "--on",
+      "--off", "--last", "--maybe" };
+   std::map<std::string, int> foundOpts;
+   int i = 0;
+   for ( auto line : helpLines ) {
+      for ( auto opt : opts ) {
+         if ( line.find( opt ) != std::string::npos ) {
+            foundOpts[opt] = i;
+            opts.erase( opt );
+            break;
+         }
+      }
+      ++i;
+   }
+
+   EXPECT_EQ( 0, opts.size() );
+   EXPECT_LT( foundOpts["--yes"], foundOpts["--no"] );
+   EXPECT_LT( foundOpts["--yes"], foundOpts["--maybe"] );
+   EXPECT_LT( foundOpts["--no"], foundOpts["--off"] );
+   EXPECT_LT( foundOpts["--maybe"], foundOpts["--off"] );
+   EXPECT_LT( foundOpts["--off"], foundOpts["--on"] );
+   EXPECT_LT( foundOpts["--on"], foundOpts["--last"] );
+   EXPECT_LT( foundOpts["--last"], foundOpts["simplicity"] );
+   EXPECT_LT( foundOpts["simplicity"], foundOpts["--first"] );
+   EXPECT_LT( foundOpts["--first"], foundOpts["--second"] );
+}
