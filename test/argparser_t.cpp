@@ -1320,3 +1320,38 @@ TEST( ArgumentParserTest, shouldDefineExclusiveGroups )
    // -- THEN succeed
    EXPECT_EQ( 0, res.errors.size() );
 }
+
+// The logic for this requirement may seem strange.  But this might be useful
+// when a group of exclusive options is scattered among multiple
+// argparse::Options instances that are used by a parser.
+TEST( ArgumentParserTest, shouldStartSameGroupMultipleTimes )
+{
+   std::optional<int> maybeInt;
+   std::optional<int> otherInt;
+
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout ).on_exit_return();
+   parser.add_exclusive_group( "maybies" );
+   parser.add_argument( maybeInt, "--maybe" );
+   parser.add_argument( maybeInt, "--optional" );
+   parser.end_group();
+   parser.add_argument( otherInt, "--other" );
+   parser.add_exclusive_group( "maybies" );
+   parser.add_argument( maybeInt, "--possibly" );
+   parser.end_group();
+
+   // -- WHEN there are more than one options from the exclusive group
+   auto res = parser.parse_args( { "--maybe", "--optional" } );
+
+   // -- THEN fail
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( argument_parser::EXCLUSIVE_OPTION, res.errors[0].errorCode );
+
+   // -- WHEN the second argument is from the second group definition
+   res = parser.parse_args( { "--maybe", "--possibly" } );
+
+   // -- THEN fail
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( argument_parser::EXCLUSIVE_OPTION, res.errors[0].errorCode );
+}
