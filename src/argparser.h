@@ -98,8 +98,18 @@ public:
          mOptionAssignCount = 0;
       }
 
+      void reset()
+      {
+         mAssignCount = 0;
+         mOptionAssignCount = 0;
+         mHasErrors = false;
+         doReset();
+      }
+
    protected:
       virtual void doSetValue( const std::string& value ) = 0;
+      virtual void doReset()
+      {}
    };
 
    class VoidValue : public Value
@@ -128,6 +138,11 @@ public:
       void doSetValue( const std::string& value ) override
       {
          assign( mValue, value );
+      }
+
+      void doReset() override
+      {
+         mValue = {};
       }
 
       template<typename TVar>
@@ -347,6 +362,11 @@ public:
          }
 
          mpValue->setValue( value );
+      }
+
+      void resetValue()
+      {
+         mpValue->reset();
       }
 
       void onOptionStarted()
@@ -883,6 +903,12 @@ public:
    {
       if ( mHelpOptionNames.empty() )
          add_help_option();
+
+      for ( auto& option : mOptions )
+         option.resetValue();
+
+      for ( auto& option : mPositional )
+         option.resetValue();
 
       for ( auto&& arg : args ) {
          if ( mHelpOptionNames.count( arg ) > 0 ) {
