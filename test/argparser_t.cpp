@@ -1304,3 +1304,12 @@ TEST( ArgumentParserTest, shouldResetValuesWhenCalledMultipleTimes )
    EXPECT_EQ( "", first );
    EXPECT_NE( "", second );
 }
+
+TEST( ArgumentParserTest, shouldForbidDuplicateOptions )
+{
+   std::string first;
+   std::string second;
+   auto parser = argument_parser{};
+   parser.add_argument( first, "--first" );
+   EXPECT_THROW( parser.add_argument( second, "--first" ), argparse::DuplicateOption );
+}
