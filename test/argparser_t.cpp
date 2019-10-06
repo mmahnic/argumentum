@@ -1217,6 +1217,20 @@ TEST( ArgumentParserTest, shouldSupportMultipleHelpOptions )
    EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
 }
 
+TEST( ArgumentParserTest, shouldThrowIfDefaultHelpOptionsCanNotBeSet )
+{
+   std::stringstream strout;
+   int hide;
+   auto parser = argument_parser{};
+   parser.config().cout( strout ).on_exit_return();
+
+   // -- WHEN
+   parser.add_argument( hide, "-h", "--help" );
+
+   // -- THEN
+   EXPECT_THROW( parser.add_help_option(), std::invalid_argument );
+}
+
 TEST( ArgumentParserTest, shouldSetParserOutputToStream )
 {
    std::stringstream strout;
@@ -1312,4 +1326,20 @@ TEST( ArgumentParserTest, shouldForbidDuplicateOptions )
    auto parser = argument_parser{};
    parser.add_argument( first, "--first" );
    EXPECT_THROW( parser.add_argument( second, "--first" ), argparse::DuplicateOption );
+}
+
+TEST( ArgumentParserTest, shouldForbidDuplicateHelpOptions )
+{
+   std::string first;
+   auto parser = argument_parser{};
+   parser.add_argument( first, "--aiuto" );
+   EXPECT_THROW( parser.add_help_option( "--aiuto" ), argparse::DuplicateOption );
+}
+
+TEST( ArgumentParserTest, shouldForbidDuplicateHelpOptions2 )
+{
+   std::string first;
+   auto parser = argument_parser{};
+   parser.add_help_option( "--aiuto" );
+   EXPECT_THROW( parser.add_argument( first, "--aiuto" ), argparse::DuplicateOption );
 }
