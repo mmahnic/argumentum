@@ -198,6 +198,15 @@ public:
          , mIsExclusive( isExclusive )
       {}
 
+      void setRequired( bool isRequired )
+      {
+         // The required option can be set only when the group is not yet
+         // required.  Because a group can be defined in multiple places, it is
+         // required as soon as it is required in one place.
+         if ( !mIsRequired )
+            mIsRequired = isRequired;
+      }
+
       const std::string& getName() const
       {
          return mName;
@@ -211,6 +220,22 @@ public:
       bool isRequired() const
       {
          return mIsRequired;
+      }
+   };
+
+   class GroupConfig
+   {
+      std::shared_ptr<OptionGroup> mpGroup;
+
+   public:
+      GroupConfig( std::shared_ptr<OptionGroup> pGroup )
+         : mpGroup( pGroup )
+      {}
+
+      GroupConfig& required( bool isRequired = true )
+      {
+         mpGroup->setRequired( isRequired );
+         return *this;
       }
    };
 
@@ -617,6 +642,7 @@ public:
       UNKNOWN_OPTION,
       EXCLUSIVE_OPTION,
       MISSING_OPTION,
+      MISSING_OPTION_GROUP,
       MISSING_ARGUMENT,
       CONVERSION_ERROR,
       INVALID_CHOICE,
@@ -909,7 +935,7 @@ public:
       return optionConfig;
    }
 
-   void add_group( const std::string& name )
+   GroupConfig add_group( const std::string& name )
    {
       auto pGroup = findGroup( name );
       if ( pGroup ) {
@@ -919,9 +945,11 @@ public:
       }
       else
          mpActiveGroup = addGroup( name, false );
+
+      return GroupConfig( mpActiveGroup );
    }
 
-   void add_exclusive_group( const std::string& name )
+   GroupConfig add_exclusive_group( const std::string& name )
    {
       auto pGroup = findGroup( name );
       if ( pGroup ) {
@@ -931,6 +959,8 @@ public:
       }
       else
          mpActiveGroup = addGroup( name, true );
+
+      return GroupConfig( mpActiveGroup );
    }
 
    void end_group()
