@@ -658,6 +658,12 @@ public:
       {
          return mFactory != nullptr;
       }
+
+      std::shared_ptr<Options> createOptions()
+      {
+         assert( mFactory != nullptr );
+         return mFactory();
+      }
    };
 
    enum EExitMode { EXIT_TERMINATE, EXIT_THROW, EXIT_RETURN };
@@ -777,6 +783,16 @@ public:
          ignoredArguments.clear();
          errors.clear();
       }
+
+      void addResults( ParseResult&& res )
+      {
+         ignoredArguments.insert( std::end( ignoredArguments ),
+               std::make_move_iterator( std::begin( res.ignoredArguments ) ),
+               std::make_move_iterator( std::end( res.ignoredArguments ) ) );
+         for ( auto& err : res.errors )
+            errors.emplace_back( std::move( err ) );
+         res.clear();
+      }
    };
 
 private:
@@ -832,8 +848,16 @@ private:
                         closeOption();
                   }
                }
-               else
-                  addFreeArgument( *iarg );
+               else {
+                  auto pCommand = mArgParser.findCommand( *iarg );
+                  if ( pCommand ) {
+                     auto res = mArgParser.parseCommandArguments( *pCommand, iarg, iend );
+                     mResult.addResults( std::move( res ) );
+                     break;
+                  }
+                  else
+                     addFreeArgument( *iarg );
+               }
             }
          }
 
@@ -1345,6 +1369,16 @@ private:
             return &command;
 
       return nullptr;
+   }
+
+   ParseResult parseCommandArguments( Command& command,
+         std::vector<std::string>::const_iterator ibegin,
+         std::vector<std::string>::const_iterator iend )
+   {
+      auto parser = argument_parser{};
+      parser.config().on_exit_return();
+      parser.add_arguments( command.createOptions() );
+      return parser.parse_args( ibegin, iend );
    }
 
    std::shared_ptr<OptionGroup> addGroup( std::string name, bool isExclusive )

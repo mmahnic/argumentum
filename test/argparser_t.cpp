@@ -1076,7 +1076,7 @@ TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
    pCmdTwo = nullptr;
 
    // -- WHEN
-   parser.parse_args( { "two", "--string", "works" } );
+   res = parser.parse_args( { "two", "--string", "works" } );
 
    // -- THEN
    EXPECT_TRUE( res.errors.empty() );
@@ -1090,7 +1090,7 @@ TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
    pCmdTwo = nullptr;
 
    // -- WHEN
-   parser.parse_args( { "-s", "works" } );
+   res = parser.parse_args( { "-s", "works" } );
 
    // -- THEN
    ASSERT_FALSE( res.errors.empty() );
