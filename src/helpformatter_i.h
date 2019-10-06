@@ -24,6 +24,7 @@ struct ArgumentHelpResult
    {
       std::string name;
       std::string title;
+      std::string description;
       bool isExclusive = false;
       bool isRequired = false;
    } group;

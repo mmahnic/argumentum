@@ -258,6 +258,10 @@ inline void HelpFormatter::format( const argument_parser& parser, std::ostream& 
       if ( !isDefaultGroup ) {
          writer.write( firstArg.group.title + ":" );
          writer.startLine();
+         writer.setIndent( mArgumentIndent );
+         writer.write( firstArg.group.description );
+         writer.startParagraph();
+         writer.setIndent( 0 );
       }
 
       if ( hasPositional ) {

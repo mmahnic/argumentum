@@ -211,6 +211,7 @@ public:
    private:
       std::string mName;
       std::string mTitle;
+      std::string mDescription;
       bool mIsRequired = false;
       bool mIsExclusive = false;
 
@@ -224,6 +225,11 @@ public:
       void setTitle( std::string_view title )
       {
          mTitle = title;
+      }
+
+      void setDescription( std::string_view description )
+      {
+         mDescription = description;
       }
 
       // The required option can be set only when the group is not yet required.
@@ -243,6 +249,11 @@ public:
       const std::string& getTitle() const
       {
          return mTitle;
+      }
+
+      const std::string& getDescription() const
+      {
+         return mDescription;
       }
 
       const bool isExclusive() const
@@ -268,6 +279,12 @@ public:
       GroupConfig& title( std::string_view title )
       {
          mpGroup->setTitle( title );
+         return *this;
+      }
+
+      GroupConfig& description( std::string_view description )
+      {
+         mpGroup->setDescription( description );
          return *this;
       }
 
@@ -1298,6 +1315,7 @@ private:
       if ( pGroup ) {
          help.group.name = pGroup->getName();
          help.group.title = pGroup->getTitle();
+         help.group.description = pGroup->getDescription();
          help.group.isExclusive = pGroup->isExclusive();
          help.group.isRequired = pGroup->isRequired();
       }
