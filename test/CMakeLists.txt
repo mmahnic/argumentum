@@ -9,6 +9,7 @@ add_executable( runUnitTests
    argparser_t.cpp
    argparserconvert_t.cpp
    argparsergroup_t.cpp
+   argparsercommand_t.cpp
    action_t.cpp
    argparserhelp_t.cpp
    helpwriter_t.cpp
