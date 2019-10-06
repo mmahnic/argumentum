@@ -63,6 +63,15 @@ public:
    {}
 };
 
+class DuplicateOption : public std::runtime_error
+{
+public:
+   DuplicateOption( const std::string& groupName, const std::string& optionName )
+      : runtime_error( std::string( "Option '" ) + optionName + "' is already defined in group '"
+              + groupName + "'" )
+   {}
+};
+
 class argument_parser;
 
 class Options
@@ -1159,10 +1168,12 @@ private:
          return { mPositional, mPositional.size() - 1 };
       }
       else if ( isOption( names ) ) {
+         trySetNames( newOption, names );
+         ensureIsNewOption( newOption.getLongName() );
+         ensureIsNewOption( newOption.getShortName() );
+
          mOptions.push_back( std::move( newOption ) );
          auto& option = mOptions.back();
-
-         trySetNames( option, names );
 
          if ( mpActiveGroup )
             option.setGroup( mpActiveGroup );
@@ -1190,6 +1201,18 @@ private:
 
       if ( option.getName().empty() )
          throw std::invalid_argument( "An option must have a name." );
+   }
+
+   void ensureIsNewOption( const std::string& name )
+   {
+      if ( name.empty() )
+         return;
+
+      auto pOption = findOption( name );
+      if ( pOption ) {
+         auto groupName = pOption->getGroup() ? pOption->getGroup()->getName() : "";
+         throw DuplicateOption( groupName, name );
+      }
    }
 
    std::shared_ptr<OptionGroup> addGroup( std::string name, bool isExclusive )
