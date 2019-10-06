@@ -639,15 +639,23 @@ public:
 
    // Errors known by the parser
    enum EError {
+      // The option is not known by the argument parser.
       UNKNOWN_OPTION,
+      // Multiple options from an exclusive group are present.
       EXCLUSIVE_OPTION,
+      // A required option is missing.
       MISSING_OPTION,
+      // An option from a required (exclusive) group is missing.
       MISSING_OPTION_GROUP,
+      // An required argument is missing.
       MISSING_ARGUMENT,
+      // The input argument could not be converted.
       CONVERSION_ERROR,
+      // The argument value is not in the set of valid argument values.
       INVALID_CHOICE,
-      // Flags do not accept parameters
+      // Flags do not accept parameters.
       FLAG_PARAMETER,
+      // Signal that help was requesetd when on_exit_return is set.
       HELP_REQUESTED
    };
 
