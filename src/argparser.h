@@ -998,15 +998,6 @@ public:
 
    ParseResult parse_args( const std::vector<std::string>& args )
    {
-      if ( mHelpOptionNames.empty() ) {
-         end_group();
-         try {
-            add_help_option();
-         }
-         catch ( const std::invalid_argument& ) {
-         }
-      }
-
       verifyDefinedOptions();
 
       for ( auto& option : mOptions )
@@ -1065,6 +1056,18 @@ private:
 
    void verifyDefinedOptions()
    {
+      // Check if any options are defined and add the default if not.
+      if ( mHelpOptionNames.empty() ) {
+         end_group();
+         try {
+            add_help_option();
+         }
+         catch ( const std::invalid_argument& ) {
+            // TODO: write a warning through a logging system proxy:
+            // argparser::logger().warn( "...", __FILE__, __LINE__ );
+         }
+      }
+
       // A required option can not be in an exclusive group.
       for ( auto& opt : mOptions ) {
          if ( opt.isRequired() ) {
