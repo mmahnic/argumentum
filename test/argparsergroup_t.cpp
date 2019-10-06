@@ -182,3 +182,31 @@ TEST( ArgumentParserGroupsTest, shouldForbidRequiredOptionsInExclusiveGroup )
    // before actually parsing anything.
    EXPECT_THROW( parser.parse_args( {} ), argparse::RequiredExclusiveOption );
 }
+
+TEST( ArgumentParserGroupsTest, shouldNotAddDefaultHelpToGroupWhenHelpNotDefined )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout ).on_exit_return();
+   parser.add_group( "simple" );
+   try {
+      parser.parse_args( {} );
+   }
+   catch ( ... ) {
+   }
+
+   auto args = parser.describe_arguments();
+   std::optional<bool> shortInGroup;
+   std::optional<bool> longInGroup;
+   for ( auto& arg : args ) {
+      if ( arg.short_name == "-h" )
+         shortInGroup = !arg.group.name.empty();
+      if ( arg.long_name == "--help" )
+         longInGroup = !arg.group.name.empty();
+   }
+
+   EXPECT_TRUE( shortInGroup.has_value() );
+   EXPECT_FALSE( shortInGroup.value_or( true ) );
+   EXPECT_TRUE( longInGroup.has_value() );
+   EXPECT_FALSE( longInGroup.value_or( true ) );
+}
