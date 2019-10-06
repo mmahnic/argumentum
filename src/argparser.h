@@ -925,14 +925,16 @@ public:
    }
 
    /**
-    * Add a special option that will display the help and terminate the parser.
-    * If this method is not called, the default help options --help and -h will
-    * be used as long as they are not used for other purposes.
+    * Add default help options --help and -h that will display the help and
+    * terminate the parser.
     *
-    * The method called without parameters will throw an invalid_argument
-    * exception if none of the option names --help and -h can be used.
+    * The method will throw an invalid_argument exception if none of the option
+    * names --help and -h can be used.
+    *
+    * This method will be called from parse_args if neither it nor the method
+    * add_help_option were called before parse_args.
     */
-   OptionConfig add_help_option()
+   OptionConfig add_default_help_option()
    {
       const auto shortName = "-h";
       const auto longName = "--help";
@@ -949,12 +951,14 @@ public:
       throw std::invalid_argument( "The default help options are hidden by other options." );
    }
 
-   OptionConfig add_help_option( const std::string& name )
-   {
-      return add_help_option( name, "" );
-   }
-
-   OptionConfig add_help_option( const std::string& name, const std::string& altName )
+   /**
+    * Add a special option that will display the help and terminate the parser.
+    *
+    * If neither this method nor add_default_help_option is called, the default
+    * help options --help and -h will be used as long as they are not used for
+    * other purposes.
+    */
+   OptionConfig add_help_option( const std::string& name, const std::string& altName = "" )
    {
       if ( !name.empty() && name[0] != '-' || !altName.empty() && altName[0] != '-' )
          throw std::invalid_argument( "A help argument must be an option." );
@@ -1069,7 +1073,7 @@ private:
       if ( mHelpOptionNames.empty() ) {
          end_group();
          try {
-            add_help_option();
+            add_default_help_option();
          }
          catch ( const std::invalid_argument& ) {
             // TODO: write a warning through a logging system proxy:

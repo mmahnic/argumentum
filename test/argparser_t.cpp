@@ -1139,7 +1139,7 @@ TEST( ArgumentParserTest, shouldNotAddDefaultHelpWhenDefined )
    auto parser = argument_parser{};
    parser.config().cout( strout ).on_exit_return();
    parser.add_argument( hide, "-h" );
-   parser.add_help_option();
+   parser.add_default_help_option();
 
    // -- WHEN
    auto res = parser.parse_args( { "-h" } );
@@ -1191,7 +1191,7 @@ TEST( ArgumentParserTest, shouldSupportMultipleHelpOptions )
    parser.config().cout( strout ).on_exit_return();
 
    // -- WHEN
-   parser.add_help_option();
+   parser.add_default_help_option();
    parser.add_help_option( "-a", "--asistado" );
    parser.add_help_option( "--advice" );
 
@@ -1228,7 +1228,7 @@ TEST( ArgumentParserTest, shouldThrowIfDefaultHelpOptionsCanNotBeSet )
    parser.add_argument( hide, "-h", "--help" );
 
    // -- THEN
-   EXPECT_THROW( parser.add_help_option(), std::invalid_argument );
+   EXPECT_THROW( parser.add_default_help_option(), std::invalid_argument );
 }
 
 TEST( ArgumentParserTest, shouldSetParserOutputToStream )
@@ -1251,7 +1251,7 @@ TEST( ArgumentParserTest, shouldWriteHelpAndExitWhenHelpOptionIsPresent )
    auto parser = argument_parser{};
    parser.config().cout( strout ).on_exit_return();
    parser.add_argument( maybeInt, "--maybe" ).nargs( 1 );
-   parser.add_help_option().help( "Print this test help message and exit!" );
+   parser.add_default_help_option().help( "Print this test help message and exit!" );
 
    auto res = parser.parse_args( { "--maybe", "123", "-h" } );
 
@@ -1266,7 +1266,7 @@ TEST( ArgumentParserTest, shouldConfigureExitMode_Return )
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout ).on_exit_return();
-   parser.add_help_option();
+   parser.add_default_help_option();
 
    auto res = parser.parse_args( { "-h" } );
    ASSERT_EQ( 1, res.errors.size() );
@@ -1278,7 +1278,7 @@ TEST( ArgumentParserTest, shouldConfigureExitMode_Throw )
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout ).on_exit_throw();
-   parser.add_help_option();
+   parser.add_default_help_option();
 
    try {
       auto res = parser.parse_args( { "-h" } );
@@ -1297,7 +1297,7 @@ TEST( ArgumentParserTest, shouldConfigureExitMode_Terminate )
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout ).on_exit_terminate();
-   parser.add_help_option();
+   parser.add_default_help_option();
 
    // The parser must not be executed because it would terminate the test program.
 }
