@@ -175,6 +175,10 @@ TEST( ArgumentParserGroupsTest, shouldForbidRequiredOptionsInExclusiveGroup )
    parser.config().cout( strout ).on_exit_return();
    parser.add_exclusive_group( "ints" );
    parser.add_argument( first, "--first" );
-   EXPECT_THROW( parser.add_argument( second, "--second" ).requierd( true ),
-         argparse::RequiredExclusiveOption );
+   parser.add_argument( second, "--second" ).required( true );
+
+   // The combination of exclusive groups with required options can be verified
+   // only after the options are configured.  We make such checks in parse_args
+   // before actually parsing anything.
+   EXPECT_THROW( parser.parse_args( {} ), argparse::RequiredExclusiveOption );
 }

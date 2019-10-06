@@ -50,7 +50,16 @@ class MixingGroupTypes : public std::runtime_error
 {
 public:
    MixingGroupTypes( const std::string& groupName )
-      : runtime_error( std::string( "Mixing group types in group " ) + groupName )
+      : runtime_error( std::string( "Mixing group types in group '" ) + groupName + "'" )
+   {}
+};
+
+class RequiredExclusiveOption : public std::runtime_error
+{
+public:
+   RequiredExclusiveOption( const std::string& groupName, const std::string& optionName )
+      : runtime_error( std::string( "Option '" ) + optionName + "' is required in exclusive group '"
+              + groupName + "'" )
    {}
 };
 
@@ -981,6 +990,8 @@ public:
       if ( mHelpOptionNames.empty() )
          add_help_option();
 
+      verifyDefinedOptions();
+
       for ( auto& option : mOptions )
          option.resetValue();
 
@@ -1026,6 +1037,18 @@ public:
    }
 
 private:
+   void verifyDefinedOptions()
+   {
+      // A required option can not be in an exclusive group.
+      for ( auto& opt : mOptions ) {
+         if ( opt.isRequired() ) {
+            auto pGroup = opt.getGroup();
+            if ( pGroup && pGroup->isExclusive() )
+               throw RequiredExclusiveOption( opt.getName(), pGroup->getName() );
+         }
+      }
+   }
+
    void reportMissingOptions( ParseResult& result )
    {
       for ( auto& option : mOptions )
@@ -1100,7 +1123,7 @@ private:
             option.setNArgs( 1 );
 
          // Positional parameters are required so they can't be in an exclusive
-         // group.
+         // group.  We simply ignore them.
          if ( mpActiveGroup && !mpActiveGroup->isExclusive() )
             option.setGroup( mpActiveGroup );
 
