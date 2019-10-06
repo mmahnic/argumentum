@@ -753,26 +753,27 @@ private:
          : mArgParser( argParser )
       {}
 
-      ParseResult parse( const std::vector<std::string>& args )
+      ParseResult parse( std::vector<std::string>::const_iterator ibegin,
+            std::vector<std::string>::const_iterator iend )
       {
          mResult.clear();
-         for ( auto& arg : args ) {
-            if ( arg == "--" ) {
+         for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
+            if ( *iarg == "--" ) {
                mIgnoreOptions = true;
                continue;
             }
 
             if ( mIgnoreOptions ) {
-               addFreeArgument( arg );
+               addFreeArgument( *iarg );
                continue;
             }
 
-            auto arg_view = std::string_view( arg );
+            auto arg_view = std::string_view( *iarg );
             if ( arg_view.substr( 0, 2 ) == "--" )
-               startOption( arg );
+               startOption( *iarg );
             else if ( arg_view.substr( 0, 1 ) == "-" ) {
-               if ( arg.size() == 2 )
-                  startOption( arg );
+               if ( iarg->size() == 2 )
+                  startOption( *iarg );
                else {
                   auto opt = std::string{ "--" };
                   for ( int i = 1; i < arg_view.size(); ++i ) {
@@ -785,13 +786,13 @@ private:
                if ( haveActiveOption() ) {
                   auto& option = *mpActiveOption;
                   if ( option.willAcceptArgument() ) {
-                     setValue( option, arg );
+                     setValue( option, *iarg );
                      if ( !option.willAcceptArgument() )
                         closeOption();
                   }
                }
                else
-                  addFreeArgument( arg );
+                  addFreeArgument( *iarg );
             }
          }
 
@@ -1047,7 +1048,17 @@ public:
       mpActiveGroup = nullptr;
    }
 
-   ParseResult parse_args( const std::vector<std::string>& args )
+   ParseResult parse_args( const std::vector<std::string>& args, int skip_args = 0 )
+   {
+      auto ibegin = std::begin( args );
+      if ( skip_args > 0 )
+         ibegin += std::min<size_t>( skip_args, args.size() );
+
+      return parse_args( ibegin, std::end( args ) );
+   }
+
+   ParseResult parse_args( std::vector<std::string>::const_iterator ibegin,
+         std::vector<std::string>::const_iterator iend )
    {
       verifyDefinedOptions();
 
@@ -1057,15 +1068,15 @@ public:
       for ( auto& option : mPositional )
          option.resetValue();
 
-      for ( auto&& arg : args ) {
-         if ( mHelpOptionNames.count( arg ) > 0 ) {
+      for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
+         if ( mHelpOptionNames.count( *iarg ) > 0 ) {
             generate_help();
-            return exit_parser( arg, HELP_REQUESTED );
+            return exit_parser( *iarg, HELP_REQUESTED );
          }
       }
 
       Parser parser( *this );
-      auto result = parser.parse( args );
+      auto result = parser.parse( ibegin, iend );
       reportMissingOptions( result );
       reportExclusiveViolations( result );
       reportMissingGroups( result );
@@ -1351,7 +1362,7 @@ private:
 
       return {};
    }
-};
+};   // namespace argparse
 
 }   // namespace argparse
 
