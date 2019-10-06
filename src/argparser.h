@@ -50,7 +50,7 @@ class MixingGroupTypes : public std::runtime_error
 {
 public:
    MixingGroupTypes( const std::string& groupName )
-      : runtime_error( std::string( "Mixing group types in group '" ) + groupName + "'" )
+      : runtime_error( std::string( "Mixing group types in group '" ) + groupName + "'." )
    {}
 };
 
@@ -59,7 +59,7 @@ class RequiredExclusiveOption : public std::runtime_error
 public:
    RequiredExclusiveOption( const std::string& groupName, const std::string& optionName )
       : runtime_error( std::string( "Option '" ) + optionName + "' is required in exclusive group '"
-              + groupName + "'" )
+              + groupName + "'." )
    {}
 };
 
@@ -68,7 +68,7 @@ class DuplicateOption : public std::runtime_error
 public:
    DuplicateOption( const std::string& groupName, const std::string& optionName )
       : runtime_error( std::string( "Option '" ) + optionName + "' is already defined in group '"
-              + groupName + "'" )
+              + groupName + "'." )
    {}
 };
 
