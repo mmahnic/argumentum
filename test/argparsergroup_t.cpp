@@ -150,7 +150,7 @@ TEST( ArgumentParserGroupsTest, shouldRequireOptionsFromRequiredExclusiveGroups 
 
 TEST( ArgumentParserGroupsTest, shouldRequireOptionsFromRequiredSimpleGroups )
 {
-   int value, first, second, third;
+   int first, second, third;
 
    std::stringstream strout;
    auto parser = argument_parser{};
@@ -164,4 +164,17 @@ TEST( ArgumentParserGroupsTest, shouldRequireOptionsFromRequiredSimpleGroups )
    auto res = parser.parse_args( { "--third" } );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( argument_parser::MISSING_OPTION_GROUP, res.errors[0].errorCode );
+}
+
+TEST( ArgumentParserGroupsTest, shouldForbidRequiredOptionsInExclusiveGroup )
+{
+   int first, second;
+
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout ).on_exit_return();
+   parser.add_exclusive_group( "ints" );
+   parser.add_argument( first, "--first" );
+   EXPECT_THROW( parser.add_argument( second, "--second" ).requierd( true ),
+         argparse::RequiredExclusiveOption );
 }
