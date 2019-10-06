@@ -990,6 +990,7 @@ public:
       auto result = parser.parse( args );
       reportMissingOptions( result );
       reportExclusiveViolations( result );
+      reportMissingExclusiveGroups( result );
       return result;
    }
 
@@ -1040,6 +1041,20 @@ private:
       for ( auto& c : counts )
          if ( c.second.size() > 1 )
             result.errors.emplace_back( c.second.front(), EXCLUSIVE_OPTION );
+   }
+
+   void reportMissingExclusiveGroups( ParseResult& result )
+   {
+      std::map<std::string, int> counts;
+      for ( auto& option : mOptions ) {
+         auto pGroup = option.getGroup();
+         if ( pGroup && pGroup->isExclusive() && pGroup->isRequired() )
+            counts[pGroup->getName()] += option.wasAssigned() ? 1 : 0;
+      }
+
+      for ( auto& c : counts )
+         if ( c.second < 1 )
+            result.errors.emplace_back( c.first, MISSING_OPTION_GROUP );
    }
 
    OptionConfig tryAddArgument( Option& newOption, std::vector<std::string_view> names )
