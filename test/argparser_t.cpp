@@ -1132,6 +1132,31 @@ TEST( ArgumentParserTest, shouldHaveHelpByDefault )
    EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
 }
 
+TEST( ArgumentParserTest, shouldNotAddDefaultHelpWhenDefined )
+{
+   std::optional<int> hide;
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout ).on_exit_return();
+   parser.add_argument( hide, "-h" );
+   parser.add_help_option();
+
+   // -- WHEN
+   auto res = parser.parse_args( { "-h" } );
+
+   // -- THEN
+   EXPECT_EQ( 0, res.errors.size() );
+   EXPECT_TRUE( hide.has_value() );
+
+   // -- WHEN
+   res = parser.parse_args( { "--help" } );
+
+   // -- THEN
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_FALSE( hide.has_value() );
+}
+
 TEST( ArgumentParserTest, shouldSetCustomHelpOptions )
 {
    std::stringstream strout;
