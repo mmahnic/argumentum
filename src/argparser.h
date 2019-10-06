@@ -72,6 +72,14 @@ public:
    {}
 };
 
+class DuplicateCommand : public std::runtime_error
+{
+public:
+   DuplicateCommand( const std::string& commandName )
+      : runtime_error( std::string( "Command '" ) + commandName + "' is already defined." )
+   {}
+};
+
 class argument_parser;
 
 class Options
@@ -621,6 +629,37 @@ public:
       }
    };
 
+   class Command
+   {
+   public:
+      using options_factory_t = std::function<std::shared_ptr<Options>()>;
+
+   private:
+      std::string mName;
+      options_factory_t mFactory;
+
+   public:
+      Command( std::string_view name, options_factory_t factory )
+         : mName( name )
+         , mFactory( factory )
+      {}
+
+      const std::string& getName() const
+      {
+         return mName;
+      }
+
+      bool hasName( std::string_view name ) const
+      {
+         return name == mName;
+      }
+
+      bool hasFactory() const
+      {
+         return mFactory != nullptr;
+      }
+   };
+
    enum EExitMode { EXIT_TERMINATE, EXIT_THROW, EXIT_RETURN };
 
    class ParserConfig
@@ -907,6 +946,7 @@ private:
 
 private:
    ParserConfig mConfig;
+   std::vector<Command> mCommands;
    std::vector<Option> mOptions;
    std::vector<Option> mPositional;
    std::set<std::string> mHelpOptionNames;
@@ -930,6 +970,12 @@ public:
    const ParserConfig::Data& getConfig() const
    {
       return mConfig.data();
+   }
+
+   void add_command( const std::string& name, Command::options_factory_t factory )
+   {
+      auto command = Command( name, factory );
+      tryAddCommand( command );
    }
 
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value>>
@@ -1270,6 +1316,35 @@ private:
          auto groupName = pOption->getGroup() ? pOption->getGroup()->getName() : "";
          throw DuplicateOption( groupName, name );
       }
+   }
+
+   void tryAddCommand( Command& command )
+   {
+      if ( command.getName().empty() )
+         throw std::invalid_argument( "A command must have a name." );
+      if ( !command.hasFactory() )
+         throw std::invalid_argument( "A command must have an options factory." );
+      if ( command.getName()[0] == '-' )
+         throw std::invalid_argument( "Command name must not start with a dash." );
+
+      ensureIsNewCommand( command.getName() );
+      mCommands.push_back( std::move( command ) );
+   }
+
+   void ensureIsNewCommand( const std::string& name )
+   {
+      auto pCommand = findCommand( name );
+      if ( pCommand )
+         throw DuplicateCommand( name );
+   }
+
+   Command* findCommand( std::string_view commandName )
+   {
+      for ( auto& command : mCommands )
+         if ( command.hasName( commandName ) )
+            return &command;
+
+      return nullptr;
    }
 
    std::shared_ptr<OptionGroup> addGroup( std::string name, bool isExclusive )
