@@ -129,3 +129,21 @@ TEST( ArgumentParserGroupsTest, shouldNotMixExclusiveAndSimpleGroups )
    parser.end_group();
    EXPECT_THROW( parser.add_group( "ints" ), argparse::MixingGroupTypes );
 }
+
+TEST( ArgumentParserGroupsTest, shouldRequireOptionsFromRequiredExclusiveGroups )
+{
+   int first, second, third;
+
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout ).on_exit_return();
+   parser.add_exclusive_group( "ints" ).required( true );
+   parser.add_argument( first, "--first" );
+   parser.add_argument( second, "--second" );
+   parser.end_group();
+   parser.add_argument( third, "--third" );
+
+   auto res = parser.parse_args( { "--third" } );
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( argument_parser::MISSING_OPTION_GROUP, res.errors[0].errorCode );
+}
