@@ -207,14 +207,21 @@ public:
    {
    private:
       std::string mName;
+      std::string mTitle;
       bool mIsRequired = false;
       bool mIsExclusive = false;
 
    public:
       OptionGroup( std::string_view name, bool isExclusive )
          : mName( name )
+         , mTitle( name )
          , mIsExclusive( isExclusive )
       {}
+
+      void setTitle( std::string_view title )
+      {
+         mTitle = title;
+      }
 
       void setRequired( bool isRequired )
       {
@@ -228,6 +235,11 @@ public:
       const std::string& getName() const
       {
          return mName;
+      }
+
+      const std::string& getTitle() const
+      {
+         return mTitle;
       }
 
       const bool isExclusive() const
@@ -249,6 +261,12 @@ public:
       GroupConfig( std::shared_ptr<OptionGroup> pGroup )
          : mpGroup( pGroup )
       {}
+
+      GroupConfig& title( std::string_view title )
+      {
+         mpGroup->setTitle( title );
+         return *this;
+      }
 
       GroupConfig& required( bool isRequired = true )
       {
