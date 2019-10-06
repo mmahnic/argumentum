@@ -1343,3 +1343,24 @@ TEST( ArgumentParserTest, shouldForbidDuplicateHelpOptions2 )
    parser.add_help_option( "--aiuto" );
    EXPECT_THROW( parser.add_argument( first, "--aiuto" ), argparse::DuplicateOption );
 }
+
+TEST( ArgumentParserTest, shouldSkipInitialArguments )
+{
+   std::optional<int> first;
+   std::optional<int> second;
+   auto parser = argument_parser{};
+   parser.add_argument( first, "--first" );
+   parser.add_argument( second, "--second" );
+
+   parser.parse_args( { "--first", "--second" }, 0 );
+   EXPECT_TRUE( first.has_value() );
+   EXPECT_TRUE( second.has_value() );
+
+   parser.parse_args( { "--first", "--second" }, 1 );
+   EXPECT_FALSE( first.has_value() );
+   EXPECT_TRUE( second.has_value() );
+
+   parser.parse_args( { "--first", "--second" }, 2 );
+   EXPECT_FALSE( first.has_value() );
+   EXPECT_FALSE( second.has_value() );
+}
