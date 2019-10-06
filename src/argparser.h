@@ -998,8 +998,7 @@ public:
       auto result = parser.parse( args );
       reportMissingOptions( result );
       reportExclusiveViolations( result );
-      reportMissingExclusiveGroups( result );
-      reportMissingSimpleGroups( result );
+      reportMissingGroups( result );
       return result;
    }
 
@@ -1052,26 +1051,12 @@ private:
             result.errors.emplace_back( c.second.front(), EXCLUSIVE_OPTION );
    }
 
-   void reportMissingExclusiveGroups( ParseResult& result )
+   void reportMissingGroups( ParseResult& result )
    {
       std::map<std::string, int> counts;
       for ( auto& option : mOptions ) {
          auto pGroup = option.getGroup();
-         if ( pGroup && pGroup->isExclusive() && pGroup->isRequired() )
-            counts[pGroup->getName()] += option.wasAssigned() ? 1 : 0;
-      }
-
-      for ( auto& c : counts )
-         if ( c.second < 1 )
-            result.errors.emplace_back( c.first, MISSING_OPTION_GROUP );
-   }
-
-   void reportMissingSimpleGroups( ParseResult& result )
-   {
-      std::map<std::string, int> counts;
-      for ( auto& option : mOptions ) {
-         auto pGroup = option.getGroup();
-         if ( pGroup && !pGroup->isExclusive() && pGroup->isRequired() )
+         if ( pGroup && pGroup->isRequired() )
             counts[pGroup->getName()] += option.wasAssigned() ? 1 : 0;
       }
 
