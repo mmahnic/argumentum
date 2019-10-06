@@ -439,3 +439,28 @@ TEST( ArgumentParserHelpTest, shouldSortParametersByGroups )
    EXPECT_LT( foundOpts["simplicity"], foundOpts["--first"] );
    EXPECT_LT( foundOpts["--first"], foundOpts["--second"] );
 }
+
+TEST( ArgumentParserHelpTest, shouldOutputGroupTitle )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.add_group( "simple" ).title( "Simple group" );
+   parser.add_argument( dummy, "--first" ).nargs( 0 ).help( "simple:first" );
+   parser.add_argument( dummy, "--second" ).nargs( 0 ).help( "simple:second" );
+   parser.add_exclusive_group( "exclusive" ).title( "Exclusive group" );
+   parser.add_argument( dummy, "--third" ).nargs( 0 ).help( "exclusive:third" );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help );
+   bool hasSimple = false;
+   bool hasExclusive = false;
+   for ( auto line : helpLines ) {
+      if ( line.find( "Simple group:" ) != std::string::npos )
+         hasSimple = true;
+      if ( line.find( "Exclusive group:" ) != std::string::npos )
+         hasExclusive = true;
+   }
+
+   EXPECT_TRUE( hasSimple );
+   EXPECT_TRUE( hasExclusive );
+}
