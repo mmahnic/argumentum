@@ -203,6 +203,9 @@ public:
       }
    };
 
+   // NOTE: An option group with the same name can be defined in multiple
+   // places.  When it is configured multiple times the last configured values
+   // will be used, except for setRequired().
    class OptionGroup
    {
    private:
@@ -223,11 +226,11 @@ public:
          mTitle = title;
       }
 
+      // The required option can be set only when the group is not yet required.
+      // Because a group can be defined in multiple places, it is required as
+      // soon as it is required in one place.
       void setRequired( bool isRequired )
       {
-         // The required option can be set only when the group is not yet
-         // required.  Because a group can be defined in multiple places, it is
-         // required as soon as it is required in one place.
          if ( !mIsRequired )
             mIsRequired = isRequired;
       }
@@ -1239,6 +1242,9 @@ private:
 
    std::shared_ptr<OptionGroup> addGroup( std::string name, bool isExclusive )
    {
+      if ( name.empty() )
+         throw std::invalid_argument( "A group must have a name." );
+
       std::transform( name.begin(), name.end(), name.begin(), tolower );
       assert( mGroups.count( name ) == 0 );
 
@@ -1291,6 +1297,7 @@ private:
       auto pGroup = option.getGroup();
       if ( pGroup ) {
          help.group.name = pGroup->getName();
+         help.group.title = pGroup->getTitle();
          help.group.isExclusive = pGroup->isExclusive();
          help.group.isRequired = pGroup->isRequired();
       }

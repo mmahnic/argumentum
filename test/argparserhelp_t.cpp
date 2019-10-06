@@ -444,6 +444,8 @@ TEST( ArgumentParserHelpTest, shouldOutputGroupTitle )
 {
    int dummy;
    auto parser = argument_parser{};
+   parser.config().description( "Should output group title." );
+   parser.add_argument( dummy, "--default" ).nargs( 0 ).help( "default:default" );
    parser.add_group( "simple" ).title( "Simple group" );
    parser.add_argument( dummy, "--first" ).nargs( 0 ).help( "simple:first" );
    parser.add_argument( dummy, "--second" ).nargs( 0 ).help( "simple:second" );

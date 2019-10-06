@@ -23,6 +23,7 @@ struct ArgumentHelpResult
    struct
    {
       std::string name;
+      std::string title;
       bool isExclusive = false;
       bool isRequired = false;
    } group;

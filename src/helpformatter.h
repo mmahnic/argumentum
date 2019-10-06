@@ -252,19 +252,29 @@ inline void HelpFormatter::format( const argument_parser& parser, std::ostream& 
       auto hasPositional = group.ibegin != group.iendpos;
       auto hasRequired = group.iendpos != group.iendreq;
       auto hasOptional = group.iendreq != group.iend;
+      auto& firstArg = *group.ibegin;
+      auto isDefaultGroup = firstArg.group.name.empty();
+
+      if ( !isDefaultGroup ) {
+         writer.write( firstArg.group.title + ":" );
+         writer.startLine();
+      }
 
       if ( hasPositional ) {
-         writer.write( "positional arguments:" );
+         if ( isDefaultGroup )
+            writer.write( "positional arguments:" );
          writeArguments( writer, group.ibegin, group.iendpos );
       }
 
       if ( hasRequired ) {
-         writer.write( "required arguments:" );
+         if ( isDefaultGroup )
+            writer.write( "required arguments:" );
          writeArguments( writer, group.iendpos, group.iendreq );
       }
 
       if ( hasOptional ) {
-         writer.write( "optional arguments:" );
+         if ( isDefaultGroup )
+            writer.write( "optional arguments:" );
          writeArguments( writer, group.iendreq, group.iend );
       }
    }
