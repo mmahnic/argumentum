@@ -999,6 +999,7 @@ public:
    ParseResult parse_args( const std::vector<std::string>& args )
    {
       if ( mHelpOptionNames.empty() ) {
+         end_group();
          try {
             add_help_option();
          }
