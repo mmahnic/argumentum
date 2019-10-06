@@ -835,11 +835,7 @@ private:
 
       Option* findOption( std::string_view optionName ) const
       {
-         for ( auto& option : mArgParser.mOptions )
-            if ( option.hasName( optionName ) )
-               return &option;
-
-         return nullptr;
+         return mArgParser.findOption( optionName );
       }
 
       void setValue( Option& option, const std::string& value )
@@ -922,11 +918,26 @@ public:
    /**
     * Add a special option that will display the help and terminate the parser.
     * If this method is not called, the default help options --help and -h will
-    * be used.
+    * be used as long as they are not used for other purposes.
+    *
+    * The method called without parameters will throw an invalid_argument
+    * exception if none of the option names --help and -h can be used.
     */
    OptionConfig add_help_option()
    {
-      return add_help_option( "--help", "-h" );
+      const auto shortName = "-h";
+      const auto longName = "--help";
+      auto pShort = findOption( shortName );
+      auto pLong = findOption( longName );
+
+      if ( !pShort && !pLong )
+         return add_help_option( shortName, longName );
+      if ( !pShort )
+         return add_help_option( shortName );
+      if ( !pLong )
+         return add_help_option( longName );
+
+      throw std::invalid_argument( "The default help options are hidden by other options." );
    }
 
    OptionConfig add_help_option( const std::string& name )
@@ -987,8 +998,13 @@ public:
 
    ParseResult parse_args( const std::vector<std::string>& args )
    {
-      if ( mHelpOptionNames.empty() )
-         add_help_option();
+      if ( mHelpOptionNames.empty() ) {
+         try {
+            add_help_option();
+         }
+         catch ( const std::invalid_argument& ) {
+         }
+      }
 
       verifyDefinedOptions();
 
@@ -1020,7 +1036,7 @@ public:
          if ( opt.hasName( name ) )
             return describeOption( opt );
 
-      throw std::invalid_argument( "Unknown option" );
+      throw std::invalid_argument( "Unknown option." );
    }
 
    std::vector<ArgumentHelpResult> describe_arguments() const
@@ -1037,6 +1053,15 @@ public:
    }
 
 private:
+   Option* findOption( std::string_view optionName )
+   {
+      for ( auto& option : mOptions )
+         if ( option.hasName( optionName ) )
+            return &option;
+
+      return nullptr;
+   }
+
    void verifyDefinedOptions()
    {
       // A required option can not be in an exclusive group.
