@@ -7,6 +7,7 @@ set(PARSER_SOURCES
 add_executable( runUnitTests
    runtest.cpp
    argparser_t.cpp
+   argparsergroup_t.cpp
    action_t.cpp
    argparserhelp_t.cpp
    helpwriter_t.cpp

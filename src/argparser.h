@@ -50,7 +50,16 @@ class MixingGroupTypes : public std::runtime_error
 {
 public:
    MixingGroupTypes( const std::string& groupName )
-      : runtime_error( std::string( "Mixing group types in group " ) + groupName )
+      : runtime_error( std::string( "Mixing group types in group '" ) + groupName + "'" )
+   {}
+};
+
+class RequiredExclusiveOption : public std::runtime_error
+{
+public:
+   RequiredExclusiveOption( const std::string& groupName, const std::string& optionName )
+      : runtime_error( std::string( "Option '" ) + optionName + "' is required in exclusive group '"
+              + groupName + "'" )
    {}
 };
 
@@ -198,6 +207,15 @@ public:
          , mIsExclusive( isExclusive )
       {}
 
+      void setRequired( bool isRequired )
+      {
+         // The required option can be set only when the group is not yet
+         // required.  Because a group can be defined in multiple places, it is
+         // required as soon as it is required in one place.
+         if ( !mIsRequired )
+            mIsRequired = isRequired;
+      }
+
       const std::string& getName() const
       {
          return mName;
@@ -211,6 +229,22 @@ public:
       bool isRequired() const
       {
          return mIsRequired;
+      }
+   };
+
+   class GroupConfig
+   {
+      std::shared_ptr<OptionGroup> mpGroup;
+
+   public:
+      GroupConfig( std::shared_ptr<OptionGroup> pGroup )
+         : mpGroup( pGroup )
+      {}
+
+      GroupConfig& required( bool isRequired = true )
+      {
+         mpGroup->setRequired( isRequired );
+         return *this;
       }
    };
 
@@ -614,14 +648,23 @@ public:
 
    // Errors known by the parser
    enum EError {
+      // The option is not known by the argument parser.
       UNKNOWN_OPTION,
+      // Multiple options from an exclusive group are present.
       EXCLUSIVE_OPTION,
+      // A required option is missing.
       MISSING_OPTION,
+      // An option from a required (exclusive) group is missing.
+      MISSING_OPTION_GROUP,
+      // An required argument is missing.
       MISSING_ARGUMENT,
+      // The input argument could not be converted.
       CONVERSION_ERROR,
+      // The argument value is not in the set of valid argument values.
       INVALID_CHOICE,
-      // Flags do not accept parameters
+      // Flags do not accept parameters.
       FLAG_PARAMETER,
+      // Signal that help was requesetd when on_exit_return is set.
       HELP_REQUESTED
    };
 
@@ -909,7 +952,7 @@ public:
       return optionConfig;
    }
 
-   void add_group( const std::string& name )
+   GroupConfig add_group( const std::string& name )
    {
       auto pGroup = findGroup( name );
       if ( pGroup ) {
@@ -919,9 +962,11 @@ public:
       }
       else
          mpActiveGroup = addGroup( name, false );
+
+      return GroupConfig( mpActiveGroup );
    }
 
-   void add_exclusive_group( const std::string& name )
+   GroupConfig add_exclusive_group( const std::string& name )
    {
       auto pGroup = findGroup( name );
       if ( pGroup ) {
@@ -931,6 +976,8 @@ public:
       }
       else
          mpActiveGroup = addGroup( name, true );
+
+      return GroupConfig( mpActiveGroup );
    }
 
    void end_group()
@@ -942,6 +989,8 @@ public:
    {
       if ( mHelpOptionNames.empty() )
          add_help_option();
+
+      verifyDefinedOptions();
 
       for ( auto& option : mOptions )
          option.resetValue();
@@ -960,6 +1009,7 @@ public:
       auto result = parser.parse( args );
       reportMissingOptions( result );
       reportExclusiveViolations( result );
+      reportMissingGroups( result );
       return result;
    }
 
@@ -987,6 +1037,18 @@ public:
    }
 
 private:
+   void verifyDefinedOptions()
+   {
+      // A required option can not be in an exclusive group.
+      for ( auto& opt : mOptions ) {
+         if ( opt.isRequired() ) {
+            auto pGroup = opt.getGroup();
+            if ( pGroup && pGroup->isExclusive() )
+               throw RequiredExclusiveOption( opt.getName(), pGroup->getName() );
+         }
+      }
+   }
+
    void reportMissingOptions( ParseResult& result )
    {
       for ( auto& option : mOptions )
@@ -1010,6 +1072,20 @@ private:
       for ( auto& c : counts )
          if ( c.second.size() > 1 )
             result.errors.emplace_back( c.second.front(), EXCLUSIVE_OPTION );
+   }
+
+   void reportMissingGroups( ParseResult& result )
+   {
+      std::map<std::string, int> counts;
+      for ( auto& option : mOptions ) {
+         auto pGroup = option.getGroup();
+         if ( pGroup && pGroup->isRequired() )
+            counts[pGroup->getName()] += option.wasAssigned() ? 1 : 0;
+      }
+
+      for ( auto& c : counts )
+         if ( c.second < 1 )
+            result.errors.emplace_back( c.first, MISSING_OPTION_GROUP );
    }
 
    OptionConfig tryAddArgument( Option& newOption, std::vector<std::string_view> names )
@@ -1047,7 +1123,7 @@ private:
             option.setNArgs( 1 );
 
          // Positional parameters are required so they can't be in an exclusive
-         // group.
+         // group.  We simply ignore them.
          if ( mpActiveGroup && !mpActiveGroup->isExclusive() )
             option.setGroup( mpActiveGroup );
 
