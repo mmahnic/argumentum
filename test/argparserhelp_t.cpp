@@ -625,6 +625,43 @@ struct CmdTwoOptions : public argparse::Options
       parser.add_argument( count, "--count" ).nargs( 1 );
    }
 };
+
+struct GlobalOptions : public argparse::Options
+{
+   std::optional<std::string> global;
+   void add_arguments( argument_parser& parser ) override
+   {
+      parser.add_argument( global, "str" ).nargs( 1 ).required( true );
+   }
+};
+
+struct TestCommandOptions : public argparse::Options
+{
+   std::shared_ptr<GlobalOptions> pGlobal;
+   std::shared_ptr<CmdOneOptions> pCmdOne;
+   std::shared_ptr<CmdTwoOptions> pCmdTwo;
+
+   void add_arguments( argument_parser& parser ) override
+   {
+      auto pGlobal = std::make_shared<GlobalOptions>();
+      parser.add_arguments( pGlobal );
+
+      parser.add_command( "cmdone",
+                  [&]() {
+                     pCmdOne = std::make_shared<CmdOneOptions>();
+                     return pCmdOne;
+                  } )
+            .help( "Command One description." );
+
+      parser.add_command( "cmdtwo",
+                  [&]() {
+                     pCmdTwo = std::make_shared<CmdTwoOptions>();
+                     return pCmdTwo;
+                  } )
+            .help( "Command Two description." );
+   }
+};
+
 }   // namespace
 
 TEST( ArgumentParserCommandHelpTest, shouldOutputCommandSummary )
@@ -633,34 +670,7 @@ TEST( ArgumentParserCommandHelpTest, shouldOutputCommandSummary )
    auto parser = argument_parser{};
    parser.config().on_exit_return();
 
-   struct GlobalOptions : public argparse::Options
-   {
-      std::optional<std::string> global;
-      void add_arguments( argument_parser& parser ) override
-      {
-         parser.add_argument( global, "str" ).nargs( 1 ).required( true );
-      }
-   };
-
-   auto pGlobal = std::make_shared<GlobalOptions>();
-   ASSERT_NE( nullptr, pGlobal );
-   parser.add_arguments( pGlobal );
-
-   std::shared_ptr<CmdOneOptions> pCmdOne;
-   parser.add_command( "cmdone",
-               [&]() {
-                  pCmdOne = std::make_shared<CmdOneOptions>();
-                  return pCmdOne;
-               } )
-         .help( "Command One description." );
-
-   std::shared_ptr<CmdTwoOptions> pCmdTwo;
-   parser.add_command( "cmdtwo",
-               [&]() {
-                  pCmdTwo = std::make_shared<CmdTwoOptions>();
-                  return pCmdTwo;
-               } )
-         .help( "Command Two description." );
+   parser.add_arguments( std::make_shared<TestCommandOptions>() );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help, KEEPEMPTY );
@@ -683,34 +693,7 @@ TEST( ArgumentParserCommandHelpTest, shouldPutUngroupedCommandsUnderCommandsTitl
    auto parser = argument_parser{};
    parser.config().on_exit_return();
 
-   struct GlobalOptions : public argparse::Options
-   {
-      std::optional<std::string> global;
-      void add_arguments( argument_parser& parser ) override
-      {
-         parser.add_argument( global, "str" ).nargs( 1 ).required( true );
-      }
-   };
-
-   auto pGlobal = std::make_shared<GlobalOptions>();
-   ASSERT_NE( nullptr, pGlobal );
-   parser.add_arguments( pGlobal );
-
-   std::shared_ptr<CmdOneOptions> pCmdOne;
-   parser.add_command( "cmdone",
-               [&]() {
-                  pCmdOne = std::make_shared<CmdOneOptions>();
-                  return pCmdOne;
-               } )
-         .help( "Command One description." );
-
-   std::shared_ptr<CmdTwoOptions> pCmdTwo;
-   parser.add_command( "cmdtwo",
-               [&]() {
-                  pCmdTwo = std::make_shared<CmdTwoOptions>();
-                  return pCmdTwo;
-               } )
-         .help( "Command Two description." );
+   parser.add_arguments( std::make_shared<TestCommandOptions>() );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help, KEEPEMPTY );
