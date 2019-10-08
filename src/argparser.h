@@ -670,6 +670,11 @@ public:
          return mFactory != nullptr;
       }
 
+      const std::string& getHelp() const
+      {
+         return mHelp;
+      }
+
       std::shared_ptr<Options> createOptions()
       {
          assert( mFactory != nullptr );
@@ -1212,6 +1217,9 @@ public:
       for ( auto& opt : mPositional )
          descriptions.push_back( describeOption( opt ) );
 
+      for ( auto& cmd : mCommands )
+         descriptions.push_back( describeCommand( cmd ) );
+
       return descriptions;
    }
 
@@ -1480,6 +1488,16 @@ private:
          help.group.isExclusive = pGroup->isExclusive();
          help.group.isRequired = pGroup->isRequired();
       }
+
+      return help;
+   }
+
+   ArgumentHelpResult describeCommand( const Command& command ) const
+   {
+      ArgumentHelpResult help;
+      help.command = true;
+      help.long_name = command.getName();
+      help.help = command.getHelp();
 
       return help;
    }

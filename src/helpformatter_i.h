@@ -20,6 +20,7 @@ struct ArgumentHelpResult
    std::string arguments;
    std::string help;
    bool required = false;
+   bool command = false;
    struct
    {
       std::string name;
