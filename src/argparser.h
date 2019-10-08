@@ -1454,7 +1454,7 @@ private:
       help.short_name = option.getShortName();
       help.long_name = option.getLongName();
       help.help = option.getRawHelp();
-      help.required = option.isRequired();
+      help.isRequired = option.isRequired();
 
       if ( option.acceptsAnyArguments() ) {
          const auto& metavar = option.getMetavar();
@@ -1495,7 +1495,7 @@ private:
    ArgumentHelpResult describeCommand( const Command& command ) const
    {
       ArgumentHelpResult help;
-      help.command = true;
+      help.isCommand = true;
       help.long_name = command.getName();
       help.help = command.getHelp();
 

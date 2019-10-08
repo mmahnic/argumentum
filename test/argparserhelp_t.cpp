@@ -721,7 +721,6 @@ TEST( ArgumentParserCommandHelpTest, shouldPutUngroupedCommandsUnderCommandsTitl
 
    int i = 0;
    for ( auto line : helpLines ) {
-      std::cout << line << "\n";
       if ( strHasTexts( line, { "cmdone", "Command One description." } ) )
          posOne = i;
       if ( strHasTexts( line, { "cmdtwo", "Command Two description." } ) )
