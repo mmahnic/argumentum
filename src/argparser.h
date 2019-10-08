@@ -551,32 +551,32 @@ public:
 
       OptionConfig& setShortName( std::string_view name )
       {
-         mOptions[mIndex].setShortName( name );
+         getOption().setShortName( name );
          return *this;
       }
 
       OptionConfig& setLongName( std::string_view name )
       {
-         mOptions[mIndex].setLongName( name );
+         getOption().setLongName( name );
          return *this;
       }
 
       OptionConfig& metavar( std::string_view varname )
       {
-         mOptions[mIndex].setMetavar( varname );
+         getOption().setMetavar( varname );
          return *this;
       }
 
       OptionConfig& help( std::string_view help )
       {
-         mOptions[mIndex].setHelp( help );
+         getOption().setHelp( help );
          return *this;
       }
 
       OptionConfig& nargs( int count )
       {
          ensureCountWasNotSet();
-         mOptions[mIndex].setNArgs( count );
+         getOption().setNArgs( count );
          mCountWasSet = true;
          return *this;
       }
@@ -584,7 +584,7 @@ public:
       OptionConfig& minargs( int count )
       {
          ensureCountWasNotSet();
-         mOptions[mIndex].setMinArgs( count );
+         getOption().setMinArgs( count );
          mCountWasSet = true;
          return *this;
       }
@@ -592,32 +592,32 @@ public:
       OptionConfig& maxargs( int count )
       {
          ensureCountWasNotSet();
-         mOptions[mIndex].setMaxArgs( count );
+         getOption().setMaxArgs( count );
          mCountWasSet = true;
          return *this;
       }
 
       OptionConfig& required( bool isRequired = true )
       {
-         mOptions[mIndex].setRequired( isRequired );
+         getOption().setRequired( isRequired );
          return *this;
       }
 
       OptionConfig& flagValue( std::string_view value )
       {
-         mOptions[mIndex].setFlagValue( value );
+         getOption().setFlagValue( value );
          return *this;
       }
 
       OptionConfig& choices( const std::vector<std::string>& choices )
       {
-         mOptions[mIndex].setChoices( choices );
+         getOption().setChoices( choices );
          return *this;
       }
 
       OptionConfig& action( const std::shared_ptr<AssignAction>& pAction )
       {
-         mOptions[mIndex].setAction( pAction );
+         getOption().setAction( pAction );
          return *this;
       }
 
@@ -626,6 +626,11 @@ public:
       {
          if ( mCountWasSet )
             throw std::invalid_argument( "Only one of nargs, minargs and maxargs can be used." );
+      }
+
+      Option& getOption()
+      {
+         return mOptions[mIndex];
       }
    };
 
@@ -637,12 +642,18 @@ public:
    private:
       std::string mName;
       options_factory_t mFactory;
+      std::string mHelp;
 
    public:
       Command( std::string_view name, options_factory_t factory )
          : mName( name )
          , mFactory( factory )
       {}
+
+      void setHelp( std::string_view help )
+      {
+         mHelp = help;
+      }
 
       const std::string& getName() const
       {
@@ -663,6 +674,30 @@ public:
       {
          assert( mFactory != nullptr );
          return mFactory();
+      }
+   };
+
+   class CommandConfig
+   {
+      std::vector<Command>& mCommands;
+      size_t mIndex = 0;
+
+   public:
+      CommandConfig( std::vector<Command>& commands, size_t index )
+         : mCommands( commands )
+         , mIndex( index )
+      {}
+
+      CommandConfig& help( std::string_view help )
+      {
+         getCommand().setHelp( help );
+         return *this;
+      }
+
+   private:
+      Command& getCommand()
+      {
+         return mCommands[mIndex];
       }
    };
 
@@ -996,10 +1031,10 @@ public:
       return mConfig.data();
    }
 
-   void add_command( const std::string& name, Command::options_factory_t factory )
+   CommandConfig add_command( const std::string& name, Command::options_factory_t factory )
    {
       auto command = Command( name, factory );
-      tryAddCommand( command );
+      return tryAddCommand( command );
    }
 
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value>>
@@ -1342,7 +1377,7 @@ private:
       }
    }
 
-   void tryAddCommand( Command& command )
+   CommandConfig tryAddCommand( Command& command )
    {
       if ( command.getName().empty() )
          throw std::invalid_argument( "A command must have a name." );
@@ -1353,6 +1388,8 @@ private:
 
       ensureIsNewCommand( command.getName() );
       mCommands.push_back( std::move( command ) );
+
+      return { mCommands, mCommands.size() - 1 };
    }
 
    void ensureIsNewCommand( const std::string& name )
