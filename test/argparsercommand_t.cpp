@@ -149,3 +149,72 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent2 )
    ASSERT_NE( nullptr, pCmdOne );
    EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
 }
+
+TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredOptionsWhenCommandPresent )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout ).on_exit_return();
+
+   struct GlobalOptions : public argparse::Options
+   {
+      std::optional<std::string> global;
+      void add_arguments( argument_parser& parser ) override
+      {
+         parser.add_argument( global, "-s" ).nargs( 1 ).required( true );
+      }
+   };
+
+   auto pGlobal = std::make_shared<GlobalOptions>();
+   ASSERT_NE( nullptr, pGlobal );
+   parser.add_arguments( pGlobal );
+
+   std::shared_ptr<CmdOneOptions> pCmdOne;
+   parser.add_command( "one", [&]() {
+      pCmdOne = std::make_shared<CmdOneOptions>();
+      return pCmdOne;
+   } );
+
+   auto res = parser.parse_args( { "one", "-s", "command-works" } );
+   ASSERT_FALSE( res.errors.empty() );
+   EXPECT_EQ( argument_parser::MISSING_OPTION, res.errors.front().errorCode );
+
+   ASSERT_NE( nullptr, pCmdOne );
+   EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
+}
+
+// The parser tries to process commands before positional arguments. If an
+// allowed argument value is equal to the name of a command, the ambiguity is
+// resolved in favour of the command.
+TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredPositionalWhenCommandPresent )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout ).on_exit_return();
+
+   struct GlobalOptions : public argparse::Options
+   {
+      std::optional<std::string> global;
+      void add_arguments( argument_parser& parser ) override
+      {
+         parser.add_argument( global, "str" ).nargs( 1 ).required( true );
+      }
+   };
+
+   auto pGlobal = std::make_shared<GlobalOptions>();
+   ASSERT_NE( nullptr, pGlobal );
+   parser.add_arguments( pGlobal );
+
+   std::shared_ptr<CmdOneOptions> pCmdOne;
+   parser.add_command( "one", [&]() {
+      pCmdOne = std::make_shared<CmdOneOptions>();
+      return pCmdOne;
+   } );
+
+   auto res = parser.parse_args( { "one", "-s", "command-works" } );
+   ASSERT_FALSE( res.errors.empty() );
+   EXPECT_EQ( argument_parser::MISSING_ARGUMENT, res.errors.front().errorCode );
+
+   ASSERT_NE( nullptr, pCmdOne );
+   EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
+}
