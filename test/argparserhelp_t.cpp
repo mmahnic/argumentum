@@ -600,3 +600,79 @@ TEST( ArgumentParserHelpTest, shouldOutputGroupDescription )
    EXPECT_TRUE( hasSimple );
    EXPECT_TRUE( hasExclusive );
 }
+
+namespace {
+struct CmdOneOptions : public argparse::Options
+{
+   std::optional<std::string> str;
+   std::optional<long> count;
+
+   void add_arguments( argument_parser& parser ) override
+   {
+      parser.add_argument( str, "-s" ).nargs( 1 );
+      parser.add_argument( count, "-n" ).nargs( 1 );
+   }
+};
+
+struct CmdTwoOptions : public argparse::Options
+{
+   std::optional<std::string> str;
+   std::optional<long> count;
+
+   void add_arguments( argument_parser& parser ) override
+   {
+      parser.add_argument( str, "--string" ).nargs( 1 );
+      parser.add_argument( count, "--count" ).nargs( 1 );
+   }
+};
+}   // namespace
+
+TEST( ArgumentParserHelpTest, shouldOutputCommandSummary )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.config().on_exit_return();
+
+   struct GlobalOptions : public argparse::Options
+   {
+      std::optional<std::string> global;
+      void add_arguments( argument_parser& parser ) override
+      {
+         parser.add_argument( global, "str" ).nargs( 1 ).required( true );
+      }
+   };
+
+   auto pGlobal = std::make_shared<GlobalOptions>();
+   ASSERT_NE( nullptr, pGlobal );
+   parser.add_arguments( pGlobal );
+
+   std::shared_ptr<CmdOneOptions> pCmdOne;
+   parser.add_command( "cmdone",
+               [&]() {
+                  pCmdOne = std::make_shared<CmdOneOptions>();
+                  return pCmdOne;
+               } )
+         .help( "Command One description." );
+
+   std::shared_ptr<CmdTwoOptions> pCmdTwo;
+   parser.add_command( "cmdtwo",
+               [&]() {
+                  pCmdTwo = std::make_shared<CmdTwoOptions>();
+                  return pCmdTwo;
+               } )
+         .help( "Command Two description." );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+   bool hasOne = false;
+   bool hasTwo = false;
+   for ( auto line : helpLines ) {
+      if ( strHasTexts( line, { "cmdone", "Command One description." } ) )
+         hasOne = true;
+      if ( strHasTexts( line, { "cmdtwo", "Command Two description." } ) )
+         hasTwo = true;
+   }
+
+   EXPECT_TRUE( hasOne );
+   EXPECT_TRUE( hasTwo );
+}
