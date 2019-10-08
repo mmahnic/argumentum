@@ -627,7 +627,7 @@ struct CmdTwoOptions : public argparse::Options
 };
 }   // namespace
 
-TEST( ArgumentParserHelpTest, shouldOutputCommandSummary )
+TEST( ArgumentParserCommandHelpTest, shouldOutputCommandSummary )
 {
    int dummy;
    auto parser = argument_parser{};
@@ -675,4 +675,70 @@ TEST( ArgumentParserHelpTest, shouldOutputCommandSummary )
 
    EXPECT_TRUE( hasOne );
    EXPECT_TRUE( hasTwo );
+}
+
+TEST( ArgumentParserCommandHelpTest, shouldPutUngroupedCommandsUnderCommandsTitle )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.config().on_exit_return();
+
+   struct GlobalOptions : public argparse::Options
+   {
+      std::optional<std::string> global;
+      void add_arguments( argument_parser& parser ) override
+      {
+         parser.add_argument( global, "str" ).nargs( 1 ).required( true );
+      }
+   };
+
+   auto pGlobal = std::make_shared<GlobalOptions>();
+   ASSERT_NE( nullptr, pGlobal );
+   parser.add_arguments( pGlobal );
+
+   std::shared_ptr<CmdOneOptions> pCmdOne;
+   parser.add_command( "cmdone",
+               [&]() {
+                  pCmdOne = std::make_shared<CmdOneOptions>();
+                  return pCmdOne;
+               } )
+         .help( "Command One description." );
+
+   std::shared_ptr<CmdTwoOptions> pCmdTwo;
+   parser.add_command( "cmdtwo",
+               [&]() {
+                  pCmdTwo = std::make_shared<CmdTwoOptions>();
+                  return pCmdTwo;
+               } )
+         .help( "Command Two description." );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+   int posPositional = -1;
+   int posOne = -1;
+   int posTwo = -1;
+   int posTitle = -1;
+
+   int i = 0;
+   for ( auto line : helpLines ) {
+      std::cout << line << "\n";
+      if ( strHasTexts( line, { "cmdone", "Command One description." } ) )
+         posOne = i;
+      if ( strHasTexts( line, { "cmdtwo", "Command Two description." } ) )
+         posTwo = i;
+      if ( strHasText( line, "commands:" ) )
+         posTitle = i;
+      if ( strHasText( line, "positional arguments:" ) )
+         posPositional = i;
+      ++i;
+   }
+
+   EXPECT_LT( -1, posPositional );
+   EXPECT_LT( -1, posOne );
+   EXPECT_LT( -1, posTwo );
+   EXPECT_LT( -1, posTitle );
+
+   EXPECT_LT( posPositional, posTitle );
+   EXPECT_LT( posTitle, posOne );
+   EXPECT_LT( posTitle, posTwo );
 }
