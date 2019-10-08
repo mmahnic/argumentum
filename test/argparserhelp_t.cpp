@@ -204,7 +204,7 @@ TEST( ArgumentParserHelpTest, shouldOutputHelpToStream )
       "some width", "args", "some arguments", "More about testing." };
 
    for ( auto& p : parts )
-      EXPECT_NE( std::string::npos, help.find( p ) ) << "Missing: " << p;
+      EXPECT_TRUE( strHasText( help, p ) ) << "Missing: " << p;
 }
 
 TEST( ArgumentParserHelpTest, shouldFormatDescriptionsToTheSameColumn )
@@ -310,9 +310,9 @@ TEST( ArgumentParserHelpTest, shouldKeepSourceParagraphsInDescriptions )
    int ly = -1;
    int i = 0;
    for ( auto line : lines ) {
-      if ( line.find( "xxxx" ) != std::string::npos )
+      if ( strHasText( line, "xxxx" ) )
          lx = i;
-      if ( line.find( "yyyy" ) != std::string::npos )
+      if ( strHasText( line, "yyyy" ) )
          ly = i;
       ++i;
    }
@@ -473,16 +473,16 @@ TEST( ArgumentParserHelpTest, shouldSplitOptionalAndMandatoryArguments )
    std::map<std::string, EBlock> found;
 
    for ( auto line : helpLines ) {
-      if ( line.find( "optional arguments" ) != std::string::npos ) {
+      if ( strHasText( line, "optional arguments" ) ) {
          hasOptional = true;
          block = EBlock::optional;
       }
-      if ( line.find( "required arguments" ) != std::string::npos ) {
+      if ( strHasText( line, "required arguments" ) ) {
          hasRequired = true;
          block = EBlock::required;
       }
       for ( auto param : { "--yes", "--no" } ) {
-         if ( line.find( param ) != std::string::npos )
+         if ( strHasText( line, param ) )
             found[param] = block;
       }
    }
@@ -521,7 +521,7 @@ TEST( ArgumentParserHelpTest, shouldSortParametersByGroups )
    int i = 0;
    for ( auto line : helpLines ) {
       for ( auto opt : opts ) {
-         if ( line.find( opt ) != std::string::npos ) {
+         if ( strHasText( line, opt ) ) {
             foundOpts[opt] = i;
             opts.erase( opt );
             break;
@@ -564,9 +564,9 @@ TEST( ArgumentParserHelpTest, shouldOutputGroupTitle )
    bool hasSimple = false;
    bool hasExclusive = false;
    for ( auto line : helpLines ) {
-      if ( line.find( "Simple group:" ) != std::string::npos )
+      if ( strHasText( line, "Simple group:" ) )
          hasSimple = true;
-      if ( line.find( "Exclusive group:" ) != std::string::npos )
+      if ( strHasText( line, "Exclusive group:" ) )
          hasExclusive = true;
    }
 
@@ -591,9 +591,9 @@ TEST( ArgumentParserHelpTest, shouldOutputGroupDescription )
    bool hasSimple = false;
    bool hasExclusive = false;
    for ( auto line : helpLines ) {
-      if ( line.find( "Simple group." ) != std::string::npos )
+      if ( strHasText( line, "Simple group." ) )
          hasSimple = true;
-      if ( line.find( "Exclusive group." ) != std::string::npos )
+      if ( strHasText( line, "Exclusive group." ) )
          hasExclusive = true;
    }
 
