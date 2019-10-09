@@ -345,3 +345,31 @@ TEST( ArgumentParserConvertTest, shouldSupportBoolType )
    EXPECT_EQ( OK, testType<bool>( "-111", true ) );
    EXPECT_EQ( OK, testType<bool>( "0", false ) );
 }
+
+namespace {
+
+class StringConvertible
+{
+public:
+   std::string value;
+
+public:
+   StringConvertible& operator=( const StringConvertible& v ) = default;
+   StringConvertible& operator=( const std::string& v )
+   {
+      value = v;
+   }
+};
+
+}   // namespace
+
+TEST( ArgumentParserConvertTest, shouldConvertValuesWithStringAssignmentOp )
+{
+   StringConvertible value;
+
+   auto parser = argument_parser{};
+   parser.add_argument( value, "--value" ).nargs( 1 );
+   auto res = parser.parse_args( { "--value", "c:/dev/xdata" } );
+
+   EXPECT_EQ( "c:/dev/xdata", value.value );
+}
