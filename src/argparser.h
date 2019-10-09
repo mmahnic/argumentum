@@ -169,7 +169,7 @@ public:
 
       void doReset() override
       {
-         mValue = {};
+         mValue = TValue{};
       }
 
       template<typename TVar>

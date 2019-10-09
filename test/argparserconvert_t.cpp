@@ -348,16 +348,27 @@ TEST( ArgumentParserConvertTest, shouldSupportBoolType )
 
 namespace {
 
-class StringConvertible
+class StringConstructible
 {
 public:
    std::string value;
 
 public:
-   StringConvertible& operator=( const StringConvertible& v ) = default;
-   StringConvertible& operator=( const std::string& v )
+   StringConstructible( const StringConstructible& ) = default;
+   StringConstructible( const std::string& v = "" )
+      : value( v )
+   {}
+};
+
+class StringAssignable
+{
+public:
+   std::string value;
+   StringAssignable& operator=( const StringAssignable& ) = default;
+   StringAssignable& operator=( const std::string& v )
    {
       value = v;
+      return *this;
    }
 };
 
@@ -365,11 +376,22 @@ public:
 
 TEST( ArgumentParserConvertTest, shouldConvertValuesWithStringAssignmentOp )
 {
-   StringConvertible value;
+   StringAssignable assign;
 
    auto parser = argument_parser{};
-   parser.add_argument( value, "--value" ).nargs( 1 );
-   auto res = parser.parse_args( { "--value", "c:/dev/xdata" } );
+   parser.add_argument( assign, "--assign" ).nargs( 1 );
+   auto res = parser.parse_args( { "--assign", "Assign" } );
 
-   EXPECT_EQ( "c:/dev/xdata", value.value );
+   EXPECT_EQ( "Assign", assign.value );
+}
+
+TEST( ArgumentParserConvertTest, shouldConvertValuesWithStringConstructor )
+{
+   StringConstructible construct;
+
+   auto parser = argument_parser{};
+   parser.add_argument( construct, "--construct" ).nargs( 1 );
+   auto res = parser.parse_args( { "--construct", "Construct" } );
+
+   EXPECT_EQ( "Construct", construct.value );
 }
