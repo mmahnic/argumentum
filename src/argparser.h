@@ -441,7 +441,9 @@ public:
          auto& name = getName();
          auto pos = name.find_first_not_of( "-" );
          auto metavar = name.substr( pos );
-         std::transform( metavar.begin(), metavar.end(), metavar.begin(), toupper );
+         auto isPositional = pos == 0;
+         std::transform(
+               metavar.begin(), metavar.end(), metavar.begin(), isPositional ? tolower : toupper );
          return metavar;
       }
 
@@ -1085,10 +1087,12 @@ public:
 
    ArgumentHelpResult describe_argument( std::string_view name ) const
    {
-      const auto& args = ( name.substr( 0, 1 ) == "-" ) ? mOptions : mPositional;
+      bool isPositional = name.substr( 0, 1 ) != "-";
+      const auto& args = isPositional ? mPositional : mOptions;
       for ( auto& opt : args )
-         if ( opt.hasName( name ) )
+         if ( opt.hasName( name ) ) {
             return describeOption( opt );
+         }
 
       throw std::invalid_argument( "Unknown option." );
    }
@@ -1297,8 +1301,12 @@ private:
       help.long_name = option.getLongName();
       help.help = option.getRawHelp();
       help.required = option.isRequired();
+      bool isPositional = option.getName().substr( 0, 1 ) != "-";
 
-      if ( option.acceptsAnyArguments() ) {
+      if ( isPositional ) {
+         help.arguments = option.getMetavar();
+      }
+      else if ( !isPositional && option.acceptsAnyArguments() ) {
          const auto& metavar = option.getMetavar();
          auto [mmin, mmax] = option.getArgumentCounts();
          std::string res;
