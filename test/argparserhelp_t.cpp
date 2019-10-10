@@ -403,6 +403,12 @@ TEST( ArgumentParserHelpTest, shouldOutputPositionalArguments )
    EXPECT_FALSE( hasAA );
 }
 
+// TODO: The metavar for the positional argument must be the same as the name of
+// the option, oterwise we loose the connection between usage and description.
+//   a) forbid / ignore metavar()
+//   b) also change the name in metavar()
+//   c) display name and metavar in description: name(metavar)
+
 TEST( ArgumentParserHelpTest, shouldSplitOptionalAndMandatoryArguments )
 {
    int dummy;
