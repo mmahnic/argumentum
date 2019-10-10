@@ -379,6 +379,30 @@ TEST( ArgumentParserHelpTest, shouldDescribePositionalArguments )
    EXPECT_EQ( "f", res.arguments );
 }
 
+TEST( ArgumentParserHelpTest, shouldOutputPositionalArguments )
+{
+   std::string str;
+   auto parser = argument_parser{};
+   parser.add_argument( str, "aaa" ).nargs( 3 ).help( "Triple a." );
+
+   auto formatter = HelpFormatter();
+   formatter.setTextWidth( 60 );
+   formatter.setMaxDescriptionIndent( 20 );
+   auto help = getTestHelp( parser, formatter );
+   auto lines = splitLines( help, KEEPEMPTY );
+
+   bool hasA = false;
+   bool hasAA = false;
+   for ( auto line : lines ) {
+      if ( line.find( "aaa" ) != std::string::npos )
+         hasA = true;
+      if ( line.find( "aaa aaa" ) != std::string::npos )
+         hasAA = true;
+   }
+   EXPECT_TRUE( hasA );
+   EXPECT_FALSE( hasAA );
+}
+
 TEST( ArgumentParserHelpTest, shouldSplitOptionalAndMandatoryArguments )
 {
    int dummy;
