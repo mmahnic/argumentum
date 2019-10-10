@@ -1301,12 +1301,8 @@ private:
       help.long_name = option.getLongName();
       help.help = option.getRawHelp();
       help.required = option.isRequired();
-      bool isPositional = option.getName().substr( 0, 1 ) != "-";
 
-      if ( isPositional ) {
-         help.arguments = option.getMetavar();
-      }
-      else if ( !isPositional && option.acceptsAnyArguments() ) {
+      if ( option.acceptsAnyArguments() ) {
          const auto& metavar = option.getMetavar();
          auto [mmin, mmax] = option.getArgumentCounts();
          std::string res;

@@ -361,22 +361,22 @@ TEST( ArgumentParserHelpTest, shouldDescribePositionalArguments )
    parser.add_argument( str, "f" ).maxargs( 1 );
 
    auto res = parser.describe_argument( "a" );
-   EXPECT_EQ( "a", res.arguments );
+   EXPECT_EQ( "a a", res.arguments );
 
    res = parser.describe_argument( "bees" );
-   EXPECT_EQ( "bees", res.arguments );
+   EXPECT_EQ( "bees [bees ...]", res.arguments );
 
    res = parser.describe_argument( "c" );
-   EXPECT_EQ( "c", res.arguments );
+   EXPECT_EQ( "[c ...]", res.arguments );
 
    res = parser.describe_argument( "d" );
-   EXPECT_EQ( "d", res.arguments );
+   EXPECT_EQ( "d d [d ...]", res.arguments );
 
    res = parser.describe_argument( "e" );
-   EXPECT_EQ( "e", res.arguments );
+   EXPECT_EQ( "[e {0..3}]", res.arguments );
 
    res = parser.describe_argument( "f" );
-   EXPECT_EQ( "f", res.arguments );
+   EXPECT_EQ( "[f]", res.arguments );
 }
 
 TEST( ArgumentParserHelpTest, shouldOutputPositionalArguments )
