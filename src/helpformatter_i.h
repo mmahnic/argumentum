@@ -78,7 +78,7 @@ private:
       else
          return {};
 
-      if ( arg.arguments.empty() )
+      if ( arg.arguments.empty() || arg.is_positional() )
          return res;
 
       return res + " " + arg.arguments;

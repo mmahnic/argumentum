@@ -349,6 +349,66 @@ TEST( ArgumentParserHelpTest, shouldChangeOptionMetavarName )
    }
 }
 
+TEST( ArgumentParserHelpTest, shouldDescribePositionalArguments )
+{
+   std::string str;
+   auto parser = argument_parser{};
+   parser.add_argument( str, "a" ).nargs( 2 );
+   parser.add_argument( str, "bees" ).minargs( 1 );
+   parser.add_argument( str, "c" ).minargs( 0 );
+   parser.add_argument( str, "d" ).minargs( 2 );
+   parser.add_argument( str, "e" ).maxargs( 3 );
+   parser.add_argument( str, "f" ).maxargs( 1 );
+
+   auto res = parser.describe_argument( "a" );
+   EXPECT_EQ( "a a", res.arguments );
+
+   res = parser.describe_argument( "bees" );
+   EXPECT_EQ( "bees [bees ...]", res.arguments );
+
+   res = parser.describe_argument( "c" );
+   EXPECT_EQ( "[c ...]", res.arguments );
+
+   res = parser.describe_argument( "d" );
+   EXPECT_EQ( "d d [d ...]", res.arguments );
+
+   res = parser.describe_argument( "e" );
+   EXPECT_EQ( "[e {0..3}]", res.arguments );
+
+   res = parser.describe_argument( "f" );
+   EXPECT_EQ( "[f]", res.arguments );
+}
+
+TEST( ArgumentParserHelpTest, shouldOutputPositionalArguments )
+{
+   std::string str;
+   auto parser = argument_parser{};
+   parser.add_argument( str, "aaa" ).nargs( 3 ).help( "Triple a." );
+
+   auto formatter = HelpFormatter();
+   formatter.setTextWidth( 60 );
+   formatter.setMaxDescriptionIndent( 20 );
+   auto help = getTestHelp( parser, formatter );
+   auto lines = splitLines( help, KEEPEMPTY );
+
+   bool hasA = false;
+   bool hasAA = false;
+   for ( auto line : lines ) {
+      if ( line.find( "aaa" ) != std::string::npos )
+         hasA = true;
+      if ( line.find( "aaa aaa" ) != std::string::npos )
+         hasAA = true;
+   }
+   EXPECT_TRUE( hasA );
+   EXPECT_FALSE( hasAA );
+}
+
+// TODO: The metavar for the positional argument must be the same as the name of
+// the option, oterwise we loose the connection between usage and description.
+//   a) forbid / ignore metavar()
+//   b) also change the name in metavar()
+//   c) display name and metavar in description: name(metavar)
+
 TEST( ArgumentParserHelpTest, shouldSplitOptionalAndMandatoryArguments )
 {
    int dummy;
