@@ -349,6 +349,36 @@ TEST( ArgumentParserHelpTest, shouldChangeOptionMetavarName )
    }
 }
 
+TEST( ArgumentParserHelpTest, shouldDescribePositionalArguments )
+{
+   std::string str;
+   auto parser = argument_parser{};
+   parser.add_argument( str, "a" ).nargs( 2 );
+   parser.add_argument( str, "bees" ).minargs( 1 );
+   parser.add_argument( str, "c" ).minargs( 0 );
+   parser.add_argument( str, "d" ).minargs( 2 );
+   parser.add_argument( str, "e" ).maxargs( 3 );
+   parser.add_argument( str, "f" ).maxargs( 1 );
+
+   auto res = parser.describe_argument( "a" );
+   EXPECT_EQ( "a", res.arguments );
+
+   res = parser.describe_argument( "bees" );
+   EXPECT_EQ( "bees", res.arguments );
+
+   res = parser.describe_argument( "c" );
+   EXPECT_EQ( "c", res.arguments );
+
+   res = parser.describe_argument( "d" );
+   EXPECT_EQ( "d", res.arguments );
+
+   res = parser.describe_argument( "e" );
+   EXPECT_EQ( "e", res.arguments );
+
+   res = parser.describe_argument( "f" );
+   EXPECT_EQ( "f", res.arguments );
+}
+
 TEST( ArgumentParserHelpTest, shouldSplitOptionalAndMandatoryArguments )
 {
    int dummy;
