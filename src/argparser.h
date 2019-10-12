@@ -196,20 +196,13 @@ public:
    /**
     * The assign-action is executed before @p target.setValue is called.
     *
+    * Set the the @p value on @p target or return a new string that will be set
+    * on @p target the normal way.
+    *
     * @p target.setValue will be called if assign returns a non-empty value.
     */
-   class AssignAction
-   {
-   public:
-      /**
-       * Set the the @p value on @p target or return a new string that will be set
-       * on @p target the normal way.
-       */
-      virtual std::optional<std::string> assign( Value& target, const std::string& value )
-      {
-         return value;
-      }
-   };
+   using AssignAction =
+         std::function<std::optional<std::string>( Value& target, const std::string& value )>;
 
    // NOTE: An option group with the same name can be defined in multiple
    // places.  When it is configured multiple times the last configured values
@@ -307,7 +300,7 @@ public:
    {
    private:
       std::unique_ptr<Value> mpValue;
-      std::shared_ptr<AssignAction> mpAssignAction;
+      AssignAction mAssignAction;
       std::string mShortName;
       std::string mLongName;
       std::string mMetavar;
@@ -401,9 +394,9 @@ public:
          mChoices = choices;
       }
 
-      void setAction( const std::shared_ptr<AssignAction>& pAction )
+      void setAction( AssignAction action )
       {
-         mpAssignAction = pAction;
+         mAssignAction = action;
       }
 
       void setGroup( const std::shared_ptr<OptionGroup>& pGroup )
@@ -464,8 +457,8 @@ public:
             throw InvalidChoiceError( value );
          }
 
-         if ( mpAssignAction ) {
-            auto newValue = mpAssignAction->assign( *mpValue, value );
+         if ( mAssignAction ) {
+            auto newValue = mAssignAction( *mpValue, value );
             if ( newValue )
                mpValue->setValue( *newValue );
             return;
@@ -615,7 +608,7 @@ public:
          return *this;
       }
 
-      OptionConfig& action( const std::shared_ptr<AssignAction>& pAction )
+      OptionConfig& action( AssignAction action )
       {
          getOption().setAction( pAction );
          return *this;

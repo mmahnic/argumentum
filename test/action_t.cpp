@@ -10,7 +10,7 @@ using namespace argparse;
 TEST( ArgumentParserActionTest, shouldModifyArgumentWithAction )
 {
    auto testAction = []( argparse::argument_parser::Value& target,
-                           const std::string& value ) -> std::string {
+                           const std::string& value ) -> std::optional<std::string> {
       if ( value.find( "1" ) != std::string::npos )
          return value + " Has One";
       return value;
@@ -37,7 +37,7 @@ TEST( ArgumentParserActionTest, shouldModifyArgumentWithAction )
 TEST( ArgumentParserActionTest, shouldNotSetValueIfActionReturnsEmptyOptional )
 {
    auto testAction = []( argparse::argument_parser::Value& target,
-                           const std::string& value ) -> std::string { return {}; };
+                           const std::string& value ) -> std::optional<std::string> { return {}; };
 
    std::string result;
    std::stringstream strout;
@@ -52,7 +52,7 @@ TEST( ArgumentParserActionTest, shouldNotSetValueIfActionReturnsEmptyOptional )
 TEST( ArgumentParserActionTest, shouldSetValueOnTargetFromAction )
 {
    auto testAction = []( argparse::argument_parser::Value& target,
-                           const std::string& value ) -> std::string {
+                           const std::string& value ) -> std::optional<std::string> {
       if ( value.find( "1" ) != std::string::npos )
          target.setValue( value + " Has One" );
       else
