@@ -532,6 +532,7 @@ public:
     */
    class OptionConfig
    {
+   protected:
       std::vector<Option>& mOptions;
       size_t mIndex = 0;
       bool mCountWasSet = false;
@@ -542,79 +543,13 @@ public:
          , mIndex( index )
       {}
 
-      OptionConfig& setShortName( std::string_view name )
-      {
-         getOption().setShortName( name );
-         return *this;
-      }
-
-      OptionConfig& setLongName( std::string_view name )
-      {
-         getOption().setLongName( name );
-         return *this;
-      }
-
-      OptionConfig& metavar( std::string_view varname )
-      {
-         getOption().setMetavar( varname );
-         return *this;
-      }
-
-      OptionConfig& help( std::string_view help )
-      {
-         getOption().setHelp( help );
-         return *this;
-      }
-
-      OptionConfig& nargs( int count )
-      {
-         ensureCountWasNotSet();
-         getOption().setNArgs( count );
-         mCountWasSet = true;
-         return *this;
-      }
-
-      OptionConfig& minargs( int count )
-      {
-         ensureCountWasNotSet();
-         getOption().setMinArgs( count );
-         mCountWasSet = true;
-         return *this;
-      }
-
-      OptionConfig& maxargs( int count )
-      {
-         ensureCountWasNotSet();
-         getOption().setMaxArgs( count );
-         mCountWasSet = true;
-         return *this;
-      }
-
-      OptionConfig& required( bool isRequired = true )
-      {
-         getOption().setRequired( isRequired );
-         return *this;
-      }
-
-      OptionConfig& flagValue( std::string_view value )
-      {
-         getOption().setFlagValue( value );
-         return *this;
-      }
-
-      OptionConfig& choices( const std::vector<std::string>& choices )
-      {
-         getOption().setChoices( choices );
-         return *this;
-      }
-
       OptionConfig& action( AssignAction action )
       {
-         getOption().setAction( pAction );
+         mOptions[mIndex].setAction( action );
          return *this;
       }
 
-   private:
+   protected:
       void ensureCountWasNotSet() const
       {
          if ( mCountWasSet )
@@ -624,6 +559,103 @@ public:
       Option& getOption()
       {
          return mOptions[mIndex];
+      }
+   };
+
+   template<typename TValue>
+   class OptionConfigA : public OptionConfig
+   {
+   public:
+      using this_t = OptionConfigA<TValue>;
+      using assign_action_t = std::function<void( ConvertedValue<TValue>&, const std::string& )>;
+
+   public:
+      using OptionConfig::OptionConfig;
+      OptionConfigA( OptionConfig&& wrapped )
+         : OptionConfig( std::move( wrapped ) )
+      {}
+
+      this_t& setShortName( std::string_view name )
+      {
+         getOption().setShortName( name );
+         return *this;
+      }
+
+      this_t& setLongName( std::string_view name )
+      {
+         getOption().setLongName( name );
+         return *this;
+      }
+
+      this_t& metavar( std::string_view varname )
+      {
+         getOption().setMetavar( varname );
+         return *this;
+      }
+
+      this_t& help( std::string_view help )
+      {
+         getOption().setHelp( help );
+         return *this;
+      }
+
+      this_t& nargs( int count )
+      {
+         ensureCountWasNotSet();
+         getOption().setNArgs( count );
+         mCountWasSet = true;
+         return *this;
+      }
+
+      this_t& minargs( int count )
+      {
+         ensureCountWasNotSet();
+         getOption().setMinArgs( count );
+         mCountWasSet = true;
+         return *this;
+      }
+
+      this_t& maxargs( int count )
+      {
+         ensureCountWasNotSet();
+         getOption().setMaxArgs( count );
+         mCountWasSet = true;
+         return *this;
+      }
+
+      this_t& required( bool isRequired = true )
+      {
+         getOption().setRequired( isRequired );
+         return *this;
+      }
+
+      this_t& flagValue( std::string_view value )
+      {
+         getOption().setFlagValue( value );
+         return *this;
+      }
+
+      this_t& choices( const std::vector<std::string>& choices )
+      {
+         getOption().setChoices( choices );
+         return *this;
+      }
+
+      this_t& action( assign_action_t action )
+      {
+         if ( action ) {
+            auto wrapAction = [&]( Value& target,
+                                    const std::string& value ) -> std::optional<std::string> {
+               auto pv = dynamic_cast<ConvertedValue<TValue>*>( &target );
+               if ( pv )
+                  action( *pv, value );
+               return {};
+            };
+            mOptions[mIndex].setAction( wrapAction );
+         }
+         else
+            mOptions[mIndex].setAction( nullptr );
+         return *this;
       }
    };
 
@@ -1036,11 +1068,11 @@ public:
    }
 
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value>>
-   OptionConfig add_argument(
+   OptionConfigA<TValue> add_argument(
          TValue value, const std::string& name = "", const std::string& altName = "" )
    {
       auto option = Option( value );
-      return tryAddArgument( option, { name, altName } );
+      return OptionConfigA<TValue>( tryAddArgument( option, { name, altName } ) );
    }
 
    /**
@@ -1048,11 +1080,11 @@ public:
     * to @p value that will receive the parsed parameter(s).
     */
    template<typename TValue, typename = std::enable_if_t<!std::is_base_of<Value, TValue>::value>>
-   OptionConfig add_argument(
+   OptionConfigA<TValue> add_argument(
          TValue& value, const std::string& name = "", const std::string& altName = "" )
    {
       auto option = Option( value );
-      return tryAddArgument( option, { name, altName } );
+      return OptionConfigA<TValue>( tryAddArgument( option, { name, altName } ) );
    }
 
    /**
@@ -1078,7 +1110,7 @@ public:
     * This method will be called from parse_args if neither it nor the method
     * add_help_option were called before parse_args.
     */
-   OptionConfig add_default_help_option()
+   OptionConfigA<void> add_default_help_option()
    {
       const auto shortName = "-h";
       const auto longName = "--help";
@@ -1102,15 +1134,15 @@ public:
     * help options --help and -h will be used as long as they are not used for
     * other purposes.
     */
-   OptionConfig add_help_option( const std::string& name, const std::string& altName = "" )
+   OptionConfigA<void> add_help_option( const std::string& name, const std::string& altName = "" )
    {
       if ( !name.empty() && name[0] != '-' || !altName.empty() && altName[0] != '-' )
          throw std::invalid_argument( "A help argument must be an option." );
 
       auto value = VoidValue{};
       auto option = Option( value );
-      auto optionConfig =
-            tryAddArgument( option, { name, altName } ).help( "Print this help message and exit." );
+      auto optionConfig = OptionConfigA<void>( tryAddArgument( option, { name, altName } ) )
+                                .help( "Print this help message and exit." );
 
       if ( !name.empty() )
          mHelpOptionNames.insert( name );
