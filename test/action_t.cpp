@@ -73,3 +73,46 @@ TEST( ArgumentParserActionTest, shouldSetValueOnTargetFromAction )
    EXPECT_TRUE( res.errors.empty() );
    EXPECT_EQ( "2", result );
 }
+
+namespace {
+class NewType
+{
+private:
+   std::set<long> value;
+
+public:
+   NewType( std::set<long> v = {} )
+      : value( v )
+   {}
+   void setValue( std::set<long> v )
+   {
+      value = v;
+   }
+   const std::set<long>& getValue() const
+   {
+      return value;
+   }
+};
+
+TEST( ArgumentParserActionTest, shouldSetNewTypesThroughActionWithoutFromStringConversion )
+{
+   auto testAction = []( auto&& target, const std::string& value ) -> std::optional<std::string> {
+      using parser = argparse::argument_parser;
+      target.mValue = std::set<long>{ value[0], value.size() };
+   };
+
+   NewType result;
+   auto parser = argument_parser{};
+
+   // - add_argument fails because there is no conversion from string to NewType.
+   // - testAction fails because mValue is not part of target (of type Value, base class).
+   parser.add_argument( result, "-v" ).maxargs( 1 ).action( testAction );
+
+   auto res = parser.parse_args( { "-v", "assign" } );
+   EXPECT_TRUE( res.errors.empty() );
+
+   EXPECT_EQ( 2, result.getValue().size() );
+   EXPECT_EQ( 1, result.getValue().count( 'a' ) );
+   EXPECT_EQ( 1, result.getValue().count( 6 ) );
+}
+}   // namespace

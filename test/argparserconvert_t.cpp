@@ -96,6 +96,9 @@ TEST( ArgumentParserConvertTest, shouldReportBadConversionError )
    EXPECT_EQ( argument_parser::CONVERSION_ERROR, res.errors.front().errorCode );
 }
 
+// TODO: This interface should be replaced by actions acting on ConvertedValue<CustomType>.
+//   - add_argument() receives CustomType,
+//   - action() receives a callable like doSetValue().
 TEST( ArgumentParserConvertTest, shouldSupportCustomOptionTypes )
 {
    struct CustomType
