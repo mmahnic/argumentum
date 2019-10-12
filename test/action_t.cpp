@@ -9,21 +9,17 @@ using namespace argparse;
 
 TEST( ArgumentParserActionTest, shouldModifyArgumentWithAction )
 {
-   class TestAction : public argparse::argument_parser::AssignAction
-   {
-      std::optional<std::string> assign(
-            argparse::argument_parser::Value& target, const std::string& value ) override
-      {
-         if ( value.find( "1" ) != std::string::npos )
-            return value + " Has One";
-         return value;
-      }
+   auto testAction = []( argparse::argument_parser::Value& target,
+                           const std::string& value ) -> std::string {
+      if ( value.find( "1" ) != std::string::npos )
+         return value + " Has One";
+      return value;
    };
 
    std::string result;
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.add_argument( result, "-v" ).nargs( 1 ).action( std::make_shared<TestAction>() );
+   parser.add_argument( result, "-v" ).nargs( 1 ).action( testAction );
 
    auto res = parser.parse_args( { "-v", "1" } );
    EXPECT_TRUE( res.errors.empty() );
@@ -40,19 +36,13 @@ TEST( ArgumentParserActionTest, shouldModifyArgumentWithAction )
 
 TEST( ArgumentParserActionTest, shouldNotSetValueIfActionReturnsEmptyOptional )
 {
-   class TestAction : public argparse::argument_parser::AssignAction
-   {
-      std::optional<std::string> assign(
-            argparse::argument_parser::Value& target, const std::string& value ) override
-      {
-         return {};
-      }
-   };
+   auto testAction = []( argparse::argument_parser::Value& target,
+                           const std::string& value ) -> std::string { return {}; };
 
    std::string result;
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.add_argument( result, "-v" ).maxargs( 1 ).action( std::make_shared<TestAction>() );
+   parser.add_argument( result, "-v" ).maxargs( 1 ).action( testAction );
 
    auto res = parser.parse_args( { "-v", "1" } );
    EXPECT_TRUE( res.errors.empty() );
@@ -61,23 +51,19 @@ TEST( ArgumentParserActionTest, shouldNotSetValueIfActionReturnsEmptyOptional )
 
 TEST( ArgumentParserActionTest, shouldSetValueOnTargetFromAction )
 {
-   class TestAction : public argparse::argument_parser::AssignAction
-   {
-      std::optional<std::string> assign(
-            argparse::argument_parser::Value& target, const std::string& value ) override
-      {
-         if ( value.find( "1" ) != std::string::npos )
-            target.setValue( value + " Has One" );
-         else
-            target.setValue( value );
-         return {};
-      }
+   auto testAction = []( argparse::argument_parser::Value& target,
+                           const std::string& value ) -> std::string {
+      if ( value.find( "1" ) != std::string::npos )
+         target.setValue( value + " Has One" );
+      else
+         target.setValue( value );
+      return {};
    };
 
    std::string result;
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.add_argument( result, "-v" ).maxargs( 1 ).action( std::make_shared<TestAction>() );
+   parser.add_argument( result, "-v" ).maxargs( 1 ).action( testAction );
 
    auto res = parser.parse_args( { "-v", "31" } );
    EXPECT_TRUE( res.errors.empty() );
