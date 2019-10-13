@@ -50,7 +50,7 @@ class MixingGroupTypes : public std::runtime_error
 {
 public:
    MixingGroupTypes( const std::string& groupName )
-      : runtime_error( std::string( "Mixing group types in group '" ) + groupName + "'" )
+      : runtime_error( std::string( "Mixing group types in group '" ) + groupName + "'." )
    {}
 };
 
@@ -59,7 +59,7 @@ class RequiredExclusiveOption : public std::runtime_error
 public:
    RequiredExclusiveOption( const std::string& groupName, const std::string& optionName )
       : runtime_error( std::string( "Option '" ) + optionName + "' is required in exclusive group '"
-              + groupName + "'" )
+              + groupName + "'." )
    {}
 };
 
@@ -68,7 +68,15 @@ class DuplicateOption : public std::runtime_error
 public:
    DuplicateOption( const std::string& groupName, const std::string& optionName )
       : runtime_error( std::string( "Option '" ) + optionName + "' is already defined in group '"
-              + groupName + "'" )
+              + groupName + "'." )
+   {}
+};
+
+class DuplicateCommand : public std::runtime_error
+{
+public:
+   DuplicateCommand( const std::string& commandName )
+      : runtime_error( std::string( "Command '" ) + commandName + "' is already defined." )
    {}
 };
 
@@ -543,32 +551,32 @@ public:
 
       OptionConfig& setShortName( std::string_view name )
       {
-         mOptions[mIndex].setShortName( name );
+         getOption().setShortName( name );
          return *this;
       }
 
       OptionConfig& setLongName( std::string_view name )
       {
-         mOptions[mIndex].setLongName( name );
+         getOption().setLongName( name );
          return *this;
       }
 
       OptionConfig& metavar( std::string_view varname )
       {
-         mOptions[mIndex].setMetavar( varname );
+         getOption().setMetavar( varname );
          return *this;
       }
 
       OptionConfig& help( std::string_view help )
       {
-         mOptions[mIndex].setHelp( help );
+         getOption().setHelp( help );
          return *this;
       }
 
       OptionConfig& nargs( int count )
       {
          ensureCountWasNotSet();
-         mOptions[mIndex].setNArgs( count );
+         getOption().setNArgs( count );
          mCountWasSet = true;
          return *this;
       }
@@ -576,7 +584,7 @@ public:
       OptionConfig& minargs( int count )
       {
          ensureCountWasNotSet();
-         mOptions[mIndex].setMinArgs( count );
+         getOption().setMinArgs( count );
          mCountWasSet = true;
          return *this;
       }
@@ -584,32 +592,32 @@ public:
       OptionConfig& maxargs( int count )
       {
          ensureCountWasNotSet();
-         mOptions[mIndex].setMaxArgs( count );
+         getOption().setMaxArgs( count );
          mCountWasSet = true;
          return *this;
       }
 
       OptionConfig& required( bool isRequired = true )
       {
-         mOptions[mIndex].setRequired( isRequired );
+         getOption().setRequired( isRequired );
          return *this;
       }
 
       OptionConfig& flagValue( std::string_view value )
       {
-         mOptions[mIndex].setFlagValue( value );
+         getOption().setFlagValue( value );
          return *this;
       }
 
       OptionConfig& choices( const std::vector<std::string>& choices )
       {
-         mOptions[mIndex].setChoices( choices );
+         getOption().setChoices( choices );
          return *this;
       }
 
       OptionConfig& action( const std::shared_ptr<AssignAction>& pAction )
       {
-         mOptions[mIndex].setAction( pAction );
+         getOption().setAction( pAction );
          return *this;
       }
 
@@ -618,6 +626,83 @@ public:
       {
          if ( mCountWasSet )
             throw std::invalid_argument( "Only one of nargs, minargs and maxargs can be used." );
+      }
+
+      Option& getOption()
+      {
+         return mOptions[mIndex];
+      }
+   };
+
+   class Command
+   {
+   public:
+      using options_factory_t = std::function<std::shared_ptr<Options>()>;
+
+   private:
+      std::string mName;
+      options_factory_t mFactory;
+      std::string mHelp;
+
+   public:
+      Command( std::string_view name, options_factory_t factory )
+         : mName( name )
+         , mFactory( factory )
+      {}
+
+      void setHelp( std::string_view help )
+      {
+         mHelp = help;
+      }
+
+      const std::string& getName() const
+      {
+         return mName;
+      }
+
+      bool hasName( std::string_view name ) const
+      {
+         return name == mName;
+      }
+
+      bool hasFactory() const
+      {
+         return mFactory != nullptr;
+      }
+
+      const std::string& getHelp() const
+      {
+         return mHelp;
+      }
+
+      std::shared_ptr<Options> createOptions()
+      {
+         assert( mFactory != nullptr );
+         return mFactory();
+      }
+   };
+
+   class CommandConfig
+   {
+      std::vector<Command>& mCommands;
+      size_t mIndex = 0;
+
+   public:
+      CommandConfig( std::vector<Command>& commands, size_t index )
+         : mCommands( commands )
+         , mIndex( index )
+      {}
+
+      CommandConfig& help( std::string_view help )
+      {
+         getCommand().setHelp( help );
+         return *this;
+      }
+
+   private:
+      Command& getCommand()
+      {
+         return mCommands[mIndex];
       }
    };
 
@@ -738,6 +823,16 @@ public:
          ignoredArguments.clear();
          errors.clear();
       }
+
+      void addResults( ParseResult&& res )
+      {
+         ignoredArguments.insert( std::end( ignoredArguments ),
+               std::make_move_iterator( std::begin( res.ignoredArguments ) ),
+               std::make_move_iterator( std::end( res.ignoredArguments ) ) );
+         for ( auto& err : res.errors )
+            errors.emplace_back( std::move( err ) );
+         res.clear();
+      }
    };
 
 private:
@@ -793,8 +888,16 @@ private:
                         closeOption();
                   }
                }
-               else
-                  addFreeArgument( *iarg );
+               else {
+                  auto pCommand = mArgParser.findCommand( *iarg );
+                  if ( pCommand ) {
+                     auto res = mArgParser.parseCommandArguments( *pCommand, iarg, iend );
+                     mResult.addResults( std::move( res ) );
+                     break;
+                  }
+                  else
+                     addFreeArgument( *iarg );
+               }
             }
          }
 
@@ -907,6 +1010,7 @@ private:
 
 private:
    ParserConfig mConfig;
+   std::vector<Command> mCommands;
    std::vector<Option> mOptions;
    std::vector<Option> mPositional;
    std::set<std::string> mHelpOptionNames;
@@ -930,6 +1034,12 @@ public:
    const ParserConfig::Data& getConfig() const
    {
       return mConfig.data();
+   }
+
+   CommandConfig add_command( const std::string& name, Command::options_factory_t factory )
+   {
+      auto command = Command( name, factory );
+      return tryAddCommand( command );
    }
 
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value>>
@@ -1107,6 +1217,9 @@ public:
       for ( auto& opt : mPositional )
          descriptions.push_back( describeOption( opt ) );
 
+      for ( auto& cmd : mCommands )
+         descriptions.push_back( describeCommand( cmd ) );
+
       return descriptions;
    }
 
@@ -1272,6 +1385,47 @@ private:
       }
    }
 
+   CommandConfig tryAddCommand( Command& command )
+   {
+      if ( command.getName().empty() )
+         throw std::invalid_argument( "A command must have a name." );
+      if ( !command.hasFactory() )
+         throw std::invalid_argument( "A command must have an options factory." );
+      if ( command.getName()[0] == '-' )
+         throw std::invalid_argument( "Command name must not start with a dash." );
+
+      ensureIsNewCommand( command.getName() );
+      mCommands.push_back( std::move( command ) );
+
+      return { mCommands, mCommands.size() - 1 };
+   }
+
+   void ensureIsNewCommand( const std::string& name )
+   {
+      auto pCommand = findCommand( name );
+      if ( pCommand )
+         throw DuplicateCommand( name );
+   }
+
+   Command* findCommand( std::string_view commandName )
+   {
+      for ( auto& command : mCommands )
+         if ( command.hasName( commandName ) )
+            return &command;
+
+      return nullptr;
+   }
+
+   ParseResult parseCommandArguments( Command& command,
+         std::vector<std::string>::const_iterator ibegin,
+         std::vector<std::string>::const_iterator iend )
+   {
+      auto parser = argument_parser{};
+      parser.config().on_exit_return();
+      parser.add_arguments( command.createOptions() );
+      return parser.parse_args( ibegin, iend );
+   }
+
    std::shared_ptr<OptionGroup> addGroup( std::string name, bool isExclusive )
    {
       if ( name.empty() )
@@ -1300,7 +1454,7 @@ private:
       help.short_name = option.getShortName();
       help.long_name = option.getLongName();
       help.help = option.getRawHelp();
-      help.required = option.isRequired();
+      help.isRequired = option.isRequired();
 
       if ( option.acceptsAnyArguments() ) {
          const auto& metavar = option.getMetavar();
@@ -1334,6 +1488,16 @@ private:
          help.group.isExclusive = pGroup->isExclusive();
          help.group.isRequired = pGroup->isRequired();
       }
+
+      return help;
+   }
+
+   ArgumentHelpResult describeCommand( const Command& command ) const
+   {
+      ArgumentHelpResult help;
+      help.isCommand = true;
+      help.long_name = command.getName();
+      help.help = command.getHelp();
 
       return help;
    }

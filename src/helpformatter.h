@@ -174,14 +174,19 @@ public:
    // 2. required groups by name
    // 3. optional free group
    // 4. optional groups by name
+   // 5. commands
    std::vector<GroupLimit> reorderGroups( std::vector<ArgumentHelpResult>& args )
    {
       auto lowerGroup = []( auto&& a, auto&& b ) {
-         if ( a.group.isRequired == b.group.isRequired )
-            return a.group.name < b.group.name;
+         if ( a.isCommand == b.isCommand ) {
+            if ( a.group.isRequired == b.group.isRequired )
+               return a.group.name < b.group.name;
 
-         // Required before optional ( false < true => !isRequired(true) < isRequired(true) )
-         return !a.group.isRequired < !b.group.isRequired;
+            // Required before optional ( false < true => !isRequired(true) < isRequired(true) )
+            return !a.group.isRequired < !b.group.isRequired;
+         }
+
+         return a.isCommand < b.isCommand;
       };
 
       std::stable_sort( std::begin( args ), std::end( args ), lowerGroup );
@@ -254,6 +259,7 @@ inline void HelpFormatter::format( const argument_parser& parser, std::ostream& 
       auto hasOptional = group.iendreq != group.iend;
       auto& firstArg = *group.ibegin;
       auto isDefaultGroup = firstArg.group.name.empty();
+      auto isCommand = firstArg.isCommand;
 
       if ( !isDefaultGroup ) {
          writer.write( firstArg.group.title + ":" );
@@ -264,7 +270,7 @@ inline void HelpFormatter::format( const argument_parser& parser, std::ostream& 
          writer.setIndent( 0 );
       }
 
-      if ( hasPositional ) {
+      if ( hasPositional && !isCommand ) {
          if ( isDefaultGroup )
             writer.write( "positional arguments:" );
          writeArguments( writer, group.ibegin, group.iendpos );
@@ -280,6 +286,14 @@ inline void HelpFormatter::format( const argument_parser& parser, std::ostream& 
          if ( isDefaultGroup )
             writer.write( "optional arguments:" );
          writeArguments( writer, group.iendreq, group.iend );
+      }
+
+      if ( hasPositional && isCommand ) {
+         // Commands are not options (their names do not start with '-') so they
+         // are all in the positional part of the group.
+         if ( isDefaultGroup )
+            writer.write( "commands:" );
+         writeArguments( writer, group.ibegin, group.iendpos );
       }
    }
 

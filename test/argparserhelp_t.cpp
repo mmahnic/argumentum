@@ -34,6 +34,53 @@ std::vector<std::string_view> splitLines( std::string_view text, bool keepEmpty 
 
    return output;
 }
+
+bool strHasText( std::string_view line, std::string_view text )
+{
+   return line.find( text ) != std::string::npos;
+}
+
+bool strHasTexts( std::string_view line, std::vector<std::string_view> texts )
+{
+   if ( texts.empty() )
+      return true;
+   auto it = std::begin( texts );
+   size_t pos = line.find( *it );
+   while ( it != std::end( texts ) && pos != std::string::npos ) {
+      if ( ++it != std::end( texts ) )
+         pos = line.find( *it, pos + 1 );
+   }
+   return pos != std::string::npos;
+}
+
+TEST( Utility_strHasText, shouldFindTextInString )
+{
+   auto line = "some short line";
+   EXPECT_TRUE( strHasText( line, "some" ) );
+   EXPECT_TRUE( strHasText( line, "short" ) );
+   EXPECT_TRUE( strHasText( line, "line" ) );
+   EXPECT_FALSE( strHasText( line, "long" ) );
+}
+
+TEST( Utility_strHasTexts, shouldFindMultipleTextsInString )
+{
+   auto line = "some short line";
+   EXPECT_TRUE( strHasTexts( line, { "some" } ) );
+   EXPECT_TRUE( strHasTexts( line, { "some", "short" } ) );
+   EXPECT_TRUE( strHasTexts( line, { "some", "line" } ) );
+   EXPECT_TRUE( strHasTexts( line, { "line" } ) );
+   EXPECT_FALSE( strHasTexts( line, { "long" } ) );
+}
+
+TEST( Utility_strHasTexts, shouldFindMultipleTextsInStringInOrder )
+{
+   auto line = "some short line";
+   EXPECT_TRUE( strHasTexts( line, { "some" } ) );
+   EXPECT_TRUE( strHasTexts( line, { "some", "short" } ) );
+   EXPECT_FALSE( strHasTexts( line, { "short", "some" } ) );
+   EXPECT_FALSE( strHasTexts( line, { "line", "line" } ) );
+}
+
 }   // namespace
 
 TEST( ArgumentParserHelpTest, shouldAcceptArgumentHelpStrings )
@@ -157,7 +204,7 @@ TEST( ArgumentParserHelpTest, shouldOutputHelpToStream )
       "some width", "args", "some arguments", "More about testing." };
 
    for ( auto& p : parts )
-      EXPECT_NE( std::string::npos, help.find( p ) ) << "Missing: " << p;
+      EXPECT_TRUE( strHasText( help, p ) ) << "Missing: " << p;
 }
 
 TEST( ArgumentParserHelpTest, shouldFormatDescriptionsToTheSameColumn )
@@ -263,9 +310,9 @@ TEST( ArgumentParserHelpTest, shouldKeepSourceParagraphsInDescriptions )
    int ly = -1;
    int i = 0;
    for ( auto line : lines ) {
-      if ( line.find( "xxxx" ) != std::string::npos )
+      if ( strHasText( line, "xxxx" ) )
          lx = i;
-      if ( line.find( "yyyy" ) != std::string::npos )
+      if ( strHasText( line, "yyyy" ) )
          ly = i;
       ++i;
    }
@@ -426,16 +473,16 @@ TEST( ArgumentParserHelpTest, shouldSplitOptionalAndMandatoryArguments )
    std::map<std::string, EBlock> found;
 
    for ( auto line : helpLines ) {
-      if ( line.find( "optional arguments" ) != std::string::npos ) {
+      if ( strHasText( line, "optional arguments" ) ) {
          hasOptional = true;
          block = EBlock::optional;
       }
-      if ( line.find( "required arguments" ) != std::string::npos ) {
+      if ( strHasText( line, "required arguments" ) ) {
          hasRequired = true;
          block = EBlock::required;
       }
       for ( auto param : { "--yes", "--no" } ) {
-         if ( line.find( param ) != std::string::npos )
+         if ( strHasText( line, param ) )
             found[param] = block;
       }
    }
@@ -474,7 +521,7 @@ TEST( ArgumentParserHelpTest, shouldSortParametersByGroups )
    int i = 0;
    for ( auto line : helpLines ) {
       for ( auto opt : opts ) {
-         if ( line.find( opt ) != std::string::npos ) {
+         if ( strHasText( line, opt ) ) {
             foundOpts[opt] = i;
             opts.erase( opt );
             break;
@@ -517,9 +564,9 @@ TEST( ArgumentParserHelpTest, shouldOutputGroupTitle )
    bool hasSimple = false;
    bool hasExclusive = false;
    for ( auto line : helpLines ) {
-      if ( line.find( "Simple group:" ) != std::string::npos )
+      if ( strHasText( line, "Simple group:" ) )
          hasSimple = true;
-      if ( line.find( "Exclusive group:" ) != std::string::npos )
+      if ( strHasText( line, "Exclusive group:" ) )
          hasExclusive = true;
    }
 
@@ -544,12 +591,136 @@ TEST( ArgumentParserHelpTest, shouldOutputGroupDescription )
    bool hasSimple = false;
    bool hasExclusive = false;
    for ( auto line : helpLines ) {
-      if ( line.find( "Simple group." ) != std::string::npos )
+      if ( strHasText( line, "Simple group." ) )
          hasSimple = true;
-      if ( line.find( "Exclusive group." ) != std::string::npos )
+      if ( strHasText( line, "Exclusive group." ) )
          hasExclusive = true;
    }
 
    EXPECT_TRUE( hasSimple );
    EXPECT_TRUE( hasExclusive );
+}
+
+namespace {
+struct CmdOneOptions : public argparse::Options
+{
+   std::optional<std::string> str;
+   std::optional<long> count;
+
+   void add_arguments( argument_parser& parser ) override
+   {
+      parser.add_argument( str, "-s" ).nargs( 1 );
+      parser.add_argument( count, "-n" ).nargs( 1 );
+   }
+};
+
+struct CmdTwoOptions : public argparse::Options
+{
+   std::optional<std::string> str;
+   std::optional<long> count;
+
+   void add_arguments( argument_parser& parser ) override
+   {
+      parser.add_argument( str, "--string" ).nargs( 1 );
+      parser.add_argument( count, "--count" ).nargs( 1 );
+   }
+};
+
+struct GlobalOptions : public argparse::Options
+{
+   std::optional<std::string> global;
+   void add_arguments( argument_parser& parser ) override
+   {
+      parser.add_argument( global, "str" ).nargs( 1 ).required( true );
+   }
+};
+
+struct TestCommandOptions : public argparse::Options
+{
+   std::shared_ptr<GlobalOptions> pGlobal;
+   std::shared_ptr<CmdOneOptions> pCmdOne;
+   std::shared_ptr<CmdTwoOptions> pCmdTwo;
+
+   void add_arguments( argument_parser& parser ) override
+   {
+      auto pGlobal = std::make_shared<GlobalOptions>();
+      parser.add_arguments( pGlobal );
+
+      parser.add_command( "cmdone",
+                  [&]() {
+                     pCmdOne = std::make_shared<CmdOneOptions>();
+                     return pCmdOne;
+                  } )
+            .help( "Command One description." );
+
+      parser.add_command( "cmdtwo",
+                  [&]() {
+                     pCmdTwo = std::make_shared<CmdTwoOptions>();
+                     return pCmdTwo;
+                  } )
+            .help( "Command Two description." );
+   }
+};
+
+}   // namespace
+
+TEST( ArgumentParserCommandHelpTest, shouldOutputCommandSummary )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.config().on_exit_return();
+
+   parser.add_arguments( std::make_shared<TestCommandOptions>() );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+   bool hasOne = false;
+   bool hasTwo = false;
+   for ( auto line : helpLines ) {
+      if ( strHasTexts( line, { "cmdone", "Command One description." } ) )
+         hasOne = true;
+      if ( strHasTexts( line, { "cmdtwo", "Command Two description." } ) )
+         hasTwo = true;
+   }
+
+   EXPECT_TRUE( hasOne );
+   EXPECT_TRUE( hasTwo );
+}
+
+TEST( ArgumentParserCommandHelpTest, shouldPutUngroupedCommandsUnderCommandsTitle )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.config().on_exit_return();
+
+   parser.add_arguments( std::make_shared<TestCommandOptions>() );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+   int posPositional = -1;
+   int posOne = -1;
+   int posTwo = -1;
+   int posTitle = -1;
+
+   int i = 0;
+   for ( auto line : helpLines ) {
+      if ( strHasTexts( line, { "cmdone", "Command One description." } ) )
+         posOne = i;
+      if ( strHasTexts( line, { "cmdtwo", "Command Two description." } ) )
+         posTwo = i;
+      if ( strHasText( line, "commands:" ) )
+         posTitle = i;
+      if ( strHasText( line, "positional arguments:" ) )
+         posPositional = i;
+      ++i;
+   }
+
+   EXPECT_LT( -1, posPositional );
+   EXPECT_LT( -1, posOne );
+   EXPECT_LT( -1, posTwo );
+   EXPECT_LT( -1, posTitle );
+
+   EXPECT_LT( posPositional, posTitle );
+   EXPECT_LT( posTitle, posOne );
+   EXPECT_LT( posTitle, posTwo );
 }

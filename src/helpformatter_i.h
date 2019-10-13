@@ -19,7 +19,8 @@ struct ArgumentHelpResult
    std::string long_name;
    std::string arguments;
    std::string help;
-   bool required = false;
+   bool isRequired = false;
+   bool isCommand = false;
    struct
    {
       std::string name;
@@ -36,7 +37,7 @@ struct ArgumentHelpResult
 
    bool is_required() const
    {
-      return required || is_positional();
+      return isRequired || is_positional();
    }
 };
 
