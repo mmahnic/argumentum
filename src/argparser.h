@@ -91,6 +91,16 @@ public:
 class argument_parser
 {
 public:
+   class Value;
+
+   /**
+    * The assign-action is executed to set the value of a parameter.
+    *
+    * If an action is not provided with the OptionConfig::action method, a
+    * default action will be created and used.
+    */
+   using AssignAction = std::function<void( Value& target, const std::string& value )>;
+
    class Value
    {
       int mAssignCount = 0;
@@ -98,11 +108,14 @@ public:
       bool mHasErrors = false;
 
    public:
-      void setValue( const std::string& value )
+      void setValue( const std::string& value, AssignAction action )
       {
          ++mAssignCount;
          ++mOptionAssignCount;
-         doSetValue( value );
+         if ( action == nullptr )
+            action = getDefaultAction();
+         if ( action )
+            action( *this, value );
       }
 
       void markBadArgument()
@@ -142,6 +155,8 @@ public:
       }
 
    protected:
+      virtual AssignAction getDefaultAction() = 0;
+      // TODO: remove doSetValue
       virtual void doSetValue( const std::string& value ) = 0;
       virtual void doReset()
       {}
@@ -150,6 +165,11 @@ public:
    class VoidValue : public Value
    {
    protected:
+      AssignAction getDefaultAction() override
+      {
+         return {};
+      }
+
       void doSetValue( const std::string& value ) override
       {}
    };
@@ -176,6 +196,11 @@ public:
       {}
 
    protected:
+      AssignAction getDefaultAction() override
+      {
+         return [this]( Value& value, const std::string& arg ) { doSetValue( arg ); };
+      }
+
       void doSetValue( const std::string& value ) override
       {
          assign( mValue, value );
@@ -198,17 +223,6 @@ public:
          var.push_back( mConvert( value ) );
       }
    };
-
-   /**
-    * The assign-action is executed before @p target.setValue is called.
-    *
-    * Set the the @p value on @p target or return a new string that will be set
-    * on @p target the normal way.
-    *
-    * @p target.setValue will be called if assign returns a non-empty value.
-    */
-   using AssignAction =
-         std::function<std::optional<std::string>( Value& target, const std::string& value )>;
 
    // NOTE: An option group with the same name can be defined in multiple
    // places.  When it is configured multiple times the last configured values
@@ -463,14 +477,9 @@ public:
             throw InvalidChoiceError( value );
          }
 
-         if ( mAssignAction ) {
-            auto newValue = mAssignAction( *mpValue, value );
-            if ( newValue )
-               mpValue->setValue( *newValue );
-            return;
-         }
-
-         mpValue->setValue( value );
+         // If mAssignAction is not set, mpValue->setValue will try to use a
+         // default action.
+         mpValue->setValue( value, mAssignAction );
       }
 
       void resetValue()
@@ -664,12 +673,10 @@ public:
       this_t& action( assign_action_t action )
       {
          if ( action ) {
-            auto wrapAction = [&]( Value& target,
-                                    const std::string& value ) -> std::optional<std::string> {
+            auto wrapAction = [&]( Value& target, const std::string& value ) {
                auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
                if ( pConverted )
                   action( pConverted->mValue, value );
-               return {};
             };
             OptionConfig::getOption().setAction( wrapAction );
          }

@@ -117,6 +117,11 @@ TEST( ArgumentParserConvertTest, shouldSupportCustomOptionTypes )
       {}
 
    protected:
+      argument_parser::AssignAction getDefaultAction() override
+      {
+         return [this]( Value& value, const std::string& arg ) { doSetValue( arg ); };
+      }
+
       void doSetValue( const std::string& value ) override
       {
          mValue.value = value;

@@ -7,6 +7,7 @@
 
 using namespace argparse;
 
+#if 0
 // TODO: Obsolete test after action redesign
 TEST( ArgumentParserActionTest, shouldModifyArgumentWithAction )
 {
@@ -50,20 +51,20 @@ TEST( ArgumentParserActionTest, shouldNotSetValueIfActionReturnsEmptyOptional )
    EXPECT_TRUE( res.errors.empty() );
    EXPECT_TRUE( result.empty() );
 }
+#endif
 
 TEST( ArgumentParserActionTest, shouldSetValueOnTargetFromAction )
 {
-   auto testAction = []( std::string& target,
-                           const std::string& value ) -> std::optional<std::string> {
+   auto testAction = []( std::string& target, const std::string& value ) {
+      std::cout << "target: '" << target << "', value: '" << value << "'\n";
       if ( value.find( "1" ) != std::string::npos )
          target = value + " Has One";
       else
          target = value;
-      return {};
+      std::cout << " --> target: '" << target << "'\n";
    };
 
    std::string result;
-   std::stringstream strout;
    auto parser = argument_parser{};
    parser.add_argument( result, "-v" ).maxargs( 1 ).action( testAction );
 
