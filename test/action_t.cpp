@@ -7,52 +7,6 @@
 
 using namespace argparse;
 
-#if 0
-// TODO: Obsolete test after action redesign
-TEST( ArgumentParserActionTest, shouldModifyArgumentWithAction )
-{
-   auto testAction = []( std::string& target,
-                           const std::string& value ) -> std::optional<std::string> {
-      if ( value.find( "1" ) != std::string::npos )
-         return value + " Has One";
-      return value;
-   };
-
-   std::string result;
-   std::stringstream strout;
-   auto parser = argument_parser{};
-   parser.add_argument( result, "-v" ).nargs( 1 ).action( testAction );
-
-   auto res = parser.parse_args( { "-v", "1" } );
-   EXPECT_TRUE( res.errors.empty() );
-   EXPECT_EQ( "1 Has One", result );
-
-   res = parser.parse_args( { "-v", "2" } );
-   EXPECT_TRUE( res.errors.empty() );
-   EXPECT_EQ( "2", result );
-
-   res = parser.parse_args( { "-v", "212" } );
-   EXPECT_TRUE( res.errors.empty() );
-   EXPECT_EQ( "212 Has One", result );
-}
-
-// TODO: Obsolete test after action redesign
-TEST( ArgumentParserActionTest, shouldNotSetValueIfActionReturnsEmptyOptional )
-{
-   auto testAction = []( std::string& target,
-                           const std::string& value ) -> std::optional<std::string> { return {}; };
-
-   std::string result;
-   std::stringstream strout;
-   auto parser = argument_parser{};
-   parser.add_argument( result, "-v" ).maxargs( 1 ).action( testAction );
-
-   auto res = parser.parse_args( { "-v", "1" } );
-   EXPECT_TRUE( res.errors.empty() );
-   EXPECT_TRUE( result.empty() );
-}
-#endif
-
 TEST( ArgumentParserActionTest, shouldSetValueOnTargetFromAction )
 {
    auto testAction = []( std::string& target, const std::string& value ) {

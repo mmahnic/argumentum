@@ -140,43 +140,6 @@ TEST( ArgumentParserConvertTest, shouldSupportCustomOptionTypes )
    EXPECT_EQ( "eulav", custom.reversed );
 }
 
-#if 0
-// TODO: remove shouldSupportCustomOptionTypes_WithConvertedValue, it is
-// obsolete.  All arguments are converted through actions.  This test would
-// become the same as shouldSupportCustomOptionTypes.
-TEST( ArgumentParserConvertTest, shouldSupportCustomOptionTypes_WithConvertedValue )
-{
-   struct CustomType
-   {
-      std::optional<std::string> value;
-      std::string reversed;
-   };
-
-   class CustomValue : public argument_parser::ConvertedValue<CustomType>
-   {
-   public:
-      CustomValue( CustomType& value )
-         : ConvertedValue( value, []( const std::string& value ) {
-            CustomType custom;
-            custom.value = value;
-            custom.reversed = value;
-            std::reverse( custom.reversed.begin(), custom.reversed.end() );
-            return custom;
-         } )
-      {}
-   };
-
-   CustomType custom;
-
-   auto parser = argument_parser{};
-   parser.add_argument( CustomValue( custom ), "-c" ).nargs( 1 );
-
-   auto res = parser.parse_args( { "-c", "value" } );
-   EXPECT_EQ( "value", custom.value.value() );
-   EXPECT_EQ( "eulav", custom.reversed );
-}
-#endif
-
 namespace {
 struct CustomType_fromstring_test
 {
