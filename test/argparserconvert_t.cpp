@@ -119,14 +119,14 @@ TEST( ArgumentParserConvertTest, shouldSupportCustomOptionTypes )
    protected:
       argument_parser::AssignAction getDefaultAction() override
       {
-         return [this]( Value& value, const std::string& arg ) { doSetValue( arg ); };
-      }
-
-      void doSetValue( const std::string& value ) override
-      {
-         mValue.value = value;
-         mValue.reversed = value;
-         std::reverse( mValue.reversed.begin(), mValue.reversed.end() );
+         return [this]( Value& target, const std::string& value ) {
+            auto pCustom = dynamic_cast<CustomValue*>( &target );
+            if ( pCustom ) {
+               pCustom->mValue.value = value;
+               pCustom->mValue.reversed = value;
+               std::reverse( pCustom->mValue.reversed.begin(), pCustom->mValue.reversed.end() );
+            }
+         };
       }
    };
 
@@ -140,6 +140,10 @@ TEST( ArgumentParserConvertTest, shouldSupportCustomOptionTypes )
    EXPECT_EQ( "eulav", custom.reversed );
 }
 
+#if 0
+// TODO: remove shouldSupportCustomOptionTypes_WithConvertedValue, it is
+// obsolete.  All arguments are converted through actions.  This test would
+// become the same as shouldSupportCustomOptionTypes.
 TEST( ArgumentParserConvertTest, shouldSupportCustomOptionTypes_WithConvertedValue )
 {
    struct CustomType
@@ -171,6 +175,7 @@ TEST( ArgumentParserConvertTest, shouldSupportCustomOptionTypes_WithConvertedVal
    EXPECT_EQ( "value", custom.value.value() );
    EXPECT_EQ( "eulav", custom.reversed );
 }
+#endif
 
 namespace {
 struct CustomType_fromstring_test

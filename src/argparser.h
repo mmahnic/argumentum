@@ -156,8 +156,6 @@ public:
 
    protected:
       virtual AssignAction getDefaultAction() = 0;
-      // TODO: remove doSetValue
-      virtual void doSetValue( const std::string& value ) = 0;
       virtual void doReset()
       {}
    };
@@ -169,9 +167,6 @@ public:
       {
          return {};
       }
-
-      void doSetValue( const std::string& value ) override
-      {}
    };
 
    template<typename T>
@@ -185,25 +180,21 @@ public:
 
    protected:
       using result_t = typename convert_result<TValue>::type;
-      using converter_t = std::function<result_t( const std::string& )>;
       TValue& mValue;
-      converter_t mConvert = []( const std::string& ) { return {}; };
 
    public:
-      ConvertedValue( TValue& value, converter_t converter )
+      ConvertedValue( TValue& value )
          : mValue( value )
-         , mConvert( converter )
       {}
 
    protected:
       AssignAction getDefaultAction() override
       {
-         return [this]( Value& value, const std::string& arg ) { doSetValue( arg ); };
-      }
-
-      void doSetValue( const std::string& value ) override
-      {
-         assign( mValue, value );
+         return []( Value& target, const std::string& value ) {
+            auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
+            if ( pConverted )
+               pConverted->assign( pConverted->mValue, value );
+         };
       }
 
       void doReset() override
@@ -214,13 +205,13 @@ public:
       template<typename TVar>
       void assign( TVar& var, const std::string& value )
       {
-         var = mConvert( value );
+         var = from_string<TVar>::convert( value );
       }
 
       template<typename TVar>
       void assign( std::vector<TVar>& var, const std::string& value )
       {
-         var.push_back( mConvert( value ) );
+         var.push_back( from_string<TVar>::convert( value ) );
       }
    };
 
@@ -342,7 +333,7 @@ public:
          }
          else {
             using wrap_type = ConvertedValue<TValue>;
-            mpValue = std::make_unique<wrap_type>( value, from_string<TValue>::convert );
+            mpValue = std::make_unique<wrap_type>( value );
          }
       }
 
@@ -355,7 +346,7 @@ public:
          }
          else {
             using wrap_type = ConvertedValue<val_vector>;
-            mpValue = std::make_unique<wrap_type>( value, from_string<TValue>::convert );
+            mpValue = std::make_unique<wrap_type>( value );
          }
 
          mIsVectorValue = true;
