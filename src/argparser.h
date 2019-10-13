@@ -178,6 +178,40 @@ public:
       template<typename T>
       friend class ::argparse::argument_parser::OptionConfigA;
 
+      // Check if std::string can be converted to TVal with argparse::from_string.
+      template<typename TVal>
+      struct has_from_string
+      {
+      private:
+         typedef char YesType[1];
+         typedef char NoType[2];
+
+         template<typename C>
+         static YesType& test( decltype( &C::convert ) );
+         template<typename C>
+         static NoType& test( ... );
+
+      public:
+         enum { value = sizeof( test<from_string<TVal>>( 0 ) ) == sizeof( YesType ) };
+      };
+
+      // Check if std::string can be converted to TVal with constructors or
+      // assignment operators.
+      template<class TVal>
+      struct can_convert   // (clf)
+         : std::integral_constant<bool,   // (clf)
+                 std::is_constructible<std::string, TVal>::value   // (clf)
+                       || std::is_convertible<std::string, TVal>::value   // (clf)
+                       || std::is_assignable<TVal, std::string>::value   // (clf)
+                 >
+      {
+         template<typename T>
+         constexpr static bool has_from_string()
+         {
+            return true;
+         }
+      };
+
    protected:
       using result_t = typename convert_result<TValue>::type;
       TValue& mValue;
@@ -203,15 +237,31 @@ public:
       }
 
       template<typename TVar>
+      void assign( std::vector<TVar>& var, const std::string& value )
+      {
+         TVar target;
+         assign( target, value );
+         var.emplace_back( std::move( target ) );
+      }
+
+      template<typename TVar, std::enable_if_t<has_from_string<TVar>::value, int> = 0>
       void assign( TVar& var, const std::string& value )
       {
          var = from_string<TVar>::convert( value );
       }
 
-      template<typename TVar>
-      void assign( std::vector<TVar>& var, const std::string& value )
+      template<typename TVar,
+            std::enable_if_t<!has_from_string<TVar>::value && can_convert<TVar>::value, int> = 0>
+      void assign( TVar& var, const std::string& value )
       {
-         var.push_back( from_string<TVar>::convert( value ) );
+         var = TVar{ value };
+      }
+
+      template<typename TVar,
+            std::enable_if_t<!has_from_string<TVar>::value && !can_convert<TVar>::value, int> = 0>
+      void assign( TVar& var, const std::string& value )
+      {
+         std::cerr << "*** No assignment\n";
       }
    };
 

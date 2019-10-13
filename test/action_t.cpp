@@ -77,7 +77,6 @@ TEST( ArgumentParserActionTest, shouldSetValueOnTargetFromAction )
    EXPECT_EQ( "2", result );
 }
 
-#if 0
 namespace {
 class NewType
 {
@@ -100,9 +99,9 @@ public:
 
 TEST( ArgumentParserActionTest, shouldSetNewTypesThroughActionWithoutFromStringConversion )
 {
-   auto testAction = []( NewType& target, const std::string& value ) -> std::optional<std::string> {
+   auto testAction = []( NewType& target, const std::string& value ) {
       using parser = argparse::argument_parser;
-      target = std::set<long>{ value[0], value.size() };
+      target = std::set<long>{ (long)value[0], (long)value.size() };
    };
 
    NewType result;
@@ -120,4 +119,3 @@ TEST( ArgumentParserActionTest, shouldSetNewTypesThroughActionWithoutFromStringC
    EXPECT_EQ( 1, result.getValue().count( 6 ) );
 }
 }   // namespace
-#endif
