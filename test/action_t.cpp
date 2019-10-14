@@ -52,7 +52,6 @@ public:
 TEST( ArgumentParserActionTest, shouldSetNewTypesThroughActionWithoutFromStringConversion )
 {
    auto testAction = []( NewType& target, const std::string& value ) {
-      using parser = argparse::argument_parser;
       target = std::set<long>{ (long)value[0], (long)value.size() };
    };
 
@@ -71,7 +70,6 @@ TEST( ArgumentParserActionTest, shouldSetNewTypesThroughActionWithoutFromStringC
 TEST( ArgumentParserActionTest, shouldSetOptionalNewTypesThroughActionWithoutFromStringConversion )
 {
    auto testAction = []( std::optional<NewType>& target, const std::string& value ) {
-      using parser = argparse::argument_parser;
       target = std::set<long>{ (long)value[0], (long)value.size() };
    };
 
@@ -91,7 +89,6 @@ TEST( ArgumentParserActionTest, shouldSetOptionalNewTypesThroughActionWithoutFro
 TEST( ArgumentParserActionTest, shouldSetVectorNewTypesThroughAction )
 {
    auto testAction = []( std::vector<NewType>& target, const std::string& value ) {
-      using parser = argparse::argument_parser;
       target.push_back( std::set<long>{ (long)value[0], (long)value.size() } );
    };
 
@@ -117,7 +114,6 @@ TEST( ArgumentParserActionTest, shouldSetVectorNewTypesThroughAction )
 TEST( ArgumentParserActionTest, shouldSetVectorOptionalNewTypesThroughAction )
 {
    auto testAction = []( std::vector<std::optional<NewType>>& target, const std::string& value ) {
-      using parser = argparse::argument_parser;
       target.push_back( std::set<long>{ (long)value[0], (long)value.size() } );
    };
 
@@ -137,3 +133,28 @@ TEST( ArgumentParserActionTest, shouldSetVectorOptionalNewTypesThroughAction )
 }
 
 }   // namespace
+
+TEST( ArgumentParserActionTest, shouldSetSameVariableThroughMultipleActions )
+{
+   auto actionNormal = []( std::vector<std::string>& target, const std::string& value ) {
+      target.push_back( value );
+   };
+
+   auto actionReversed = []( std::vector<std::string>& target, const std::string& value ) {
+      auto v = value;
+      std::reverse( std::begin( v ), std::end( v ) );
+      target.push_back( v );
+   };
+
+   std::vector<std::string> result;
+   auto parser = argument_parser{};
+   parser.add_argument( result, "-n" ).maxargs( 1 ).action( actionNormal );
+   parser.add_argument( result, "-r" ).maxargs( 1 ).action( actionReversed );
+
+   auto res = parser.parse_args( { "-n", "assign", "-r", "vector" } );
+   EXPECT_TRUE( res.errors.empty() );
+
+   ASSERT_EQ( 2, result.size() );
+   EXPECT_EQ( "assign", result.front() );
+   EXPECT_EQ( "rotcev", result.back() );
+}
