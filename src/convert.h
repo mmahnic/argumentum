@@ -28,10 +28,6 @@ struct convert_result<std::vector<TItem>>
 template<typename T>
 struct from_string
 {
-   static T convert( const std::string& s )
-   {
-      return T{ s };
-   }
 };
 
 template<typename T>

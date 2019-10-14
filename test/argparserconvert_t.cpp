@@ -96,6 +96,9 @@ TEST( ArgumentParserConvertTest, shouldReportBadConversionError )
    EXPECT_EQ( argument_parser::CONVERSION_ERROR, res.errors.front().errorCode );
 }
 
+// TODO: This interface should be replaced by actions acting on ConvertedValue<CustomType>.
+//   - add_argument() receives CustomType,
+//   - action() receives a callable like doSetValue().
 TEST( ArgumentParserConvertTest, shouldSupportCustomOptionTypes )
 {
    struct CustomType
@@ -114,11 +117,16 @@ TEST( ArgumentParserConvertTest, shouldSupportCustomOptionTypes )
       {}
 
    protected:
-      void doSetValue( const std::string& value ) override
+      argument_parser::AssignAction getDefaultAction() override
       {
-         mValue.value = value;
-         mValue.reversed = value;
-         std::reverse( mValue.reversed.begin(), mValue.reversed.end() );
+         return [this]( Value& target, const std::string& value ) {
+            auto pCustom = dynamic_cast<CustomValue*>( &target );
+            if ( pCustom ) {
+               pCustom->mValue.value = value;
+               pCustom->mValue.reversed = value;
+               std::reverse( pCustom->mValue.reversed.begin(), pCustom->mValue.reversed.end() );
+            }
+         };
       }
    };
 
@@ -129,38 +137,6 @@ TEST( ArgumentParserConvertTest, shouldSupportCustomOptionTypes )
 
    auto res = parser.parse_args( { "-c", "value" } );
    EXPECT_EQ( "value", custom.value );
-   EXPECT_EQ( "eulav", custom.reversed );
-}
-
-TEST( ArgumentParserConvertTest, shouldSupportCustomOptionTypes_WithConvertedValue )
-{
-   struct CustomType
-   {
-      std::optional<std::string> value;
-      std::string reversed;
-   };
-
-   class CustomValue : public argument_parser::ConvertedValue<CustomType>
-   {
-   public:
-      CustomValue( CustomType& value )
-         : ConvertedValue( value, []( const std::string& value ) {
-            CustomType custom;
-            custom.value = value;
-            custom.reversed = value;
-            std::reverse( custom.reversed.begin(), custom.reversed.end() );
-            return custom;
-         } )
-      {}
-   };
-
-   CustomType custom;
-
-   auto parser = argument_parser{};
-   parser.add_argument( CustomValue( custom ), "-c" ).nargs( 1 );
-
-   auto res = parser.parse_args( { "-c", "value" } );
-   EXPECT_EQ( "value", custom.value.value() );
    EXPECT_EQ( "eulav", custom.reversed );
 }
 

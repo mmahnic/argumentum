@@ -91,6 +91,16 @@ public:
 class argument_parser
 {
 public:
+   class Value;
+
+   /**
+    * The assign-action is executed to set the value of a parameter.
+    *
+    * If an action is not provided with the OptionConfig::action method, a
+    * default action will be created and used.
+    */
+   using AssignAction = std::function<void( Value& target, const std::string& value )>;
+
    class Value
    {
       int mAssignCount = 0;
@@ -98,11 +108,14 @@ public:
       bool mHasErrors = false;
 
    public:
-      void setValue( const std::string& value )
+      void setValue( const std::string& value, AssignAction action )
       {
          ++mAssignCount;
          ++mOptionAssignCount;
-         doSetValue( value );
+         if ( action == nullptr )
+            action = getDefaultAction();
+         if ( action )
+            action( *this, value );
       }
 
       void markBadArgument()
@@ -142,7 +155,7 @@ public:
       }
 
    protected:
-      virtual void doSetValue( const std::string& value ) = 0;
+      virtual AssignAction getDefaultAction() = 0;
       virtual void doReset()
       {}
    };
@@ -150,29 +163,72 @@ public:
    class VoidValue : public Value
    {
    protected:
-      void doSetValue( const std::string& value ) override
-      {}
+      AssignAction getDefaultAction() override
+      {
+         return {};
+      }
    };
+
+   template<typename T>
+   class OptionConfigA;
 
    template<typename TValue>
    class ConvertedValue : public Value
    {
+      template<typename T>
+      friend class ::argparse::argument_parser::OptionConfigA;
+
+      // Check if std::string can be converted to TVal with argparse::from_string.
+      template<typename TVal>
+      struct has_from_string
+      {
+      private:
+         typedef char YesType[1];
+         typedef char NoType[2];
+
+         template<typename C>
+         static YesType& test( decltype( &C::convert ) );
+         template<typename C>
+         static NoType& test( ... );
+
+      public:
+         enum { value = sizeof( test<from_string<TVal>>( 0 ) ) == sizeof( YesType ) };
+      };
+
+      // Check if std::string can be converted to TVal with constructors or
+      // assignment operators.
+      template<class TVal>
+      struct can_convert   // (clf)
+         : std::integral_constant<bool,   // (clf)
+                 std::is_constructible<std::string, TVal>::value   // (clf)
+                       || std::is_convertible<std::string, TVal>::value   // (clf)
+                       || std::is_assignable<TVal, std::string>::value   // (clf)
+                 >
+      {
+         template<typename T>
+         constexpr static bool has_from_string()
+         {
+            return true;
+         }
+      };
+
    protected:
       using result_t = typename convert_result<TValue>::type;
-      using converter_t = std::function<result_t( const std::string& )>;
       TValue& mValue;
-      converter_t mConvert = []( const std::string& ) { return {}; };
 
    public:
-      ConvertedValue( TValue& value, converter_t converter )
+      ConvertedValue( TValue& value )
          : mValue( value )
-         , mConvert( converter )
       {}
 
    protected:
-      void doSetValue( const std::string& value ) override
+      AssignAction getDefaultAction() override
       {
-         assign( mValue, value );
+         return []( Value& target, const std::string& value ) {
+            auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
+            if ( pConverted )
+               pConverted->assign( pConverted->mValue, value );
+         };
       }
 
       void doReset() override
@@ -181,33 +237,39 @@ public:
       }
 
       template<typename TVar>
-      void assign( TVar& var, const std::string& value )
+      void assign( std::vector<TVar>& var, const std::string& value )
       {
-         var = mConvert( value );
+         TVar target;
+         assign( target, value );
+         var.emplace_back( std::move( target ) );
       }
 
       template<typename TVar>
-      void assign( std::vector<TVar>& var, const std::string& value )
+      void assign( std::optional<TVar>& var, const std::string& value )
       {
-         var.push_back( mConvert( value ) );
+         TVar target;
+         assign( target, value );
+         var = std::move( target );
       }
-   };
 
-   /**
-    * The assign-action is executed before @p target.setValue is called.
-    *
-    * @p target.setValue will be called if assign returns a non-empty value.
-    */
-   class AssignAction
-   {
-   public:
-      /**
-       * Set the the @p value on @p target or return a new string that will be set
-       * on @p target the normal way.
-       */
-      virtual std::optional<std::string> assign( Value& target, const std::string& value )
+      template<typename TVar, std::enable_if_t<has_from_string<TVar>::value, int> = 0>
+      void assign( TVar& var, const std::string& value )
       {
-         return value;
+         var = from_string<TVar>::convert( value );
+      }
+
+      template<typename TVar,
+            std::enable_if_t<!has_from_string<TVar>::value && can_convert<TVar>::value, int> = 0>
+      void assign( TVar& var, const std::string& value )
+      {
+         var = TVar{ value };
+      }
+
+      template<typename TVar,
+            std::enable_if_t<!has_from_string<TVar>::value && !can_convert<TVar>::value, int> = 0>
+      void assign( TVar& var, const std::string& value )
+      {
+         std::cerr << "*** No assignment\n";
       }
    };
 
@@ -307,7 +369,7 @@ public:
    {
    private:
       std::unique_ptr<Value> mpValue;
-      std::shared_ptr<AssignAction> mpAssignAction;
+      AssignAction mAssignAction;
       std::string mShortName;
       std::string mLongName;
       std::string mMetavar;
@@ -329,7 +391,7 @@ public:
          }
          else {
             using wrap_type = ConvertedValue<TValue>;
-            mpValue = std::make_unique<wrap_type>( value, from_string<TValue>::convert );
+            mpValue = std::make_unique<wrap_type>( value );
          }
       }
 
@@ -342,7 +404,7 @@ public:
          }
          else {
             using wrap_type = ConvertedValue<val_vector>;
-            mpValue = std::make_unique<wrap_type>( value, from_string<TValue>::convert );
+            mpValue = std::make_unique<wrap_type>( value );
          }
 
          mIsVectorValue = true;
@@ -401,9 +463,9 @@ public:
          mChoices = choices;
       }
 
-      void setAction( const std::shared_ptr<AssignAction>& pAction )
+      void setAction( AssignAction action )
       {
-         mpAssignAction = pAction;
+         mAssignAction = action;
       }
 
       void setGroup( const std::shared_ptr<OptionGroup>& pGroup )
@@ -464,14 +526,9 @@ public:
             throw InvalidChoiceError( value );
          }
 
-         if ( mpAssignAction ) {
-            auto newValue = mpAssignAction->assign( *mpValue, value );
-            if ( newValue )
-               mpValue->setValue( *newValue );
-            return;
-         }
-
-         mpValue->setValue( value );
+         // If mAssignAction is not set, mpValue->setValue will try to use a
+         // default action.
+         mpValue->setValue( value, mAssignAction );
       }
 
       void resetValue()
@@ -539,6 +596,7 @@ public:
     */
    class OptionConfig
    {
+   protected:
       std::vector<Option>& mOptions;
       size_t mIndex = 0;
       bool mCountWasSet = false;
@@ -549,79 +607,13 @@ public:
          , mIndex( index )
       {}
 
-      OptionConfig& setShortName( std::string_view name )
+      OptionConfig& action( AssignAction action )
       {
-         getOption().setShortName( name );
+         getOption().setAction( action );
          return *this;
       }
 
-      OptionConfig& setLongName( std::string_view name )
-      {
-         getOption().setLongName( name );
-         return *this;
-      }
-
-      OptionConfig& metavar( std::string_view varname )
-      {
-         getOption().setMetavar( varname );
-         return *this;
-      }
-
-      OptionConfig& help( std::string_view help )
-      {
-         getOption().setHelp( help );
-         return *this;
-      }
-
-      OptionConfig& nargs( int count )
-      {
-         ensureCountWasNotSet();
-         getOption().setNArgs( count );
-         mCountWasSet = true;
-         return *this;
-      }
-
-      OptionConfig& minargs( int count )
-      {
-         ensureCountWasNotSet();
-         getOption().setMinArgs( count );
-         mCountWasSet = true;
-         return *this;
-      }
-
-      OptionConfig& maxargs( int count )
-      {
-         ensureCountWasNotSet();
-         getOption().setMaxArgs( count );
-         mCountWasSet = true;
-         return *this;
-      }
-
-      OptionConfig& required( bool isRequired = true )
-      {
-         getOption().setRequired( isRequired );
-         return *this;
-      }
-
-      OptionConfig& flagValue( std::string_view value )
-      {
-         getOption().setFlagValue( value );
-         return *this;
-      }
-
-      OptionConfig& choices( const std::vector<std::string>& choices )
-      {
-         getOption().setChoices( choices );
-         return *this;
-      }
-
-      OptionConfig& action( const std::shared_ptr<AssignAction>& pAction )
-      {
-         getOption().setAction( pAction );
-         return *this;
-      }
-
-   private:
+   protected:
       void ensureCountWasNotSet() const
       {
          if ( mCountWasSet )
@@ -631,6 +623,146 @@ public:
       Option& getOption()
       {
          return mOptions[mIndex];
+      }
+   };
+
+   template<typename TDerived>
+   class OptionConfigBaseT : public OptionConfig
+   {
+   public:
+      using this_t = TDerived;
+
+   public:
+      using OptionConfig::OptionConfig;
+
+      OptionConfigBaseT( OptionConfig&& wrapped )
+         : OptionConfig( std::move( wrapped ) )
+      {}
+
+      this_t& setShortName( std::string_view name )
+      {
+         getOption().setShortName( name );
+         return *static_cast<this_t*>( this );
+      }
+
+      this_t& setLongName( std::string_view name )
+      {
+         getOption().setLongName( name );
+         return *static_cast<this_t*>( this );
+      }
+
+      this_t& metavar( std::string_view varname )
+      {
+         getOption().setMetavar( varname );
+         return *static_cast<this_t*>( this );
+      }
+
+      this_t& help( std::string_view help )
+      {
+         getOption().setHelp( help );
+         return *static_cast<this_t*>( this );
+      }
+
+      this_t& nargs( int count )
+      {
+         ensureCountWasNotSet();
+         getOption().setNArgs( count );
+         mCountWasSet = true;
+         return *static_cast<this_t*>( this );
+      }
+
+      this_t& minargs( int count )
+      {
+         ensureCountWasNotSet();
+         getOption().setMinArgs( count );
+         mCountWasSet = true;
+         return *static_cast<this_t*>( this );
+      }
+
+      this_t& maxargs( int count )
+      {
+         ensureCountWasNotSet();
+         getOption().setMaxArgs( count );
+         mCountWasSet = true;
+         return *static_cast<this_t*>( this );
+      }
+
+      this_t& required( bool isRequired = true )
+      {
+         getOption().setRequired( isRequired );
+         return *static_cast<this_t*>( this );
+      }
+
+      this_t& flagValue( std::string_view value )
+      {
+         getOption().setFlagValue( value );
+         return *static_cast<this_t*>( this );
+      }
+
+      this_t& choices( const std::vector<std::string>& choices )
+      {
+         getOption().setChoices( choices );
+         return *static_cast<this_t*>( this );
+      }
+   };
+
+   template<typename TValue>
+   class OptionConfigA : public OptionConfigBaseT<OptionConfigA<TValue>>
+   {
+      using this_t = OptionConfigA<TValue>;
+      using assign_action_t = std::function<void( TValue&, const std::string& )>;
+
+   public:
+      using OptionConfigBaseT<this_t>::OptionConfigBaseT;
+
+      OptionConfigA( OptionConfig&& wrapped )
+         : OptionConfigBaseT<this_t>( std::move( wrapped ) )
+      {}
+
+      this_t& action( assign_action_t assign_func )
+      {
+         if ( assign_func ) {
+            auto wrapAction = [=]( Value& target, const std::string& value ) {
+               auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
+               if ( pConverted )
+                  assign_func( pConverted->mValue, value );
+            };
+            OptionConfig::getOption().setAction( wrapAction );
+         }
+         else
+            OptionConfig::getOption().setAction( nullptr );
+         return *this;
+      }
+   };
+
+   class VoidOptionConfig : public OptionConfigBaseT<VoidOptionConfig>
+   {
+   public:
+      using this_t = VoidOptionConfig;
+      using assign_action_t = std::function<void( const std::string& )>;
+
+   public:
+      using OptionConfigBaseT<this_t>::OptionConfigBaseT;
+
+      VoidOptionConfig( OptionConfig&& wrapped )
+         : OptionConfigBaseT<this_t>( std::move( wrapped ) )
+      {}
+
+      this_t& action( assign_action_t action )
+      {
+         if ( action ) {
+            auto wrapAction = [&]( Value& target,
+                                    const std::string& value ) -> std::optional<std::string> {
+               auto pv = dynamic_cast<VoidOptionConfig*>( &target );
+               if ( pv )
+                  action( value );
+               return {};
+            };
+            OptionConfig::getOption().setAction( wrapAction );
+         }
+         else
+            OptionConfig::getOption().setAction( nullptr );
+         return *this;
       }
    };
 
@@ -1043,11 +1175,11 @@ public:
    }
 
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value>>
-   OptionConfig add_argument(
+   OptionConfigA<TValue> add_argument(
          TValue value, const std::string& name = "", const std::string& altName = "" )
    {
       auto option = Option( value );
-      return tryAddArgument( option, { name, altName } );
+      return OptionConfigA<TValue>( tryAddArgument( option, { name, altName } ) );
    }
 
    /**
@@ -1055,11 +1187,11 @@ public:
     * to @p value that will receive the parsed parameter(s).
     */
    template<typename TValue, typename = std::enable_if_t<!std::is_base_of<Value, TValue>::value>>
-   OptionConfig add_argument(
+   OptionConfigA<TValue> add_argument(
          TValue& value, const std::string& name = "", const std::string& altName = "" )
    {
       auto option = Option( value );
-      return tryAddArgument( option, { name, altName } );
+      return OptionConfigA<TValue>( tryAddArgument( option, { name, altName } ) );
    }
 
    /**
@@ -1085,7 +1217,7 @@ public:
     * This method will be called from parse_args if neither it nor the method
     * add_help_option were called before parse_args.
     */
-   OptionConfig add_default_help_option()
+   VoidOptionConfig add_default_help_option()
    {
       const auto shortName = "-h";
       const auto longName = "--help";
@@ -1109,15 +1241,15 @@ public:
     * help options --help and -h will be used as long as they are not used for
     * other purposes.
     */
-   OptionConfig add_help_option( const std::string& name, const std::string& altName = "" )
+   VoidOptionConfig add_help_option( const std::string& name, const std::string& altName = "" )
    {
       if ( !name.empty() && name[0] != '-' || !altName.empty() && altName[0] != '-' )
          throw std::invalid_argument( "A help argument must be an option." );
 
       auto value = VoidValue{};
       auto option = Option( value );
-      auto optionConfig =
-            tryAddArgument( option, { name, altName } ).help( "Print this help message and exit." );
+      auto optionConfig = VoidOptionConfig( tryAddArgument( option, { name, altName } ) )
+                                .help( "Print this help message and exit." );
 
       if ( !name.empty() )
          mHelpOptionNames.insert( name );
