@@ -88,7 +88,7 @@ TEST( ArgumentParserActionTest, shouldSetOptionalNewTypesThroughActionWithoutFro
    EXPECT_EQ( 1, result->getValue().count( 6 ) );
 }
 
-TEST( ArgumentParserActionTest, shouldSetVectorlNewTypesThroughAction )
+TEST( ArgumentParserActionTest, shouldSetVectorNewTypesThroughAction )
 {
    auto testAction = []( std::vector<NewType>& target, const std::string& value ) {
       using parser = argparse::argument_parser;
@@ -112,6 +112,28 @@ TEST( ArgumentParserActionTest, shouldSetVectorlNewTypesThroughAction )
    EXPECT_EQ( 2, item.getValue().size() );
    EXPECT_EQ( 1, item.getValue().count( 'v' ) );
    EXPECT_EQ( 1, item.getValue().count( 6 ) );
+}
+
+TEST( ArgumentParserActionTest, shouldSetVectorOptionalNewTypesThroughAction )
+{
+   auto testAction = []( std::vector<std::optional<NewType>>& target, const std::string& value ) {
+      using parser = argparse::argument_parser;
+      target.push_back( std::set<long>{ (long)value[0], (long)value.size() } );
+   };
+
+   std::vector<std::optional<NewType>> result;
+   auto parser = argument_parser{};
+   parser.add_argument( result, "-v" ).maxargs( 1 ).action( testAction );
+
+   auto res = parser.parse_args( { "-v", "assign" } );
+   EXPECT_TRUE( res.errors.empty() );
+
+   ASSERT_EQ( 1, result.size() );
+   auto& item = result.front();
+   ASSERT_TRUE( static_cast<bool>( item ) );
+   EXPECT_EQ( 2, item->getValue().size() );
+   EXPECT_EQ( 1, item->getValue().count( 'a' ) );
+   EXPECT_EQ( 1, item->getValue().count( 6 ) );
 }
 
 }   // namespace
