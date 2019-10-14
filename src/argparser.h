@@ -244,6 +244,14 @@ public:
          var.emplace_back( std::move( target ) );
       }
 
+      template<typename TVar>
+      void assign( std::optional<TVar>& var, const std::string& value )
+      {
+         TVar target;
+         assign( target, value );
+         var = std::move( target );
+      }
+
       template<typename TVar, std::enable_if_t<has_from_string<TVar>::value, int> = 0>
       void assign( TVar& var, const std::string& value )
       {

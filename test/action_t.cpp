@@ -10,12 +10,10 @@ using namespace argparse;
 TEST( ArgumentParserActionTest, shouldSetValueOnTargetWithAction )
 {
    auto testAction = []( std::string& target, const std::string& value ) {
-      std::cout << "target: '" << target << "', value: '" << value << "'\n";
       if ( value.find( "1" ) != std::string::npos )
          target = value + " Has One";
       else
          target = value;
-      std::cout << " --> target: '" << target << "'\n";
    };
 
    std::string result;
