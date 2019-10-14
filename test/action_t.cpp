@@ -69,4 +69,24 @@ TEST( ArgumentParserActionTest, shouldSetNewTypesThroughActionWithoutFromStringC
    EXPECT_EQ( 1, result.getValue().count( 'a' ) );
    EXPECT_EQ( 1, result.getValue().count( 6 ) );
 }
+
+TEST( ArgumentParserActionTest, shouldSetOptionalNewTypesThroughActionWithoutFromStringConversion )
+{
+   auto testAction = []( std::optional<NewType>& target, const std::string& value ) {
+      using parser = argparse::argument_parser;
+      target = std::set<long>{ (long)value[0], (long)value.size() };
+   };
+
+   std::optional<NewType> result;
+   auto parser = argument_parser{};
+   parser.add_argument( result, "-v" ).maxargs( 1 ).action( testAction );
+
+   auto res = parser.parse_args( { "-v", "assign" } );
+   EXPECT_TRUE( res.errors.empty() );
+
+   ASSERT_TRUE( static_cast<bool>( result ) );
+   EXPECT_EQ( 2, result->getValue().size() );
+   EXPECT_EQ( 1, result->getValue().count( 'a' ) );
+   EXPECT_EQ( 1, result->getValue().count( 6 ) );
+}
 }   // namespace
