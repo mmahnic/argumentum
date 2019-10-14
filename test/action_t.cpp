@@ -7,7 +7,7 @@
 
 using namespace argparse;
 
-TEST( ArgumentParserActionTest, shouldSetValueOnTargetFromAction )
+TEST( ArgumentParserActionTest, shouldSetValueOnTargetWithAction )
 {
    auto testAction = []( std::string& target, const std::string& value ) {
       std::cout << "target: '" << target << "', value: '" << value << "'\n";
@@ -60,9 +60,6 @@ TEST( ArgumentParserActionTest, shouldSetNewTypesThroughActionWithoutFromStringC
 
    NewType result;
    auto parser = argument_parser{};
-
-   // - add_argument fails because there is no conversion from string to NewType.
-   // - testAction fails because mValue is not part of target (of type Value, base class).
    parser.add_argument( result, "-v" ).maxargs( 1 ).action( testAction );
 
    auto res = parser.parse_args( { "-v", "assign" } );
