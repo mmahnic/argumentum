@@ -87,4 +87,31 @@ TEST( ArgumentParserActionTest, shouldSetOptionalNewTypesThroughActionWithoutFro
    EXPECT_EQ( 1, result->getValue().count( 'a' ) );
    EXPECT_EQ( 1, result->getValue().count( 6 ) );
 }
+
+TEST( ArgumentParserActionTest, shouldSetVectorlNewTypesThroughAction )
+{
+   auto testAction = []( std::vector<NewType>& target, const std::string& value ) {
+      using parser = argparse::argument_parser;
+      target.push_back( std::set<long>{ (long)value[0], (long)value.size() } );
+   };
+
+   std::vector<NewType> result;
+   auto parser = argument_parser{};
+   parser.add_argument( result, "-v" ).maxargs( 2 ).action( testAction );
+
+   auto res = parser.parse_args( { "-v", "assign", "vector" } );
+   EXPECT_TRUE( res.errors.empty() );
+
+   ASSERT_EQ( 2, result.size() );
+   auto item = result.front();
+   EXPECT_EQ( 2, item.getValue().size() );
+   EXPECT_EQ( 1, item.getValue().count( 'a' ) );
+   EXPECT_EQ( 1, item.getValue().count( 6 ) );
+
+   item = result.back();
+   EXPECT_EQ( 2, item.getValue().size() );
+   EXPECT_EQ( 1, item.getValue().count( 'v' ) );
+   EXPECT_EQ( 1, item.getValue().count( 6 ) );
+}
+
 }   // namespace
