@@ -609,7 +609,7 @@ public:
 
       OptionConfig& action( AssignAction action )
       {
-         mOptions[mIndex].setAction( action );
+         getOption().setAction( action );
          return *this;
       }
 
@@ -719,13 +719,13 @@ public:
          : OptionConfigBaseT<this_t>( std::move( wrapped ) )
       {}
 
-      this_t& action( assign_action_t action )
+      this_t& action( assign_action_t assign_func )
       {
-         if ( action ) {
-            auto wrapAction = [&]( Value& target, const std::string& value ) {
+         if ( assign_func ) {
+            auto wrapAction = [=]( Value& target, const std::string& value ) {
                auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
                if ( pConverted )
-                  action( pConverted->mValue, value );
+                  assign_func( pConverted->mValue, value );
             };
             OptionConfig::getOption().setAction( wrapAction );
          }
