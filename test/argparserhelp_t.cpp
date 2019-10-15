@@ -767,3 +767,36 @@ TEST( ArgumentParserCommandHelpTest, shouldPutOptionsBeforePositionalInUsage )
 
    EXPECT_LT( -1, posUsage );
 }
+
+TEST( ArgumentParserCommandHelpTest, shouldShowCommandPlaceholderInUsage )
+{
+   auto parser = argument_parser{};
+   parser.config().program( "testing" );
+
+   std::shared_ptr<CmdOneOptions> pCmdOne;
+   parser.add_command( "one", [&]() {
+      pCmdOne = std::make_shared<CmdOneOptions>();
+      return pCmdOne;
+   } );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+
+   auto posUsage = -1;
+   auto posOne = -1;
+   auto posS = -1;
+   int i = 0;
+   for ( auto line : helpLines ) {
+      if ( strHasTexts( line, { "usage:", "testing", "<command> ..." } ) )
+         posUsage = i;
+      if ( strHasTexts( line, { "usage:", "-s" } ) )
+         posS = i;
+      if ( strHasTexts( line, { "usage:", "one" } ) )
+         posOne = i;
+      ++i;
+   }
+
+   EXPECT_LT( -1, posUsage );
+   EXPECT_EQ( -1, posOne );
+   EXPECT_EQ( -1, posS );
+}
