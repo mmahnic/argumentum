@@ -222,6 +222,11 @@ inline void HelpFormatter::formatUsage(
       writer.write( config.program );
 
    for ( auto& arg : args ) {
+      if ( arg.isCommand ) {
+         writer.write( "<command> ..." );
+         break;
+      }
+
       if ( !arg.is_positional() ) {
          if ( !arg.long_name.empty() )
             writer.write( arg.long_name );
