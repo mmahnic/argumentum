@@ -12,6 +12,7 @@
 namespace argparse {
 
 class argument_parser;
+class Writer;
 
 struct ArgumentHelpResult
 {
@@ -67,6 +68,9 @@ public:
    }
 
 private:
+   void formatUsage(
+         const argument_parser& parser, std::vector<ArgumentHelpResult>& args, Writer& writer );
+
    std::string formatArgument( const ArgumentHelpResult& arg ) const
    {
       std::string res;
