@@ -431,6 +431,7 @@ TEST( ArgumentParserHelpTest, shouldOutputPositionalArguments )
    std::string str;
    auto parser = argument_parser{};
    parser.add_argument( str, "aaa" ).nargs( 3 ).help( "Triple a." );
+   parser.config().usage( "test" );
 
    auto formatter = HelpFormatter();
    formatter.setTextWidth( 60 );
@@ -497,6 +498,8 @@ TEST( ArgumentParserHelpTest, shouldSortParametersByGroups )
 {
    int dummy;
    auto parser = argument_parser{};
+   parser.config().usage( "test" );
+
    parser.add_argument( dummy, "--no" ).nargs( 0 ).required( false ).help( "default:no" );
    parser.add_argument( dummy, "--yes" ).nargs( 0 ).required( true ).help( "default:yes" );
    parser.add_argument( dummy, "positional" ).nargs( 0 ).help( "default:positional" );
