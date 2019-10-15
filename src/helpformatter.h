@@ -222,10 +222,12 @@ inline void HelpFormatter::formatUsage(
       writer.write( config.program );
 
    for ( auto& arg : args ) {
-      if ( !arg.long_name.empty() )
-         writer.write( arg.long_name );
-      else if ( !arg.short_name.empty() )
-         writer.write( arg.short_name );
+      if ( !arg.is_positional() ) {
+         if ( !arg.long_name.empty() )
+            writer.write( arg.long_name );
+         else if ( !arg.short_name.empty() )
+            writer.write( arg.short_name );
+      }
 
       if ( !arg.arguments.empty() )
          writer.write( arg.arguments );
