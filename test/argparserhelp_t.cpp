@@ -825,3 +825,26 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayArgumentCountInUsage )
 
    EXPECT_LT( -1, posUsage );
 }
+
+TEST( ArgumentParserCommandHelpTest, shouldDistinguishRequierdOptionsInUsage )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" );
+   parser.add_argument( dummy, "-o" ).nargs( 0 ).required( true );
+   parser.add_argument( dummy, "-a" ).maxargs( 2 ).required( false );
+   parser.add_argument( dummy, "-n" ).nargs( 0 ).required( false );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+
+   auto posUsage = -1;
+   int i = 0;
+   for ( auto line : helpLines ) {
+      if ( strHasTexts( line, { "usage:", "testing", "-o", "[-a [A {0..2}]]", "[-n]" } ) )
+         posUsage = i;
+      ++i;
+   }
+
+   EXPECT_LT( -1, posUsage );
+}
