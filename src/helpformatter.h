@@ -244,8 +244,10 @@ inline void HelpFormatter::formatUsage(
       }
       else {
          if ( !name.empty() || !arg.arguments.empty() ) {
+            auto addBracket = !name.empty() || arg.arguments.substr( 0, 1 ) != "[";
             std::ostringstream oss;
-            oss << "[";
+            if ( addBracket )
+               oss << "[";
             if ( !name.empty() ) {
                oss << name;
                if ( !arg.arguments.empty() )
@@ -253,7 +255,8 @@ inline void HelpFormatter::formatUsage(
             }
             else if ( !arg.arguments.empty() )
                oss << arg.arguments;
-            oss << "]";
+            if ( addBracket )
+               oss << "]";
             writer.write( oss.str() );
          }
       }
