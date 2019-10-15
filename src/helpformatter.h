@@ -227,15 +227,36 @@ inline void HelpFormatter::formatUsage(
          break;
       }
 
+      std::string_view name;
+
       if ( !arg.is_positional() ) {
          if ( !arg.long_name.empty() )
-            writer.write( arg.long_name );
+            name = arg.long_name;
          else if ( !arg.short_name.empty() )
-            writer.write( arg.short_name );
+            name = arg.short_name;
       }
 
-      if ( !arg.arguments.empty() )
-         writer.write( arg.arguments );
+      if ( arg.isRequired ) {
+         if ( !name.empty() )
+            writer.write( name );
+         if ( !arg.arguments.empty() )
+            writer.write( arg.arguments );
+      }
+      else {
+         if ( !name.empty() || !arg.arguments.empty() ) {
+            std::ostringstream oss;
+            oss << "[";
+            if ( !name.empty() ) {
+               oss << name;
+               if ( !arg.arguments.empty() )
+                  oss << " " << arg.arguments;
+            }
+            else if ( !arg.arguments.empty() )
+               oss << arg.arguments;
+            oss << "]";
+            writer.write( oss.str() );
+         }
+      }
    }
 }
 
