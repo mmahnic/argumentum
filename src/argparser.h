@@ -1456,6 +1456,7 @@ private:
          mPositional.push_back( std::move( newOption ) );
          auto& option = mPositional.back();
          option.setLongName( names.empty() ? "arg" : names[0] );
+         option.setRequired( true );
 
          if ( option.hasVectorValue() )
             option.setMinArgs( 0 );

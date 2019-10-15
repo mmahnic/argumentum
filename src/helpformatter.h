@@ -214,14 +214,67 @@ public:
    }
 };
 
+inline void HelpFormatter::formatUsage(
+      const argument_parser& parser, std::vector<ArgumentHelpResult>& args, Writer& writer )
+{
+   const auto& config = parser.getConfig();
+   if ( !config.program.empty() )
+      writer.write( config.program );
+
+   for ( auto& arg : args ) {
+      if ( arg.isCommand ) {
+         writer.write( "<command> ..." );
+         break;
+      }
+
+      std::string_view name;
+
+      if ( !arg.is_positional() ) {
+         if ( !arg.long_name.empty() )
+            name = arg.long_name;
+         else if ( !arg.short_name.empty() )
+            name = arg.short_name;
+      }
+
+      if ( arg.isRequired ) {
+         if ( !name.empty() )
+            writer.write( name );
+         if ( !arg.arguments.empty() )
+            writer.write( arg.arguments );
+      }
+      else {
+         if ( !name.empty() || !arg.arguments.empty() ) {
+            auto addBracket = !name.empty() || arg.arguments.substr( 0, 1 ) != "[";
+            std::ostringstream oss;
+            if ( addBracket )
+               oss << "[";
+            if ( !name.empty() ) {
+               oss << name;
+               if ( !arg.arguments.empty() )
+                  oss << " " << arg.arguments;
+            }
+            else if ( !arg.arguments.empty() )
+               oss << arg.arguments;
+            if ( addBracket )
+               oss << "]";
+            writer.write( oss.str() );
+         }
+      }
+   }
+}
+
 inline void HelpFormatter::format( const argument_parser& parser, std::ostream& out )
 {
-   auto config = parser.getConfig();
+   const auto& config = parser.getConfig();
    auto args = parser.describe_arguments();
-   OptionSorter sorter;
-   auto groups = sorter.reorderGroups( args );
-   for ( auto& group : groups )
-      sorter.reorderOptions( group );
+
+   Writer writer( out, mTextWidth );
+   writer.write( "usage: " );
+   if ( !config.usage.empty() )
+      writer.write( config.usage );
+   else
+      formatUsage( parser, args, writer );
+   writer.startParagraph();
 
    auto desctiptionIndent = deriveMaxArgumentWidth( args ) + mArgumentIndent + 1;
    if ( desctiptionIndent > mMaxDescriptionIndent )
@@ -241,12 +294,10 @@ inline void HelpFormatter::format( const argument_parser& parser, std::ostream& 
       writer.setIndent( 0 );
    };
 
-   Writer writer( out, mTextWidth );
-   if ( !config.usage.empty() ) {
-      writer.write( "usage: " );
-      writer.write( config.usage );
-      writer.startParagraph();
-   }
+   OptionSorter sorter;
+   auto groups = sorter.reorderGroups( args );
+   for ( auto& group : groups )
+      sorter.reorderOptions( group );
 
    if ( !config.description.empty() ) {
       writer.write( config.description );

@@ -431,6 +431,7 @@ TEST( ArgumentParserHelpTest, shouldOutputPositionalArguments )
    std::string str;
    auto parser = argument_parser{};
    parser.add_argument( str, "aaa" ).nargs( 3 ).help( "Triple a." );
+   parser.config().usage( "test" );
 
    auto formatter = HelpFormatter();
    formatter.setTextWidth( 60 );
@@ -497,6 +498,8 @@ TEST( ArgumentParserHelpTest, shouldSortParametersByGroups )
 {
    int dummy;
    auto parser = argument_parser{};
+   parser.config().usage( "test" );
+
    parser.add_argument( dummy, "--no" ).nargs( 0 ).required( false ).help( "default:no" );
    parser.add_argument( dummy, "--yes" ).nargs( 0 ).required( true ).help( "default:yes" );
    parser.add_argument( dummy, "positional" ).nargs( 0 ).help( "default:positional" );
@@ -723,4 +726,158 @@ TEST( ArgumentParserCommandHelpTest, shouldPutUngroupedCommandsUnderCommandsTitl
    EXPECT_LT( posPositional, posTitle );
    EXPECT_LT( posTitle, posOne );
    EXPECT_LT( posTitle, posTwo );
+}
+
+TEST( ArgumentParserCommandHelpTest, shouldBuildDefaultUsage )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" );
+   parser.add_argument( dummy, "--default" ).nargs( 0 );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+
+   auto posUsage = -1;
+   int i = 0;
+   for ( auto line : helpLines ) {
+      if ( strHasTexts( line, { "usage:", "testing", "--default" } ) )
+         posUsage = i;
+      ++i;
+   }
+
+   EXPECT_LT( -1, posUsage );
+}
+
+TEST( ArgumentParserCommandHelpTest, shouldPutOptionsBeforePositionalInUsage )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" );
+   parser.add_argument( dummy, "positional" ).nargs( 1 );
+   parser.add_argument( dummy, "--option" ).nargs( 0 );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+
+   auto posUsage = -1;
+   int i = 0;
+   for ( auto line : helpLines ) {
+      if ( strHasTexts( line, { "usage:", "testing", "--option", "positional" } ) )
+         posUsage = i;
+      ++i;
+   }
+
+   EXPECT_LT( -1, posUsage );
+}
+
+TEST( ArgumentParserCommandHelpTest, shouldShowCommandPlaceholderInUsage )
+{
+   auto parser = argument_parser{};
+   parser.config().program( "testing" );
+
+   std::shared_ptr<CmdOneOptions> pCmdOne;
+   parser.add_command( "one", [&]() {
+      pCmdOne = std::make_shared<CmdOneOptions>();
+      return pCmdOne;
+   } );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+
+   auto posUsage = -1;
+   auto posOne = -1;
+   auto posS = -1;
+   int i = 0;
+   for ( auto line : helpLines ) {
+      if ( strHasTexts( line, { "usage:", "testing", "<command> ..." } ) )
+         posUsage = i;
+      if ( strHasTexts( line, { "usage:", "-s" } ) )
+         posS = i;
+      if ( strHasTexts( line, { "usage:", "one" } ) )
+         posOne = i;
+      ++i;
+   }
+
+   EXPECT_LT( -1, posUsage );
+   EXPECT_EQ( -1, posOne );
+   EXPECT_EQ( -1, posS );
+}
+
+TEST( ArgumentParserCommandHelpTest, shouldDisplayArgumentCountInUsage )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" );
+   parser.add_argument( dummy, "p" ).nargs( 1 );
+   parser.add_argument( dummy, "-o" ).nargs( 0 );
+   parser.add_argument( dummy, "-i" ).minargs( 1 );
+   parser.add_argument( dummy, "-a" ).maxargs( 2 );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+
+   auto posUsage = -1;
+   int i = 0;
+   for ( auto line : helpLines ) {
+      if ( strHasTexts(
+                 line, { "usage:", "testing", "-o", "-i I [I ...]", "-a [A {0..2}]", "p" } ) )
+         posUsage = i;
+      ++i;
+   }
+
+   EXPECT_LT( -1, posUsage );
+}
+
+TEST( ArgumentParserCommandHelpTest, shouldDistinguishRequierdOptionsInUsage )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" );
+   parser.add_argument( dummy, "-o" ).nargs( 0 ).required( true );
+   parser.add_argument( dummy, "-a" ).maxargs( 2 ).required( false );
+   parser.add_argument( dummy, "-n" ).nargs( 0 ).required( false );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+
+   auto posUsage = -1;
+   int i = 0;
+   for ( auto line : helpLines ) {
+      if ( strHasTexts( line, { "usage:", "testing", "-o", "[-a [A {0..2}]]", "[-n]" } ) )
+         posUsage = i;
+      ++i;
+   }
+
+   EXPECT_LT( -1, posUsage );
+}
+
+// - argparse/py forbids the use of required keyword with positionals,
+//   but positionals can be made optional with nargs='?'
+// - we allow required(false) for now
+TEST( ArgumentParserCommandHelpTest, shouldDistinguishRequriedPositionalsInUsage )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" );
+   parser.add_argument( dummy, "r" ).nargs( 1 ).required( true );
+   parser.add_argument( dummy, "o" ).nargs( 1 ).required( false );
+   parser.add_argument( dummy, "x" ).maxargs( 1 ).required( false );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+
+   auto posUsage = -1;
+   auto posBad = -1;
+   int i = 0;
+   for ( auto line : helpLines ) {
+      if ( strHasTexts( line, { "usage:", "testing", "r", "[o]", "[x]" } ) )
+         posUsage = i;
+      if ( strHasTexts( line, { "usage:", "testing", "[[x]]" } ) )
+         posBad = i;
+      ++i;
+   }
+
+   EXPECT_LT( -1, posUsage );
+   EXPECT_EQ( -1, posBad );
 }
