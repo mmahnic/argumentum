@@ -724,3 +724,25 @@ TEST( ArgumentParserCommandHelpTest, shouldPutUngroupedCommandsUnderCommandsTitl
    EXPECT_LT( posTitle, posOne );
    EXPECT_LT( posTitle, posTwo );
 }
+
+TEST( ArgumentParserCommandHelpTest, shouldBuildDefaultUsage )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" );
+   parser.add_argument( dummy, "--default" ).nargs( 0 );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+
+   auto posUsage = -1;
+   int i = 0;
+   for ( auto line : helpLines ) {
+      std::cout << line << "\n";
+      if ( strHasTexts( line, { "usage:", "testing", "--default" } ) )
+         posUsage = i;
+      ++i;
+   }
+
+   EXPECT_LT( -1, posUsage );
+}
