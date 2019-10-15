@@ -848,3 +848,33 @@ TEST( ArgumentParserCommandHelpTest, shouldDistinguishRequierdOptionsInUsage )
 
    EXPECT_LT( -1, posUsage );
 }
+
+// - argparse/py forbids the use of required keyword with positionals,
+//   but positionals can be made optional with nargs='?'
+// - we allow required(false) for now
+TEST( ArgumentParserCommandHelpTest, shouldDistinguishRequriedPositionalsInUsage )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" );
+   parser.add_argument( dummy, "r" ).nargs( 1 ).required( true );
+   parser.add_argument( dummy, "o" ).nargs( 1 ).required( false );
+   parser.add_argument( dummy, "x" ).maxargs( 1 ).required( false );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+
+   auto posUsage = -1;
+   auto posBad = -1;
+   int i = 0;
+   for ( auto line : helpLines ) {
+      if ( strHasTexts( line, { "usage:", "testing", "r", "[o]", "[x]" } ) )
+         posUsage = i;
+      if ( strHasTexts( line, { "usage:", "testing", "[[x]]" } ) )
+         posBad = i;
+      ++i;
+   }
+
+   EXPECT_LT( -1, posUsage );
+   EXPECT_EQ( -1, posBad );
+}
