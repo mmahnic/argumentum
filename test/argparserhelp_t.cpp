@@ -738,8 +738,29 @@ TEST( ArgumentParserCommandHelpTest, shouldBuildDefaultUsage )
    auto posUsage = -1;
    int i = 0;
    for ( auto line : helpLines ) {
-      std::cout << line << "\n";
       if ( strHasTexts( line, { "usage:", "testing", "--default" } ) )
+         posUsage = i;
+      ++i;
+   }
+
+   EXPECT_LT( -1, posUsage );
+}
+
+TEST( ArgumentParserCommandHelpTest, shouldPutOptionsBeforePositionalInUsage )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" );
+   parser.add_argument( dummy, "positional" ).nargs( 1 );
+   parser.add_argument( dummy, "--option" ).nargs( 0 );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+
+   auto posUsage = -1;
+   int i = 0;
+   for ( auto line : helpLines ) {
+      if ( strHasTexts( line, { "usage:", "testing", "--option", "positional" } ) )
          posUsage = i;
       ++i;
    }
