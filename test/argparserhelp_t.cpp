@@ -800,3 +800,28 @@ TEST( ArgumentParserCommandHelpTest, shouldShowCommandPlaceholderInUsage )
    EXPECT_EQ( -1, posOne );
    EXPECT_EQ( -1, posS );
 }
+
+TEST( ArgumentParserCommandHelpTest, shouldDisplayArgumentCountInUsage )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" );
+   parser.add_argument( dummy, "p" ).nargs( 1 );
+   parser.add_argument( dummy, "-o" ).nargs( 0 );
+   parser.add_argument( dummy, "-i" ).minargs( 1 );
+   parser.add_argument( dummy, "-a" ).maxargs( 2 );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+
+   auto posUsage = -1;
+   int i = 0;
+   for ( auto line : helpLines ) {
+      if ( strHasTexts(
+                 line, { "usage:", "testing", "-o", "-i I [I ...]", "-a [A {0..2}]", "p" } ) )
+         posUsage = i;
+      ++i;
+   }
+
+   EXPECT_LT( -1, posUsage );
+}
