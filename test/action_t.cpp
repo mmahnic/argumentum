@@ -196,3 +196,25 @@ TEST( ArgumentParserActionTest, shouldReadOptionNameFromActionEvnironment )
    EXPECT_FALSE( res.wasExitRequested() );
    EXPECT_EQ( "hidden-secret--hide", result );
 }
+
+TEST( ArgumentParserActionTest, shouldReportErrorsThroughActionEvnironment )
+{
+   auto actionEnv = []( std::string& target, const std::string& value,
+                          argument_parser::Environment& env ) {
+      env.addError( "Something is wrong" );
+   };
+
+   std::string result;
+   auto parser = argument_parser{};
+   parser.config().on_exit_return();
+   parser.add_argument( result, "--wrong" ).maxargs( 1 ).action( actionEnv );
+
+   auto res = parser.parse_args( { "--wrong", "wrong" } );
+   EXPECT_FALSE( res.wasExitRequested() );
+   EXPECT_EQ( "", result );
+
+   ASSERT_FALSE( res.errors.empty() );
+   EXPECT_EQ( argument_parser::ACTION_ERROR, res.errors[0].errorCode );
+   EXPECT_NE( std::string::npos, res.errors[0].option.find( "--wrong" ) );
+   EXPECT_NE( std::string::npos, res.errors[0].option.find( "Something is wrong" ) );
+}
