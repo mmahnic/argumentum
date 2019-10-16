@@ -158,3 +158,23 @@ TEST( ArgumentParserActionTest, shouldSetSameVariableThroughMultipleActions )
    EXPECT_EQ( "assign", result.front() );
    EXPECT_EQ( "rotcev", result.back() );
 }
+
+TEST( ArgumentParserActionTest, shouldTerminateParserThroughEnvironmentInAction )
+{
+   auto actionNormal = []( std::string& target, const std::string& value ) { target = value; };
+   auto actionEnv = []( std::string& target, const std::string& value,
+                          argument_parser::Environment& env ) {
+      target = value;
+      env.exit_parser();
+   };
+
+   std::string result;
+   auto parser = argument_parser{};
+   parser.config().on_exit_return();
+   parser.add_argument( result, "-n" ).maxargs( 1 ).action( actionNormal );
+   parser.add_argument( result, "-r" ).maxargs( 1 ).action( actionEnv );
+
+   auto res = parser.parse_args( { "-n", "normal", "-r", "environment" } );
+   EXPECT_FALSE( res.errors.empty() );
+   EXPECT_TRUE( res.wasExitRequested() );
+}
