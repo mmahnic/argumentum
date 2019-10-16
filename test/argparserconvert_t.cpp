@@ -96,50 +96,6 @@ TEST( ArgumentParserConvertTest, shouldReportBadConversionError )
    EXPECT_EQ( argument_parser::CONVERSION_ERROR, res.errors.front().errorCode );
 }
 
-// TODO: This interface should be replaced by actions acting on ConvertedValue<CustomType>.
-//   - add_argument() receives CustomType,
-//   - action() receives a callable like doSetValue().
-TEST( ArgumentParserConvertTest, shouldSupportCustomOptionTypes )
-{
-   struct CustomType
-   {
-      std::string value;
-      std::string reversed;
-   };
-
-   class CustomValue : public argument_parser::Value
-   {
-      CustomType& mValue;
-
-   public:
-      CustomValue( CustomType& value )
-         : mValue( value )
-      {}
-
-   protected:
-      argument_parser::AssignAction getDefaultAction() override
-      {
-         return [this]( Value& target, const std::string& value ) {
-            auto pCustom = dynamic_cast<CustomValue*>( &target );
-            if ( pCustom ) {
-               pCustom->mValue.value = value;
-               pCustom->mValue.reversed = value;
-               std::reverse( pCustom->mValue.reversed.begin(), pCustom->mValue.reversed.end() );
-            }
-         };
-      }
-   };
-
-   CustomType custom;
-
-   auto parser = argument_parser{};
-   parser.add_argument( CustomValue( custom ), "-c" ).nargs( 1 );
-
-   auto res = parser.parse_args( { "-c", "value" } );
-   EXPECT_EQ( "value", custom.value );
-   EXPECT_EQ( "eulav", custom.reversed );
-}
-
 namespace {
 struct CustomType_fromstring_test
 {
