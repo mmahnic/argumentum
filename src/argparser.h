@@ -1011,6 +1011,11 @@ public:
       {
          mResult.exitRequested = true;
       }
+
+      const std::string& getOptionName() const
+      {
+         return mOption.getName();
+      }
    };
 
 private:
