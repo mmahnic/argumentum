@@ -838,7 +838,7 @@ public:
       }
    };
 
-   enum EExitMode { EXIT_TERMINATE, EXIT_THROW, EXIT_RETURN };
+   enum EExitMode { EXIT_THROW, EXIT_RETURN };
 
    class ParserConfig
    {
@@ -850,7 +850,7 @@ public:
          std::string description;
          std::string epilog;
          std::ostream* pOutStream = nullptr;
-         EExitMode exitMode = EXIT_TERMINATE;
+         EExitMode exitMode = EXIT_THROW;
       };
 
    private:
@@ -890,12 +890,6 @@ public:
       ParserConfig& cout( std::ostream& stream )
       {
          mData.pOutStream = &stream;
-         return *this;
-      }
-
-      ParserConfig& on_exit_terminate()
-      {
-         mData.exitMode = EXIT_TERMINATE;
          return *this;
       }
 
@@ -1650,8 +1644,6 @@ private:
    {
       switch ( getConfig().exitMode ) {
          default:
-         case EXIT_TERMINATE:
-            exit( 0 );
          case EXIT_THROW:
             throw ParserTerminated( arg, errorCode );
          case EXIT_RETURN: {

@@ -946,16 +946,6 @@ TEST( ArgumentParserTest, shouldConfigureExitMode_Throw )
    EXPECT_TRUE( false );
 }
 
-TEST( ArgumentParserTest, shouldConfigureExitMode_Terminate )
-{
-   std::stringstream strout;
-   auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_terminate();
-   parser.add_default_help_option();
-
-   // The parser must not be executed because it would terminate the test program.
-}
-
 TEST( ArgumentParserTest, shouldResetValuesWhenCalledMultipleTimes )
 {
    std::string first;
