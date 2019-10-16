@@ -178,3 +178,21 @@ TEST( ArgumentParserActionTest, shouldTerminateParserThroughEnvironmentInAction 
    EXPECT_FALSE( res.errors.empty() );
    EXPECT_TRUE( res.wasExitRequested() );
 }
+
+TEST( ArgumentParserActionTest, shouldReadOptionNameFromActionEvnironment )
+{
+   auto actionEnv = []( std::string& target, const std::string& value,
+                          argument_parser::Environment& env ) {
+      target = value + env.getOptionName();
+   };
+
+   std::string result;
+   auto parser = argument_parser{};
+   parser.config().on_exit_return();
+   parser.add_argument( result, "--hide" ).maxargs( 1 ).action( actionEnv );
+
+   auto res = parser.parse_args( { "--hide", "hidden-secret" } );
+   EXPECT_TRUE( res.errors.empty() );
+   EXPECT_FALSE( res.wasExitRequested() );
+   EXPECT_EQ( "hidden-secret--hide", result );
+}
