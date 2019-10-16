@@ -158,3 +158,63 @@ TEST( ArgumentParserActionTest, shouldSetSameVariableThroughMultipleActions )
    EXPECT_EQ( "assign", result.front() );
    EXPECT_EQ( "rotcev", result.back() );
 }
+
+TEST( ArgumentParserActionTest, shouldTerminateParserThroughEnvironmentInAction )
+{
+   auto actionNormal = []( std::string& target, const std::string& value ) { target = value; };
+   auto actionEnv = []( std::string& target, const std::string& value,
+                          argument_parser::Environment& env ) {
+      target = value;
+      env.exit_parser();
+   };
+
+   std::string result;
+   auto parser = argument_parser{};
+   parser.config().on_exit_return();
+   parser.add_argument( result, "-n" ).maxargs( 1 ).action( actionNormal );
+   parser.add_argument( result, "-r" ).maxargs( 1 ).action( actionEnv );
+
+   auto res = parser.parse_args( { "-n", "normal", "-r", "environment" } );
+   EXPECT_FALSE( res.errors.empty() );
+   EXPECT_TRUE( res.wasExitRequested() );
+}
+
+TEST( ArgumentParserActionTest, shouldReadOptionNameFromActionEvnironment )
+{
+   auto actionEnv = []( std::string& target, const std::string& value,
+                          argument_parser::Environment& env ) {
+      target = value + env.get_option_name();
+   };
+
+   std::string result;
+   auto parser = argument_parser{};
+   parser.config().on_exit_return();
+   parser.add_argument( result, "--hide" ).maxargs( 1 ).action( actionEnv );
+
+   auto res = parser.parse_args( { "--hide", "hidden-secret" } );
+   EXPECT_TRUE( res.errors.empty() );
+   EXPECT_FALSE( res.wasExitRequested() );
+   EXPECT_EQ( "hidden-secret--hide", result );
+}
+
+TEST( ArgumentParserActionTest, shouldReportErrorsThroughActionEvnironment )
+{
+   auto actionEnv = []( std::string& target, const std::string& value,
+                          argument_parser::Environment& env ) {
+      env.add_error( "Something is wrong" );
+   };
+
+   std::string result;
+   auto parser = argument_parser{};
+   parser.config().on_exit_return();
+   parser.add_argument( result, "--wrong" ).maxargs( 1 ).action( actionEnv );
+
+   auto res = parser.parse_args( { "--wrong", "wrong" } );
+   EXPECT_FALSE( res.wasExitRequested() );
+   EXPECT_EQ( "", result );
+
+   ASSERT_FALSE( res.errors.empty() );
+   EXPECT_EQ( argument_parser::ACTION_ERROR, res.errors[0].errorCode );
+   EXPECT_NE( std::string::npos, res.errors[0].option.find( "--wrong" ) );
+   EXPECT_NE( std::string::npos, res.errors[0].option.find( "Something is wrong" ) );
+}
