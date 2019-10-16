@@ -92,15 +92,22 @@ class argument_parser
 {
 public:
    class Value;
+   class Environment;
 
+private:
    /**
     * The assign-action is executed to set the value of a parameter.
     *
     * If an action is not provided with the OptionConfig::action method, a
     * default action will be created and used.
+    *
+    * Action interfaces are different for different types of Value descendatns.
+    * All actions are wrapped into AssignAction interface.
     */
-   using AssignAction = std::function<void( Value& target, const std::string& value )>;
+   using AssignAction =
+         std::function<void( Value& target, const std::string& value, Environment& env )>;
 
+public:
    class Value
    {
       int mAssignCount = 0;
@@ -108,14 +115,14 @@ public:
       bool mHasErrors = false;
 
    public:
-      void setValue( const std::string& value, AssignAction action )
+      void setValue( const std::string& value, AssignAction action, Environment& env )
       {
          ++mAssignCount;
          ++mOptionAssignCount;
          if ( action == nullptr )
             action = getDefaultAction();
          if ( action )
-            action( *this, value );
+            action( *this, value, env );
       }
 
       void markBadArgument()
@@ -224,7 +231,7 @@ public:
    protected:
       AssignAction getDefaultAction() override
       {
-         return []( Value& target, const std::string& value ) {
+         return []( Value& target, const std::string& value, Environment& ) {
             auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
             if ( pConverted )
                pConverted->assign( pConverted->mValue, value );
@@ -517,7 +524,7 @@ public:
          return metavar;
       }
 
-      void setValue( const std::string& value )
+      void setValue( const std::string& value, Environment& env )
       {
          if ( !mChoices.empty()
                && std::none_of( mChoices.begin(), mChoices.end(),
@@ -528,7 +535,7 @@ public:
 
          // If mAssignAction is not set, mpValue->setValue will try to use a
          // default action.
-         mpValue->setValue( value, mAssignAction );
+         mpValue->setValue( value, mAssignAction, env );
       }
 
       void resetValue()
@@ -711,6 +718,7 @@ public:
    {
       using this_t = OptionConfigA<TValue>;
       using assign_action_t = std::function<void( TValue&, const std::string& )>;
+      using assign_action_env_t = std::function<void( TValue&, const std::string&, Environment& )>;
 
    public:
       using OptionConfigBaseT<this_t>::OptionConfigBaseT;
@@ -719,13 +727,28 @@ public:
          : OptionConfigBaseT<this_t>( std::move( wrapped ) )
       {}
 
-      this_t& action( assign_action_t assign_func )
+      this_t& action( assign_action_t action )
       {
-         if ( assign_func ) {
-            auto wrapAction = [=]( Value& target, const std::string& value ) {
+         if ( action ) {
+            auto wrapAction = [=]( Value& target, const std::string& value, Environment& ) {
                auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
                if ( pConverted )
-                  assign_func( pConverted->mValue, value );
+                  action( pConverted->mValue, value );
+            };
+            OptionConfig::getOption().setAction( wrapAction );
+         }
+         else
+            OptionConfig::getOption().setAction( nullptr );
+         return *this;
+      }
+
+      this_t& action( assign_action_env_t action )
+      {
+         if ( action ) {
+            auto wrapAction = [=]( Value& target, const std::string& value, Environment& env ) {
+               auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
+               if ( pConverted )
+                  action( pConverted->mValue, value, env );
             };
             OptionConfig::getOption().setAction( wrapAction );
          }
@@ -739,7 +762,7 @@ public:
    {
    public:
       using this_t = VoidOptionConfig;
-      using assign_action_t = std::function<void( const std::string& )>;
+      using assign_action_env_t = std::function<void( const std::string&, Environment& )>;
 
    public:
       using OptionConfigBaseT<this_t>::OptionConfigBaseT;
@@ -748,14 +771,14 @@ public:
          : OptionConfigBaseT<this_t>( std::move( wrapped ) )
       {}
 
-      this_t& action( assign_action_t action )
+      this_t& action( assign_action_env_t action )
       {
          if ( action ) {
-            auto wrapAction = [&]( Value& target,
-                                    const std::string& value ) -> std::optional<std::string> {
+            auto wrapAction = [&]( Value& target, const std::string& value,
+                                    Environment& env ) -> std::optional<std::string> {
                auto pv = dynamic_cast<VoidOptionConfig*>( &target );
                if ( pv )
-                  action( value );
+                  action( value, env );
                return {};
             };
             OptionConfig::getOption().setAction( wrapAction );
@@ -924,8 +947,10 @@ public:
       INVALID_CHOICE,
       // Flags do not accept parameters.
       FLAG_PARAMETER,
-      // Signal that help was requesetd when on_exit_return is set.
-      HELP_REQUESTED
+      // Signal that help was requested when on_exit_return is set.
+      HELP_REQUESTED,
+      // Signal that exit was requested by an action.
+      EXIT_REQUESTED
    };
 
    struct ParseError
@@ -938,12 +963,21 @@ public:
       {}
    };
 
-   struct ParseResult
+   class ParseResult
    {
+      friend class Environment;
+      bool exitRequested = false;
+
+   public:
       std::vector<std::string> ignoredArguments;
       std::vector<ParseError> errors;
 
    public:
+      bool wasExitRequested() const
+      {
+         return exitRequested;
+      }
+
       void clear()
       {
          ignoredArguments.clear();
@@ -952,12 +986,30 @@ public:
 
       void addResults( ParseResult&& res )
       {
+         exitRequested = exitRequested || res.exitRequested;
          ignoredArguments.insert( std::end( ignoredArguments ),
                std::make_move_iterator( std::begin( res.ignoredArguments ) ),
                std::make_move_iterator( std::end( res.ignoredArguments ) ) );
          for ( auto& err : res.errors )
             errors.emplace_back( std::move( err ) );
          res.clear();
+      }
+   };
+
+   class Environment
+   {
+      Option& mOption;
+      ParseResult& mResult;
+
+   public:
+      Environment( Option& option, ParseResult& result )
+         : mOption( option )
+         , mResult( result )
+      {}
+
+      void exit_parser()
+      {
+         mResult.exitRequested = true;
       }
    };
 
@@ -1025,6 +1077,9 @@ private:
                      addFreeArgument( *iarg );
                }
             }
+
+            if ( mResult.wasExitRequested() )
+               break;
          }
 
          if ( haveActiveOption() )
@@ -1078,7 +1133,7 @@ private:
             if ( option.needsMoreArguments() )
                addError( option.getName(), MISSING_ARGUMENT );
             else if ( option.willAcceptArgument() && !option.wasAssignedThroughThisOption() )
-               option.setValue( option.getFlagValue() );
+               setValue( option, option.getFlagValue() );
          }
          mpActiveOption = nullptr;
       }
@@ -1120,7 +1175,8 @@ private:
       void setValue( Option& option, const std::string& value )
       {
          try {
-            option.setValue( value );
+            auto env = Environment{ option, mResult };
+            option.setValue( value, env );
          }
          catch ( const InvalidChoiceError& ) {
             addError( option.getName(), INVALID_CHOICE );
@@ -1243,7 +1299,7 @@ public:
       auto value = VoidValue{};
       auto option = Option( value );
       auto optionConfig = VoidOptionConfig( tryAddArgument( option, { name, altName } ) )
-                                .help( "Print this help message and exit." );
+                                .help( "Display this help message and exit." );
 
       if ( !name.empty() )
          mHelpOptionNames.insert( name );
@@ -1309,12 +1365,15 @@ public:
       for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
          if ( mHelpOptionNames.count( *iarg ) > 0 ) {
             generate_help();
-            return exit_parser( *iarg, HELP_REQUESTED );
+            return exit_parser( {}, *iarg, HELP_REQUESTED );
          }
       }
 
       Parser parser( *this );
       auto result = parser.parse( ibegin, iend );
+      if ( result.wasExitRequested() )
+         return exit_parser( std::move( result ), "", EXIT_REQUESTED );
+
       reportMissingOptions( result );
       reportExclusiveViolations( result );
       reportMissingGroups( result );
@@ -1640,22 +1699,21 @@ private:
       formatter.format( *this, *pStream );
    }
 
-   ParseResult exit_parser( const std::string& arg, EError errorCode )
+   ParseResult exit_parser( ParseResult&& result, const std::string& arg, EError errorCode )
    {
       switch ( getConfig().exitMode ) {
          default:
          case EXIT_THROW:
             throw ParserTerminated( arg, errorCode );
          case EXIT_RETURN: {
-            ParseResult res;
-            res.errors.emplace_back( arg, errorCode );
-            return res;
+            result.errors.emplace_back( arg, errorCode );
+            return result;
          }
       }
 
       return {};
    }
-};   // namespace argparse
+};
 
 }   // namespace argparse
 
