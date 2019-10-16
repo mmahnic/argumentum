@@ -950,7 +950,9 @@ public:
       // Signal that help was requested when on_exit_return is set.
       HELP_REQUESTED,
       // Signal that exit was requested by an action.
-      EXIT_REQUESTED
+      EXIT_REQUESTED,
+      // An error signalled by an action.
+      ACTION_ERROR
    };
 
    struct ParseError
@@ -1012,9 +1014,18 @@ public:
          mResult.exitRequested = true;
       }
 
-      const std::string& getOptionName() const
+      const std::string& get_option_name() const
       {
          return mOption.getName();
+      }
+
+      void add_error( std::string_view error )
+      {
+         if ( error.empty() )
+            mResult.errors.emplace_back( get_option_name(), ACTION_ERROR );
+         else
+            mResult.errors.emplace_back(
+                  get_option_name() + ": " + std::string( error ), ACTION_ERROR );
       }
    };
 
