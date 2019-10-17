@@ -1008,3 +1008,20 @@ TEST( ArgumentParserTest, shouldSkipInitialArguments )
    EXPECT_FALSE( first.has_value() );
    EXPECT_FALSE( second.has_value() );
 }
+
+TEST( ArgumentParserTest, shouldShowHelpWhenHasRequiredArgumentsAndNoneAreGiven )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout ).on_exit_return();
+
+   int num = 0;
+   parser.add_argument( num, "--num" ).nargs( 1 );
+   EXPECT_TRUE( strout.str().empty() );
+
+   auto res = parser.parse_args( {} );
+   EXPECT_FALSE( strout.str().empty() );
+
+   ASSERT_EQ( 1, res.errors.size() );
+   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+}
