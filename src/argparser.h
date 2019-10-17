@@ -952,7 +952,9 @@ public:
       // Signal that exit was requested by an action.
       EXIT_REQUESTED,
       // An error signalled by an action.
-      ACTION_ERROR
+      ACTION_ERROR,
+      // The parser received invalid argv input.
+      INVALID_ARGV
    };
 
    struct ParseError
@@ -978,6 +980,11 @@ public:
       bool wasExitRequested() const
       {
          return exitRequested;
+      }
+
+      operator bool() const
+      {
+         return errors.empty() && ignoredArguments.empty() && !exitRequested;
       }
 
       void clear()
@@ -1356,6 +1363,21 @@ public:
    void end_group()
    {
       mpActiveGroup = nullptr;
+   }
+
+   ParseResult parse_args( int argc, char** argv, int skip_args = 1 )
+   {
+      if ( !argv ) {
+         auto res = ParseResult{};
+         res.errors.emplace_back( "argv", INVALID_ARGV );
+         return res;
+      }
+
+      std::vector<std::string> args;
+      for ( int i = std::max( 0, skip_args ); i < argc; ++i )
+         args.emplace_back( argv[i] );
+
+      return parse_args( std::begin( args ), std::end( args ) );
    }
 
    ParseResult parse_args( const std::vector<std::string>& args, int skip_args = 0 )

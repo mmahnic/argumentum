@@ -14,14 +14,15 @@ int main( int argc, char** argv )
    bool isSum = false;
 
    parser.config().program( argv[0] ).on_exit_return().description( "Accumulator" );
-   parser.add_argument( numbers, "N" ).minargs( 1 ).help( "Integers" );
+   parser.add_argument( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
    parser.add_argument( isSum, "--sum", "-s" )
          .nargs( 0 )
          .help( "Sum the integers (default: find the max)" );
 
    auto res = parser.parse_args( argc, argv, 1 );
-   if ( res.has_errors() ) {
-      parser.format_errors( res, cout );
+   if ( !res ) {
+      // res.format_errors( res, cout );
+      cout << "errors\n";
       return 1;
    }
 
