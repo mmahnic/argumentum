@@ -1016,7 +1016,7 @@ TEST( ArgumentParserTest, shouldShowHelpWhenHasRequiredArgumentsAndNoneAreGiven 
    parser.config().cout( strout ).on_exit_return();
 
    int num = 0;
-   parser.add_argument( num, "--num" ).nargs( 1 );
+   parser.add_argument( num, "--num" ).nargs( 1 ).required( true );
    EXPECT_TRUE( strout.str().empty() );
 
    auto res = parser.parse_args( {} );

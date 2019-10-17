@@ -1394,6 +1394,11 @@ public:
    {
       verifyDefinedOptions();
 
+      if ( ibegin == iend && hasRequiredArguments() ) {
+         generate_help();
+         return exit_parser( {}, {}, HELP_REQUESTED );
+      }
+
       for ( auto& option : mOptions )
          option.resetValue();
 
@@ -1489,6 +1494,19 @@ private:
       for ( auto& option : mPositional )
          if ( option.needsMoreArguments() )
             result.errors.emplace_back( option.getName(), MISSING_ARGUMENT );
+   }
+
+   bool hasRequiredArguments() const
+   {
+      for ( auto& option : mOptions )
+         if ( option.isRequired() )
+            return true;
+
+      for ( auto& option : mPositional )
+         if ( option.isRequired() )
+            return true;
+
+      return false;
    }
 
    void reportExclusiveViolations( ParseResult& result )
