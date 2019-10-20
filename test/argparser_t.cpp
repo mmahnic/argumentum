@@ -1028,3 +1028,16 @@ TEST( ArgumentParserTest, shouldShowHelpWhenHasRequiredArgumentsAndNoneAreGiven 
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
 }
+
+TEST( ArgumentParserTest, shouldSignalHelpWasShownWhenHelpRequested )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout );
+
+   parser.add_help_option( "--help" );
+
+   auto res = parser.parse_args( { "--help" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_TRUE( res.help_was_shown() );
+}
