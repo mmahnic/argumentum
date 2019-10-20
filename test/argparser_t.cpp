@@ -784,6 +784,20 @@ TEST( ArgumentParserTest, shouldNotSetProgramNameFromParameter0 )
    ASSERT_EQ( 0, res.errors.size() );
 }
 
+TEST( ArgumentParserTest, shouldSignalErrorsShownWhenErrorsPresent )
+{
+   std::optional<int> maybeInt;
+
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout );
+   parser.add_argument( maybeInt, "--maybe" ).nargs( 1 );
+
+   auto res = parser.parse_args( { "--wrong", "123" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_TRUE( res.errors_were_shown() );
+}
+
 TEST( ArgumentParserTest, shouldSignalHelpWasShownWhenHelpRequested )
 {
    std::stringstream strout;
