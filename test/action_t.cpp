@@ -176,7 +176,7 @@ TEST( ArgumentParserActionTest, shouldTerminateParserThroughEnvironmentInAction 
    auto res = parser.parse_args( { "-n", "normal", "-r", "environment" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_FALSE( res.errors.empty() );
-   EXPECT_TRUE( res.wasExitRequested() );
+   EXPECT_TRUE( res.has_exited() );
 }
 
 TEST( ArgumentParserActionTest, shouldThrowWhenExitRequestIsUnchecked )
@@ -195,7 +195,7 @@ TEST( ArgumentParserActionTest, shouldThrowWhenExitRequestIsUnchecked )
    try {
       auto res = parser.parse_args( { "-x" } );
    }
-   catch ( const argparse::ParserTerminated& e ) {
+   catch ( const argparse::UncheckedParseResult& e ) {
       caught = true;
    }
    EXPECT_TRUE( caught );
@@ -214,7 +214,7 @@ TEST( ArgumentParserActionTest, shouldReadOptionNameFromActionEvnironment )
 
    auto res = parser.parse_args( { "--hide", "hidden-secret" } );
    EXPECT_TRUE( res.errors.empty() );
-   EXPECT_FALSE( res.wasExitRequested() );
+   EXPECT_FALSE( res.has_exited() );
    EXPECT_EQ( "hidden-secret--hide", result );
 }
 
@@ -231,7 +231,7 @@ TEST( ArgumentParserActionTest, shouldReportErrorsThroughActionEvnironment )
 
    auto res = parser.parse_args( { "--wrong", "wrong" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
-   EXPECT_FALSE( res.wasExitRequested() );
+   EXPECT_FALSE( res.has_exited() );
    EXPECT_EQ( "", result );
 
    ASSERT_FALSE( res.errors.empty() );

@@ -28,12 +28,12 @@ public:
    {}
 };
 
-class ParserTerminated : public std::exception
+class UncheckedParseResult : public std::exception
 {
 public:
    const char* what() const noexcept override
    {
-      return "Parsing terminated.";
+      return "Unchecked parse result.";
    }
 };
 
@@ -945,8 +945,15 @@ public:
       ParseError( ParseError&& ) = default;
    };
 
+private:
+   class ParseResultBuilder;
+
+public:
    class ParseResult
    {
+   private:
+      friend class ParseResultBuilder;
+
       struct RequireCheck
       {
          bool required = false;
@@ -971,7 +978,7 @@ public:
          {
             if ( !std::current_exception() ) {
                if ( required )
-                  throw ParserTerminated();
+                  throw UncheckedParseResult();
             }
          }
 
@@ -987,7 +994,6 @@ public:
       };
 
    private:
-      friend class Environment;
       bool exitRequested = false;
       mutable RequireCheck mustCheck;
 
@@ -1003,7 +1009,7 @@ public:
       ~ParseResult() noexcept( false )
       {}
 
-      bool wasExitRequested() const
+      bool has_exited() const
       {
          return exitRequested;
       }
@@ -1014,15 +1020,19 @@ public:
          return errors.empty() && ignoredArguments.empty() && !exitRequested;
       }
 
+   private:
       void clear()
       {
          ignoredArguments.clear();
          errors.clear();
+         mustCheck.clear();
+         exitRequested = false;
       }
 
       void addResults( ParseResult&& res )
       {
          exitRequested = exitRequested || res.exitRequested;
+         mustCheck.required = mustCheck.required || res.mustCheck.required;
          ignoredArguments.insert( std::end( ignoredArguments ),
                std::make_move_iterator( std::begin( res.ignoredArguments ) ),
                std::make_move_iterator( std::end( res.ignoredArguments ) ) );
@@ -1030,22 +1040,15 @@ public:
             errors.emplace_back( std::move( err ) );
          res.clear();
       }
-
-   private:
-      void requestExit()
-      {
-         exitRequested = true;
-         mustCheck.activate();
-      }
    };
 
    class Environment
    {
       Option& mOption;
-      ParseResult& mResult;
+      ParseResultBuilder& mResult;
 
    public:
-      Environment( Option& option, ParseResult& result )
+      Environment( Option& option, ParseResultBuilder& result )
          : mOption( option )
          , mResult( result )
       {}
@@ -1063,29 +1066,73 @@ public:
       void add_error( std::string_view error )
       {
          if ( error.empty() )
-            mResult.errors.emplace_back( get_option_name(), ACTION_ERROR );
+            mResult.addError( get_option_name(), ACTION_ERROR );
          else
-            mResult.errors.emplace_back(
-                  get_option_name() + ": " + std::string( error ), ACTION_ERROR );
+            mResult.addError( get_option_name() + ": " + std::string( error ), ACTION_ERROR );
       }
    };
 
 private:
+   class ParseResultBuilder
+   {
+      ParseResult result;
+
+   public:
+      void clear()
+      {
+         result.clear();
+      }
+
+      void addResults( ParseResult&& res )
+      {
+         result.addResults( std::move( res ) );
+      }
+
+      bool wasExitRequested() const
+      {
+         return result.exitRequested;
+      }
+
+      void addError( std::string_view optionName, int error )
+      {
+         result.errors.emplace_back( optionName, error );
+         result.mustCheck.activate();
+      }
+
+      void addIgnored( const std::string& arg )
+      {
+         result.ignoredArguments.push_back( arg );
+      }
+
+      void requestExit()
+      {
+         result.exitRequested = true;
+         result.mustCheck.activate();
+      }
+
+      ParseResult&& getResult()
+      {
+         return std::move( result );
+      }
+   };
+
    class Parser
    {
       argument_parser& mArgParser;
+      ParseResultBuilder& mResult;
+
       bool mIgnoreOptions = false;
       int mPosition = 0;
       // The active option will receive additional argument(s)
       Option* mpActiveOption = nullptr;
-      ParseResult mResult;
 
    public:
-      Parser( argument_parser& argParser )
+      Parser( argument_parser& argParser, ParseResultBuilder& result )
          : mArgParser( argParser )
+         , mResult( result )
       {}
 
-      ParseResult parse( std::vector<std::string>::const_iterator ibegin,
+      void parse( std::vector<std::string>::const_iterator ibegin,
             std::vector<std::string>::const_iterator iend )
       {
          mResult.clear();
@@ -1141,8 +1188,6 @@ private:
 
          if ( haveActiveOption() )
             closeOption();
-
-         return std::move( mResult );
       }
 
    private:
@@ -1216,12 +1261,12 @@ private:
             }
          }
 
-         mResult.ignoredArguments.push_back( arg );
+         mResult.addIgnored( arg );
       }
 
       void addError( std::string_view optionName, int errorCode )
       {
-         mResult.errors.emplace_back( optionName, errorCode );
+         mResult.addError( optionName, errorCode );
       }
 
       Option* findOption( std::string_view optionName ) const
@@ -1402,9 +1447,9 @@ public:
    ParseResult parse_args( int argc, char** argv, int skip_args = 1 )
    {
       if ( !argv ) {
-         auto res = ParseResult{};
-         res.errors.emplace_back( "argv", INVALID_ARGV );
-         return res;
+         auto res = ParseResultBuilder{};
+         res.addError( "argv", INVALID_ARGV );
+         return res.getResult();
       }
 
       std::vector<std::string> args;
@@ -1427,10 +1472,13 @@ public:
          std::vector<std::string>::const_iterator iend )
    {
       verifyDefinedOptions();
+      ParseResultBuilder result;
 
       if ( ibegin == iend && hasRequiredArguments() ) {
          generate_help();
-         return exit_parser( {}, {}, HELP_REQUESTED );
+         result.addError( {}, HELP_REQUESTED );
+         result.requestExit();
+         return std::move( result.getResult() );
       }
 
       for ( auto& option : mOptions )
@@ -1442,19 +1490,24 @@ public:
       for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
          if ( mHelpOptionNames.count( *iarg ) > 0 ) {
             generate_help();
-            return exit_parser( {}, *iarg, HELP_REQUESTED );
+            result.addError( {}, HELP_REQUESTED );
+            result.requestExit();
+            return std::move( result.getResult() );
          }
       }
 
-      Parser parser( *this );
-      auto result = parser.parse( ibegin, iend );
-      if ( result.wasExitRequested() )
-         return exit_parser( std::move( result ), "", EXIT_REQUESTED );
+      Parser parser( *this, result );
+      parser.parse( ibegin, iend );
+      if ( result.wasExitRequested() ) {
+         result.addError( {}, EXIT_REQUESTED );
+         return std::move( result.getResult() );
+      }
 
       reportMissingOptions( result );
       reportExclusiveViolations( result );
       reportMissingGroups( result );
-      return result;
+
+      return result.getResult();
    }
 
    ArgumentHelpResult describe_argument( std::string_view name ) const
@@ -1519,15 +1572,15 @@ private:
       }
    }
 
-   void reportMissingOptions( ParseResult& result )
+   void reportMissingOptions( ParseResultBuilder& result )
    {
       for ( auto& option : mOptions )
          if ( option.isRequired() && !option.wasAssigned() )
-            result.errors.emplace_back( option.getName(), MISSING_OPTION );
+            result.addError( option.getName(), MISSING_OPTION );
 
       for ( auto& option : mPositional )
          if ( option.needsMoreArguments() )
-            result.errors.emplace_back( option.getName(), MISSING_ARGUMENT );
+            result.addError( option.getName(), MISSING_ARGUMENT );
    }
 
    bool hasRequiredArguments() const
@@ -1543,7 +1596,7 @@ private:
       return false;
    }
 
-   void reportExclusiveViolations( ParseResult& result )
+   void reportExclusiveViolations( ParseResultBuilder& result )
    {
       std::map<std::string, std::vector<std::string>> counts;
       for ( auto& option : mOptions ) {
@@ -1554,10 +1607,10 @@ private:
 
       for ( auto& c : counts )
          if ( c.second.size() > 1 )
-            result.errors.emplace_back( c.second.front(), EXCLUSIVE_OPTION );
+            result.addError( c.second.front(), EXCLUSIVE_OPTION );
    }
 
-   void reportMissingGroups( ParseResult& result )
+   void reportMissingGroups( ParseResultBuilder& result )
    {
       std::map<std::string, int> counts;
       for ( auto& option : mOptions ) {
@@ -1568,7 +1621,7 @@ private:
 
       for ( auto& c : counts )
          if ( c.second < 1 )
-            result.errors.emplace_back( c.first, MISSING_OPTION_GROUP );
+            result.addError( c.first, MISSING_OPTION_GROUP );
    }
 
    OptionConfig tryAddArgument( Option& newOption, std::vector<std::string_view> names )
@@ -1788,13 +1841,7 @@ private:
 
       formatter.format( *this, *pStream );
    }
-
-   ParseResult exit_parser( ParseResult&& result, const std::string& arg, EError errorCode )
-   {
-      result.errors.emplace_back( arg, errorCode );
-      return std::move( result );
-   }
-};
+};   // namespace argparse
 
 }   // namespace argparse
 
