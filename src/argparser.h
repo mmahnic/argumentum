@@ -1695,11 +1695,12 @@ private:
       ArgumentHelpResult help;
       help.short_name = option.getShortName();
       help.long_name = option.getLongName();
+      help.metavar = option.getMetavar();
       help.help = option.getRawHelp();
       help.isRequired = option.isRequired();
 
       if ( option.acceptsAnyArguments() ) {
-         const auto& metavar = option.getMetavar();
+         const auto& metavar = help.metavar;
          auto [mmin, mmax] = option.getArgumentCounts();
          std::string res;
          if ( mmin > 0 ) {

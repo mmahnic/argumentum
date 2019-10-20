@@ -18,6 +18,7 @@ struct ArgumentHelpResult
 {
    std::string short_name;
    std::string long_name;
+   std::string metavar;
    std::string arguments;
    std::string help;
    bool isRequired = false;
@@ -79,7 +80,8 @@ private:
       else if ( !arg.short_name.empty() )
          res = arg.short_name;
       else if ( !arg.long_name.empty() )
-         res = arg.is_positional() ? arg.long_name : "    " + arg.long_name;
+         res = arg.is_positional() ? ( arg.isCommand ? arg.long_name : arg.metavar )
+                                   : "    " + arg.long_name;
       else
          return {};
 
