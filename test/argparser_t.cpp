@@ -797,6 +797,20 @@ TEST( ArgumentParserTest, shouldSignalHelpWasShownWhenHelpRequested )
    EXPECT_TRUE( res.help_was_shown() );
 }
 
+TEST( ArgumentParserTest, shouldNotSignalHelpWasShownWhenAllIsOk )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout );
+
+   bool ok = false;
+   parser.add_argument( ok, "--ok" ).nargs( 0 );
+
+   auto res = parser.parse_args( { "--ok" } );
+   EXPECT_TRUE( static_cast<bool>( res ) );
+   EXPECT_FALSE( res.help_was_shown() );
+}
+
 TEST( ArgumentParserTest, shouldHaveHelpByDefault )
 {
    std::stringstream strout;
