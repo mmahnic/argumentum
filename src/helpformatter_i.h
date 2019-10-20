@@ -16,6 +16,7 @@ class Writer;
 
 struct ArgumentHelpResult
 {
+   std::string help_name;
    std::string short_name;
    std::string long_name;
    std::string metavar;
@@ -75,10 +76,9 @@ private:
    std::string formatArgument( const ArgumentHelpResult& arg ) const
    {
       if ( arg.isCommand )
-         return !arg.long_name.empty() ? arg.long_name : arg.short_name;
+         return arg.help_name;
       else if ( arg.is_positional() )
-         return !arg.metavar.empty() ? arg.metavar
-                                     : !arg.long_name.empty() ? arg.long_name : arg.short_name;
+         return arg.help_name;
 
       std::string res;
       if ( !arg.short_name.empty() && !arg.long_name.empty() )

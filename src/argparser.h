@@ -491,6 +491,17 @@ public:
          return mLongName;
       }
 
+      std::string getHelpName() const
+      {
+         auto is_positional = mShortName.substr( 0, 1 ) != "-" && mLongName.substr( 0, 1 ) != "-";
+         if ( is_positional ) {
+            const auto& name =
+                  !mMetavar.empty() ? mMetavar : !mLongName.empty() ? mLongName : mShortName;
+            return !name.empty() ? name : "ARG";
+         }
+         return !mLongName.empty() ? mLongName : mShortName;
+      }
+
       bool hasName( std::string_view name ) const
       {
          return name == mShortName || name == mLongName;
@@ -1056,9 +1067,9 @@ public:
          mResult.requestExit();
       }
 
-      const std::string& get_option_name() const
+      std::string get_option_name() const
       {
-         return mOption.getName();
+         return mOption.getHelpName();
       }
 
       void add_error( std::string_view error )
@@ -1223,7 +1234,7 @@ private:
                if ( option.willAcceptArgument() )
                   setValue( option, std::string{ arg } );
                else
-                  addError( name, FLAG_PARAMETER );
+                  addError( pOption->getHelpName(), FLAG_PARAMETER );
             }
          }
          else
@@ -1240,7 +1251,7 @@ private:
          if ( haveActiveOption() ) {
             auto& option = *mpActiveOption;
             if ( option.needsMoreArguments() )
-               addError( option.getName(), MISSING_ARGUMENT );
+               addError( option.getHelpName(), MISSING_ARGUMENT );
             else if ( option.willAcceptArgument() && !option.wasAssignedThroughThisOption() )
                setValue( option, option.getFlagValue() );
          }
@@ -1288,13 +1299,13 @@ private:
             option.setValue( value, env );
          }
          catch ( const InvalidChoiceError& ) {
-            addError( option.getName(), INVALID_CHOICE );
+            addError( option.getHelpName(), INVALID_CHOICE );
          }
          catch ( const std::invalid_argument& ) {
-            addError( option.getName(), CONVERSION_ERROR );
+            addError( option.getHelpName(), CONVERSION_ERROR );
          }
          catch ( const std::out_of_range& ) {
-            addError( option.getName(), CONVERSION_ERROR );
+            addError( option.getHelpName(), CONVERSION_ERROR );
          }
       }
    };
@@ -1497,9 +1508,8 @@ public:
       bool isPositional = name.substr( 0, 1 ) != "-";
       const auto& args = isPositional ? mPositional : mOptions;
       for ( auto& opt : args )
-         if ( opt.hasName( name ) ) {
+         if ( opt.hasName( name ) )
             return describeOption( opt );
-         }
 
       throw std::invalid_argument( "Unknown option." );
    }
@@ -1595,11 +1605,11 @@ private:
    {
       for ( auto& option : mOptions )
          if ( option.isRequired() && !option.wasAssigned() )
-            result.addError( option.getName(), MISSING_OPTION );
+            result.addError( option.getHelpName(), MISSING_OPTION );
 
       for ( auto& option : mPositional )
          if ( option.needsMoreArguments() )
-            result.addError( option.getName(), MISSING_ARGUMENT );
+            result.addError( option.getHelpName(), MISSING_ARGUMENT );
    }
 
    bool hasRequiredArguments() const
@@ -1621,7 +1631,7 @@ private:
       for ( auto& option : mOptions ) {
          auto pGroup = option.getGroup();
          if ( pGroup && pGroup->isExclusive() && option.wasAssigned() )
-            counts[pGroup->getName()].push_back( option.getName() );
+            counts[pGroup->getName()].push_back( option.getHelpName() );
       }
 
       for ( auto& c : counts )
@@ -1797,6 +1807,7 @@ private:
    ArgumentHelpResult describeOption( const Option& option ) const
    {
       ArgumentHelpResult help;
+      help.help_name = option.getHelpName();
       help.short_name = option.getShortName();
       help.long_name = option.getLongName();
       help.metavar = option.getMetavar();
@@ -1843,6 +1854,7 @@ private:
    {
       ArgumentHelpResult help;
       help.isCommand = true;
+      help.help_name = command.getName();
       help.long_name = command.getName();
       help.help = command.getHelp();
 
