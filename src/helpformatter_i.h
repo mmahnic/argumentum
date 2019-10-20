@@ -74,21 +74,21 @@ private:
 
    std::string formatArgument( const ArgumentHelpResult& arg ) const
    {
+      if ( arg.isCommand )
+         return !arg.long_name.empty() ? arg.long_name : arg.short_name;
+      else if ( arg.is_positional() )
+         return !arg.metavar.empty() ? arg.metavar
+                                     : !arg.long_name.empty() ? arg.long_name : arg.short_name;
+
       std::string res;
       if ( !arg.short_name.empty() && !arg.long_name.empty() )
          res = arg.short_name + ", " + arg.long_name;
       else if ( !arg.short_name.empty() )
          res = arg.short_name;
       else if ( !arg.long_name.empty() )
-         res = arg.is_positional() ? ( arg.isCommand ? arg.long_name : arg.metavar )
-                                   : "    " + arg.long_name;
-      else
-         return {};
+         res = "    " + arg.long_name;
 
-      if ( arg.arguments.empty() || arg.is_positional() )
-         return res;
-
-      return res + " " + arg.arguments;
+      return !arg.arguments.empty() ? res + " " + arg.arguments : res;
    }
 
    size_t deriveMaxArgumentWidth( const std::vector<ArgumentHelpResult>& args ) const
