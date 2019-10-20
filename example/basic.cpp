@@ -18,12 +18,8 @@ int main( int argc, char** argv )
          .nargs( 0 )
          .help( "Sum the integers (default: find the max)" );
 
-   auto res = parser.parse_args( argc, argv, 1 );
-   if ( !res ) {
-      // res.format_errors( res, cout );
-      cout << "errors\n";
+   if ( !parser.parse_args( argc, argv, 1 ) )
       return 1;
-   }
 
    auto mmax = []( auto&& a, auto&& b ) { return max( a, b ); };
    auto acc = isSum ? accumulate( numbers.begin(), numbers.end(), 0 )
