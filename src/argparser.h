@@ -994,6 +994,7 @@ public:
    private:
       bool exitRequested = false;
       bool helpWasShown = false;
+      bool errorsWereShown = false;
       mutable RequireCheck mustCheck;
 
    public:
@@ -1016,6 +1017,11 @@ public:
       bool help_was_shown() const
       {
          return helpWasShown;
+      }
+
+      bool errors_were_shown() const
+      {
+         return errorsWereShown;
       }
 
       operator bool() const
@@ -1102,9 +1108,19 @@ private:
          result.helpWasShown = true;
       }
 
+      void signalErrorsShown()
+      {
+         result.errorsWereShown = true;
+      }
+
       ParseResult&& getResult()
       {
          return std::move( result );
+      }
+
+      bool hasArgumentProblems() const
+      {
+         return !result.errors.empty() || !result.ignoredArguments.empty();
       }
    };
 
@@ -1465,6 +1481,14 @@ public:
       verifyDefinedOptions();
       ParseResultBuilder result;
       parse_args( ibegin, iend, result );
+
+      if ( result.hasArgumentProblems() ) {
+         result.signalErrorsShown();
+         auto res = std::move( result.getResult() );
+         describe_errors( res );
+         return std::move( res );
+      }
+
       return std::move( result.getResult() );
    }
 
@@ -1835,7 +1859,62 @@ private:
 
       formatter.format( *this, *pStream );
    }
-};   // namespace argparse
+
+   void describe_errors( ParseResult& result )
+   {
+      auto pStream = getConfig().pOutStream;
+      if ( !pStream )
+         pStream = &std::cout;
+
+      for ( const auto& e : result.errors ) {
+         switch ( e.errorCode ) {
+            case UNKNOWN_OPTION:
+               *pStream << "Error: Unknown option: '" << e.option << "'\n";
+               break;
+            case EXCLUSIVE_OPTION:
+               *pStream << "Error: Only one option from an exclusive group can be set. '"
+                        << e.option << "'\n";
+               break;
+            case MISSING_OPTION:
+               *pStream << "Error: A required option is missing: '" << e.option << "'\n";
+               break;
+            case MISSING_OPTION_GROUP:
+               *pStream << "Error: A required option from a group is missing: '" << e.option
+                        << "'\n";
+               break;
+            case MISSING_ARGUMENT:
+               *pStream << "Error: An argument is missing: '" << e.option << "'\n";
+               break;
+            case CONVERSION_ERROR:
+               *pStream << "Error: The argument could not be converted: '" << e.option << "'\n";
+               break;
+            case INVALID_CHOICE:
+               *pStream << "Error: The value is not in the list of valid values: '" << e.option
+                        << "'\n";
+               break;
+            case FLAG_PARAMETER:
+               *pStream << "Error: Flag options do not accep parameters: '" << e.option << "'\n";
+               break;
+            case EXIT_REQUESTED:
+               break;
+            case ACTION_ERROR:
+               *pStream << "Error: " << e.option << "\n";
+               break;
+            case INVALID_ARGV:
+               *pStream << "Error: Parser input is invalid.\n";
+               break;
+         }
+      }
+
+      if ( !result.ignoredArguments.empty() ) {
+         auto it = result.ignoredArguments.begin();
+         *pStream << "Error: Ignored arguments: " << *it;
+         for ( ++it; it != result.ignoredArguments.end(); ++it )
+            *pStream << ", " << *it;
+         *pStream << "\n";
+      }
+   }
+};
 
 }   // namespace argparse
 
