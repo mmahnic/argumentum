@@ -784,6 +784,19 @@ TEST( ArgumentParserTest, shouldNotSetProgramNameFromParameter0 )
    ASSERT_EQ( 0, res.errors.size() );
 }
 
+TEST( ArgumentParserTest, shouldSignalHelpWasShownWhenHelpRequested )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout );
+
+   parser.add_help_option( "--help" );
+
+   auto res = parser.parse_args( { "--help" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_TRUE( res.help_was_shown() );
+}
+
 TEST( ArgumentParserTest, shouldHaveHelpByDefault )
 {
    std::stringstream strout;
@@ -1015,18 +1028,5 @@ TEST( ArgumentParserTest, shouldShowHelpWhenHasRequiredArgumentsAndNoneAreGiven 
    EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_FALSE( strout.str().empty() );
 
-   EXPECT_TRUE( res.help_was_shown() );
-}
-
-TEST( ArgumentParserTest, shouldSignalHelpWasShownWhenHelpRequested )
-{
-   std::stringstream strout;
-   auto parser = argument_parser{};
-   parser.config().cout( strout );
-
-   parser.add_help_option( "--help" );
-
-   auto res = parser.parse_args( { "--help" } );
-   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_TRUE( res.help_was_shown() );
 }
