@@ -954,20 +954,24 @@ public:
       struct RequireCheck
       {
          bool required = false;
+
          RequireCheck() = default;
          RequireCheck( RequireCheck&& other )
          {
+            required = other.required;
             other.clear();
          }
          RequireCheck& operator=( RequireCheck&& other )
          {
+            required = other.required;
             other.clear();
             return *this;
          }
          RequireCheck( bool require )
             : required( require )
          {}
-         ~RequireCheck() throw()
+
+         ~RequireCheck() noexcept( false )
          {
             if ( !std::current_exception() ) {
                if ( required )
@@ -1000,7 +1004,7 @@ public:
       ParseResult( ParseResult&& ) = default;
       ParseResult& operator=( ParseResult&& ) = default;
 
-      ~ParseResult() throw()
+      ~ParseResult() noexcept( false )
       {}
 
       bool wasExitRequested() const

@@ -180,6 +180,28 @@ TEST( ArgumentParserActionTest, shouldTerminateParserThroughEnvironmentInAction 
    EXPECT_TRUE( res.wasExitRequested() );
 }
 
+TEST( ArgumentParserActionTest, shouldThrowWhenExitRequestIsUnchecked )
+{
+   auto actionEnv = []( std::string& target, const std::string& value,
+                          argument_parser::Environment& env ) {
+      target = value;
+      env.exit_parser();
+   };
+
+   std::string result;
+   auto parser = argument_parser{};
+   parser.add_argument( result, "-x" ).maxargs( 1 ).action( actionEnv );
+
+   bool caught = false;
+   try {
+      auto res = parser.parse_args( { "-x" } );
+   }
+   catch ( const argparse::ParserTerminated& e ) {
+      caught = true;
+   }
+   EXPECT_TRUE( caught );
+}
+
 TEST( ArgumentParserActionTest, shouldReadOptionNameFromActionEvnironment )
 {
    auto actionEnv = []( std::string& target, const std::string& value,
