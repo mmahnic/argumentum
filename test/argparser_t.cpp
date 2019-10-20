@@ -131,6 +131,7 @@ TEST( ArgumentParserTest, shouldReportErrorForMissingArgument )
    parser.add_argument( flagB, "-b" );
 
    auto res = parser.parse_args( { "-a", "-b", "freearg" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "-a", res.errors.front().option );
    ASSERT_EQ( 1, res.ignoredArguments.size() );
@@ -146,6 +147,7 @@ TEST( ArgumentParserTest, shouldReportUnknownOptionError )
    parser.add_argument( flagA, "-a" ).nargs( 1 );
 
    auto res = parser.parse_args( { "-a", "2135", "--unknown" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "--unknown", res.errors.front().option );
    EXPECT_EQ( argument_parser::UNKNOWN_OPTION, res.errors.front().errorCode );
@@ -161,6 +163,7 @@ TEST( ArgumentParserTest, shouldReportMissingRequiredOptionError )
    parser.add_argument( flagA, "-b" ).required();
 
    auto res = parser.parse_args( { "-a", "2135" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "-b", res.errors.front().option );
    EXPECT_EQ( argument_parser::MISSING_OPTION, res.errors.front().errorCode );
@@ -285,6 +288,7 @@ TEST( ArgumentParserTest, shouldFailWhenOptionArgumentCountsAreWrong )
 
    auto res =
          parser.parse_args( { "-t", "the", "-f", "file1", "file2", "not-file3", "-s", "string" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_EQ( "string", strvalue );
    EXPECT_TRUE( vector_eq( { "the" }, texts ) );
    EXPECT_TRUE( vector_eq( { "file1", "file2" }, files ) );
@@ -329,26 +333,31 @@ TEST( ArgumentParserTest, shouldSupportExactNumberOfOptionArguments )
 
    auto res = testWithNargs( 0, params );
    // When an option doesn't accept arguments, the default value is set/added
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_TRUE( vector_eq( { "1" }, texts ) );
    EXPECT_TRUE( vector_eq( { "read", "the", "text" }, res.ignoredArguments ) );
    EXPECT_EQ( 0, res.errors.size() );
 
    res = testWithNargs( 1, params );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_TRUE( vector_eq( { "read" }, texts ) );
    EXPECT_TRUE( vector_eq( { "the", "text" }, res.ignoredArguments ) );
    EXPECT_EQ( 0, res.errors.size() );
 
    res = testWithNargs( 2, params );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_TRUE( vector_eq( { "read", "the" }, texts ) );
    EXPECT_TRUE( vector_eq( { "text" }, res.ignoredArguments ) );
    EXPECT_EQ( 0, res.errors.size() );
 
    res = testWithNargs( 3, params );
+   EXPECT_TRUE( static_cast<bool>( res ) );
    EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
    EXPECT_EQ( 0, res.ignoredArguments.size() );
    EXPECT_EQ( 0, res.errors.size() );
 
    res = testWithNargs( 4, params );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
    EXPECT_EQ( 0, res.ignoredArguments.size() );
    ASSERT_EQ( 1, res.errors.size() );
@@ -369,26 +378,31 @@ TEST( ArgumentParserTest, shouldSupportExactNumberOfPositionalArguments )
    auto params = std::vector<std::string>{ "read", "the", "text" };
 
    auto res = testWithNargs( 0, params );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_EQ( 0, texts.size() );
    EXPECT_TRUE( vector_eq( { "read", "the", "text" }, res.ignoredArguments ) );
    EXPECT_EQ( 0, res.errors.size() );
 
    res = testWithNargs( 1, params );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_TRUE( vector_eq( { "read" }, texts ) );
    EXPECT_TRUE( vector_eq( { "the", "text" }, res.ignoredArguments ) );
    EXPECT_EQ( 0, res.errors.size() );
 
    res = testWithNargs( 2, params );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_TRUE( vector_eq( { "read", "the" }, texts ) );
    EXPECT_TRUE( vector_eq( { "text" }, res.ignoredArguments ) );
    EXPECT_EQ( 0, res.errors.size() );
 
    res = testWithNargs( 3, params );
+   EXPECT_TRUE( static_cast<bool>( res ) );
    EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
    EXPECT_EQ( 0, res.ignoredArguments.size() );
    EXPECT_EQ( 0, res.errors.size() );
 
    res = testWithNargs( 4, params );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
    EXPECT_EQ( 0, res.ignoredArguments.size() );
    ASSERT_EQ( 1, res.errors.size() );
@@ -416,6 +430,7 @@ TEST( ArgumentParserTest, shouldSupportMinNumberOfOptionArguments )
    }
 
    auto res = testWithMinArgs( 4, params );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
    EXPECT_EQ( 0, res.ignoredArguments.size() );
    ASSERT_EQ( 1, res.errors.size() );
@@ -479,6 +494,7 @@ TEST( ArgumentParserTest, shouldSupportMinNumberOfPositionalArguments )
    }
 
    auto res = testWithMinArgs( 4, params );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
    EXPECT_EQ( 0, res.ignoredArguments.size() );
    ASSERT_EQ( 1, res.errors.size() );
@@ -602,6 +618,7 @@ TEST( ArgumentParserTest, shouldFailIfArgumentIsNotInChoices )
 
    parser.add_argument( strvalue, "-s" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
    auto res = parser.parse_args( { "-s", "phi" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_TRUE( strvalue.empty() );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "-s", res.errors[0].option );
@@ -615,6 +632,7 @@ TEST( ArgumentParserTest, shouldFailIfPositionalArgumentIsNotInChoices )
 
    parser.add_argument( strvalue, "string" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
    auto res = parser.parse_args( { "phi" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_TRUE( strvalue.empty() );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "string", res.errors[0].option );
@@ -740,6 +758,7 @@ TEST( ArgumentParserTest, shouldFailIfArgumentFollowsFlagWithEquals )
    parser.add_argument( strvalue, "--string" );
 
    auto res = parser.parse_args( { "--string=alpha" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_EQ( "1", strvalue );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "--string", res.errors.front().option );
@@ -765,25 +784,66 @@ TEST( ArgumentParserTest, shouldNotSetProgramNameFromParameter0 )
    ASSERT_EQ( 0, res.errors.size() );
 }
 
+TEST( ArgumentParserTest, shouldSignalErrorsShownWhenErrorsPresent )
+{
+   std::optional<int> maybeInt;
+
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout );
+   parser.add_argument( maybeInt, "--maybe" ).nargs( 1 );
+
+   auto res = parser.parse_args( { "--wrong", "123" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_TRUE( res.errors_were_shown() );
+}
+
+TEST( ArgumentParserTest, shouldSignalHelpWasShownWhenHelpRequested )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout );
+
+   parser.add_help_option( "--help" );
+
+   auto res = parser.parse_args( { "--help" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_TRUE( res.help_was_shown() );
+}
+
+TEST( ArgumentParserTest, shouldNotSignalHelpWasShownWhenAllIsOk )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout );
+
+   bool ok = false;
+   parser.add_argument( ok, "--ok" ).nargs( 0 );
+
+   auto res = parser.parse_args( { "--ok" } );
+   EXPECT_TRUE( static_cast<bool>( res ) );
+   EXPECT_FALSE( res.help_was_shown() );
+}
+
 TEST( ArgumentParserTest, shouldHaveHelpByDefault )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    // -- WHEN
    auto res = parser.parse_args( { "-h" } );
 
    // -- THEN
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_TRUE( res.help_was_shown() );
 
    // -- WHEN
    res = parser.parse_args( { "--help" } );
 
    // -- THEN
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_TRUE( res.help_was_shown() );
 }
 
 TEST( ArgumentParserTest, shouldNotAddDefaultHelpWhenDefined )
@@ -791,7 +851,7 @@ TEST( ArgumentParserTest, shouldNotAddDefaultHelpWhenDefined )
    std::optional<int> hide;
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
    parser.add_argument( hide, "-h" );
    parser.add_default_help_option();
 
@@ -799,6 +859,7 @@ TEST( ArgumentParserTest, shouldNotAddDefaultHelpWhenDefined )
    auto res = parser.parse_args( { "-h" } );
 
    // -- THEN
+   EXPECT_TRUE( static_cast<bool>( res ) );
    EXPECT_EQ( 0, res.errors.size() );
    EXPECT_TRUE( hide.has_value() );
 
@@ -806,8 +867,8 @@ TEST( ArgumentParserTest, shouldNotAddDefaultHelpWhenDefined )
    res = parser.parse_args( { "--help" } );
 
    // -- THEN
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_TRUE( res.help_was_shown() );
    EXPECT_FALSE( hide.has_value() );
 }
 
@@ -815,25 +876,27 @@ TEST( ArgumentParserTest, shouldSetCustomHelpOptions )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    // -- WHEN
    parser.add_help_option( "-a", "--asistado" );
 
    // -- THEN
    auto res = parser.parse_args( { "-a" } );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_TRUE( res.help_was_shown() );
 
    res = parser.parse_args( { "--asistado" } );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_TRUE( res.help_was_shown() );
 
    res = parser.parse_args( { "-h" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( argument_parser::UNKNOWN_OPTION, res.errors[0].errorCode );
 
    res = parser.parse_args( { "--help" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( argument_parser::UNKNOWN_OPTION, res.errors[0].errorCode );
 }
@@ -842,7 +905,7 @@ TEST( ArgumentParserTest, shouldSupportMultipleHelpOptions )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    // -- WHEN
    parser.add_default_help_option();
@@ -851,24 +914,24 @@ TEST( ArgumentParserTest, shouldSupportMultipleHelpOptions )
 
    // -- THEN
    auto res = parser.parse_args( { "-a" } );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_TRUE( res.help_was_shown() );
 
    res = parser.parse_args( { "--asistado" } );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_TRUE( res.help_was_shown() );
 
    res = parser.parse_args( { "--advice" } );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_TRUE( res.help_was_shown() );
 
    res = parser.parse_args( { "-h" } );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_TRUE( res.help_was_shown() );
 
    res = parser.parse_args( { "--help" } );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_TRUE( res.help_was_shown() );
 }
 
 TEST( ArgumentParserTest, shouldThrowIfDefaultHelpOptionsCanNotBeSet )
@@ -876,7 +939,7 @@ TEST( ArgumentParserTest, shouldThrowIfDefaultHelpOptionsCanNotBeSet )
    std::stringstream strout;
    int hide;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    // -- WHEN
    parser.add_argument( hide, "-h", "--help" );
@@ -903,47 +966,17 @@ TEST( ArgumentParserTest, shouldWriteHelpAndExitWhenHelpOptionIsPresent )
 
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
    parser.add_argument( maybeInt, "--maybe" ).nargs( 1 );
    parser.add_default_help_option().help( "Print this test help message and exit!" );
 
    auto res = parser.parse_args( { "--maybe", "123", "-h" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
 
    auto text = strout.str();
    EXPECT_NE( std::string::npos, text.find( "Print this test help message and exit!" ) );
 
    EXPECT_FALSE( bool( maybeInt ) );
-}
-
-TEST( ArgumentParserTest, shouldConfigureExitMode_Return )
-{
-   std::stringstream strout;
-   auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
-   parser.add_default_help_option();
-
-   auto res = parser.parse_args( { "-h" } );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
-}
-
-TEST( ArgumentParserTest, shouldConfigureExitMode_Throw )
-{
-   std::stringstream strout;
-   auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_throw();
-   parser.add_default_help_option();
-
-   try {
-      auto res = parser.parse_args( { "-h" } );
-      EXPECT_TRUE( false );
-   }
-   catch ( const argparse::ParserTerminated& e ) {
-      EXPECT_TRUE( true );
-      EXPECT_EQ( argument_parser::HELP_REQUESTED, e.errorCode );
-      return;
-   }
-   EXPECT_TRUE( false );
 }
 
 TEST( ArgumentParserTest, shouldResetValuesWhenCalledMultipleTimes )
@@ -1007,4 +1040,21 @@ TEST( ArgumentParserTest, shouldSkipInitialArguments )
    parser.parse_args( { "--first", "--second" }, 2 );
    EXPECT_FALSE( first.has_value() );
    EXPECT_FALSE( second.has_value() );
+}
+
+TEST( ArgumentParserTest, shouldShowHelpWhenHasRequiredArgumentsAndNoneAreGiven )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout );
+
+   int num = 0;
+   parser.add_argument( num, "--num" ).nargs( 1 ).required( true );
+   EXPECT_TRUE( strout.str().empty() );
+
+   auto res = parser.parse_args( {} );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_FALSE( strout.str().empty() );
+
+   EXPECT_TRUE( res.help_was_shown() );
 }

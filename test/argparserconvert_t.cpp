@@ -91,6 +91,7 @@ TEST( ArgumentParserConvertTest, shouldReportBadConversionError )
    parser.add_argument( flagA, "-a" ).nargs( 1 );
 
    auto res = parser.parse_args( { "-a", "wrong" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "-a", res.errors.front().option );
    EXPECT_EQ( argument_parser::CONVERSION_ERROR, res.errors.front().errorCode );

@@ -671,7 +671,6 @@ TEST( ArgumentParserCommandHelpTest, shouldOutputCommandSummary )
 {
    int dummy;
    auto parser = argument_parser{};
-   parser.config().on_exit_return();
 
    parser.add_arguments( std::make_shared<TestCommandOptions>() );
 
@@ -694,7 +693,6 @@ TEST( ArgumentParserCommandHelpTest, shouldPutUngroupedCommandsUnderCommandsTitl
 {
    int dummy;
    auto parser = argument_parser{};
-   parser.config().on_exit_return();
 
    parser.add_arguments( std::make_shared<TestCommandOptions>() );
 
@@ -728,7 +726,7 @@ TEST( ArgumentParserCommandHelpTest, shouldPutUngroupedCommandsUnderCommandsTitl
    EXPECT_LT( posTitle, posTwo );
 }
 
-TEST( ArgumentParserCommandHelpTest, shouldBuildDefaultUsage )
+TEST( ArgumentParserHelpTest, shouldBuildDefaultUsage )
 {
    int dummy;
    auto parser = argument_parser{};
@@ -749,7 +747,7 @@ TEST( ArgumentParserCommandHelpTest, shouldBuildDefaultUsage )
    EXPECT_LT( -1, posUsage );
 }
 
-TEST( ArgumentParserCommandHelpTest, shouldPutOptionsBeforePositionalInUsage )
+TEST( ArgumentParserHelpTest, shouldPutOptionsBeforePositionalInUsage )
 {
    int dummy;
    auto parser = argument_parser{};
@@ -804,7 +802,7 @@ TEST( ArgumentParserCommandHelpTest, shouldShowCommandPlaceholderInUsage )
    EXPECT_EQ( -1, posS );
 }
 
-TEST( ArgumentParserCommandHelpTest, shouldDisplayArgumentCountInUsage )
+TEST( ArgumentParserHelpTest, shouldDisplayArgumentCountInUsage )
 {
    int dummy;
    auto parser = argument_parser{};
@@ -829,7 +827,7 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayArgumentCountInUsage )
    EXPECT_LT( -1, posUsage );
 }
 
-TEST( ArgumentParserCommandHelpTest, shouldDistinguishRequierdOptionsInUsage )
+TEST( ArgumentParserHelpTest, shouldDistinguishRequierdOptionsInUsage )
 {
    int dummy;
    auto parser = argument_parser{};
@@ -855,7 +853,7 @@ TEST( ArgumentParserCommandHelpTest, shouldDistinguishRequierdOptionsInUsage )
 // - argparse/py forbids the use of required keyword with positionals,
 //   but positionals can be made optional with nargs='?'
 // - we allow required(false) for now
-TEST( ArgumentParserCommandHelpTest, shouldDistinguishRequriedPositionalsInUsage )
+TEST( ArgumentParserHelpTest, shouldDistinguishRequriedPositionalsInUsage )
 {
    int dummy;
    auto parser = argument_parser{};
@@ -880,4 +878,33 @@ TEST( ArgumentParserCommandHelpTest, shouldDistinguishRequriedPositionalsInUsage
 
    EXPECT_LT( -1, posUsage );
    EXPECT_EQ( -1, posBad );
+}
+
+TEST( ArgumentParserHelpTest, shouldUseSamePositionalMetavarNameInUsageAndHelp )
+{
+   int dummy;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" );
+   parser.add_argument( dummy, "xpos" ).nargs( 1 ).required( true );
+   parser.add_argument( dummy, "xmetapos" ).metavar( "MPOS" ).nargs( 1 ).required( true );
+
+   auto help = getTestHelp( parser, HelpFormatter() );
+   auto helpLines = splitLines( help, KEEPEMPTY );
+
+   std::map<std::string, long> count{ { "xpos", 0 }, { "XPOS", 0 }, { "xmetapos", 0 },
+      { "XMETAPOS", 0 }, { "mpos", 0 }, { "MPOS", 0 } };
+   int i = 0;
+   for ( auto line : helpLines ) {
+      for ( const auto& tag : count ) {
+         if ( strHasText( line, tag.first ) )
+            ++count[tag.first];
+      }
+   }
+
+   EXPECT_EQ( 2, count["xpos"] );
+   EXPECT_EQ( 0, count["XPOS"] );
+   EXPECT_EQ( 0, count["xmetapos"] );
+   EXPECT_EQ( 0, count["XMETAPOS"] );
+   EXPECT_EQ( 0, count["mpos"] );
+   EXPECT_EQ( 2, count["MPOS"] );
 }

@@ -28,21 +28,12 @@ public:
    {}
 };
 
-class ParserTerminated : public std::exception
+class UncheckedParseResult : public std::exception
 {
 public:
-   const std::string arg;
-   const int errorCode;
-
-public:
-   ParserTerminated( const std::string& arg, int code )
-      : arg( arg )
-      , errorCode( code )
-   {}
-
    const char* what() const noexcept override
    {
-      return "Parsing terminated.";
+      return "Unchecked parse result.";
    }
 };
 
@@ -500,6 +491,17 @@ public:
          return mLongName;
       }
 
+      std::string getHelpName() const
+      {
+         auto is_positional = mShortName.substr( 0, 1 ) != "-" && mLongName.substr( 0, 1 ) != "-";
+         if ( is_positional ) {
+            const auto& name =
+                  !mMetavar.empty() ? mMetavar : !mLongName.empty() ? mLongName : mShortName;
+            return !name.empty() ? name : "ARG";
+         }
+         return !mLongName.empty() ? mLongName : mShortName;
+      }
+
       bool hasName( std::string_view name ) const
       {
          return name == mShortName || name == mLongName;
@@ -861,8 +863,6 @@ public:
       }
    };
 
-   enum EExitMode { EXIT_THROW, EXIT_RETURN };
-
    class ParserConfig
    {
    public:
@@ -873,7 +873,6 @@ public:
          std::string description;
          std::string epilog;
          std::ostream* pOutStream = nullptr;
-         EExitMode exitMode = EXIT_THROW;
       };
 
    private:
@@ -915,18 +914,6 @@ public:
          mData.pOutStream = &stream;
          return *this;
       }
-
-      ParserConfig& on_exit_throw()
-      {
-         mData.exitMode = EXIT_THROW;
-         return *this;
-      }
-
-      ParserConfig& on_exit_return()
-      {
-         mData.exitMode = EXIT_RETURN;
-         return *this;
-      }
    };
 
    // Errors known by the parser
@@ -947,12 +934,12 @@ public:
       INVALID_CHOICE,
       // Flags do not accept parameters.
       FLAG_PARAMETER,
-      // Signal that help was requested when on_exit_return is set.
-      HELP_REQUESTED,
       // Signal that exit was requested by an action.
       EXIT_REQUESTED,
       // An error signalled by an action.
-      ACTION_ERROR
+      ACTION_ERROR,
+      // The parser received invalid argv input.
+      INVALID_ARGV
    };
 
    struct ParseError
@@ -963,88 +950,208 @@ public:
          : option( optionName )
          , errorCode( code )
       {}
+      ParseError( const ParseError& ) = default;
+      ParseError( ParseError&& ) = default;
    };
 
+private:
+   class ParseResultBuilder;
+
+public:
    class ParseResult
    {
-      friend class Environment;
+      friend class ParseResultBuilder;
+
+   private:
+      struct RequireCheck
+      {
+         bool required = false;
+
+         RequireCheck() = default;
+         RequireCheck( RequireCheck&& other )
+         {
+            required = other.required;
+            other.clear();
+         }
+         RequireCheck& operator=( RequireCheck&& other )
+         {
+            required = other.required;
+            other.clear();
+            return *this;
+         }
+         RequireCheck( bool require )
+            : required( require )
+         {}
+
+         ~RequireCheck() noexcept( false )
+         {
+            if ( !std::current_exception() ) {
+               if ( required )
+                  throw UncheckedParseResult();
+            }
+         }
+
+         void activate()
+         {
+            required = true;
+         }
+
+         void clear()
+         {
+            required = false;
+         }
+      };
+
+   private:
       bool exitRequested = false;
+      bool helpWasShown = false;
+      bool errorsWereShown = false;
+      mutable RequireCheck mustCheck;
 
    public:
       std::vector<std::string> ignoredArguments;
       std::vector<ParseError> errors;
 
    public:
-      bool wasExitRequested() const
+      ParseResult() = default;
+      ParseResult( ParseResult&& ) = default;
+      ParseResult& operator=( ParseResult&& ) = default;
+
+      ~ParseResult() noexcept( false )
+      {}
+
+      bool has_exited() const
       {
          return exitRequested;
       }
 
+      bool help_was_shown() const
+      {
+         return helpWasShown;
+      }
+
+      bool errors_were_shown() const
+      {
+         return errorsWereShown;
+      }
+
+      operator bool() const
+      {
+         mustCheck.clear();
+         return errors.empty() && ignoredArguments.empty() && !exitRequested;
+      }
+
+   private:
       void clear()
       {
          ignoredArguments.clear();
          errors.clear();
-      }
-
-      void addResults( ParseResult&& res )
-      {
-         exitRequested = exitRequested || res.exitRequested;
-         ignoredArguments.insert( std::end( ignoredArguments ),
-               std::make_move_iterator( std::begin( res.ignoredArguments ) ),
-               std::make_move_iterator( std::end( res.ignoredArguments ) ) );
-         for ( auto& err : res.errors )
-            errors.emplace_back( std::move( err ) );
-         res.clear();
+         mustCheck.clear();
+         exitRequested = false;
       }
    };
 
    class Environment
    {
       Option& mOption;
-      ParseResult& mResult;
+      ParseResultBuilder& mResult;
 
    public:
-      Environment( Option& option, ParseResult& result )
+      Environment( Option& option, ParseResultBuilder& result )
          : mOption( option )
          , mResult( result )
       {}
 
       void exit_parser()
       {
-         mResult.exitRequested = true;
+         mResult.requestExit();
       }
 
-      const std::string& get_option_name() const
+      std::string get_option_name() const
       {
-         return mOption.getName();
+         return mOption.getHelpName();
       }
 
       void add_error( std::string_view error )
       {
          if ( error.empty() )
-            mResult.errors.emplace_back( get_option_name(), ACTION_ERROR );
+            mResult.addError( get_option_name(), ACTION_ERROR );
          else
-            mResult.errors.emplace_back(
-                  get_option_name() + ": " + std::string( error ), ACTION_ERROR );
+            mResult.addError( get_option_name() + ": " + std::string( error ), ACTION_ERROR );
       }
    };
 
 private:
+   class ParseResultBuilder
+   {
+      ParseResult result;
+
+   public:
+      void clear()
+      {
+         result.clear();
+      }
+
+      bool wasExitRequested() const
+      {
+         return result.exitRequested;
+      }
+
+      void addError( std::string_view optionName, int error )
+      {
+         result.errors.emplace_back( optionName, error );
+         result.mustCheck.activate();
+      }
+
+      void addIgnored( const std::string& arg )
+      {
+         result.ignoredArguments.push_back( arg );
+      }
+
+      void requestExit()
+      {
+         result.exitRequested = true;
+         result.mustCheck.activate();
+      }
+
+      void signalHelpShown()
+      {
+         result.helpWasShown = true;
+      }
+
+      void signalErrorsShown()
+      {
+         result.errorsWereShown = true;
+      }
+
+      ParseResult&& getResult()
+      {
+         return std::move( result );
+      }
+
+      bool hasArgumentProblems() const
+      {
+         return !result.errors.empty() || !result.ignoredArguments.empty();
+      }
+   };
+
    class Parser
    {
       argument_parser& mArgParser;
+      ParseResultBuilder& mResult;
+
       bool mIgnoreOptions = false;
       int mPosition = 0;
       // The active option will receive additional argument(s)
       Option* mpActiveOption = nullptr;
-      ParseResult mResult;
 
    public:
-      Parser( argument_parser& argParser )
+      Parser( argument_parser& argParser, ParseResultBuilder& result )
          : mArgParser( argParser )
+         , mResult( result )
       {}
 
-      ParseResult parse( std::vector<std::string>::const_iterator ibegin,
+      void parse( std::vector<std::string>::const_iterator ibegin,
             std::vector<std::string>::const_iterator iend )
       {
          mResult.clear();
@@ -1085,8 +1192,7 @@ private:
                else {
                   auto pCommand = mArgParser.findCommand( *iarg );
                   if ( pCommand ) {
-                     auto res = mArgParser.parseCommandArguments( *pCommand, iarg, iend );
-                     mResult.addResults( std::move( res ) );
+                     mArgParser.parseCommandArguments( *pCommand, iarg, iend, mResult );
                      break;
                   }
                   else
@@ -1100,8 +1206,6 @@ private:
 
          if ( haveActiveOption() )
             closeOption();
-
-         return std::move( mResult );
       }
 
    private:
@@ -1130,7 +1234,7 @@ private:
                if ( option.willAcceptArgument() )
                   setValue( option, std::string{ arg } );
                else
-                  addError( name, FLAG_PARAMETER );
+                  addError( pOption->getHelpName(), FLAG_PARAMETER );
             }
          }
          else
@@ -1147,7 +1251,7 @@ private:
          if ( haveActiveOption() ) {
             auto& option = *mpActiveOption;
             if ( option.needsMoreArguments() )
-               addError( option.getName(), MISSING_ARGUMENT );
+               addError( option.getHelpName(), MISSING_ARGUMENT );
             else if ( option.willAcceptArgument() && !option.wasAssignedThroughThisOption() )
                setValue( option, option.getFlagValue() );
          }
@@ -1175,12 +1279,12 @@ private:
             }
          }
 
-         mResult.ignoredArguments.push_back( arg );
+         mResult.addIgnored( arg );
       }
 
       void addError( std::string_view optionName, int errorCode )
       {
-         mResult.errors.emplace_back( optionName, errorCode );
+         mResult.addError( optionName, errorCode );
       }
 
       Option* findOption( std::string_view optionName ) const
@@ -1195,13 +1299,13 @@ private:
             option.setValue( value, env );
          }
          catch ( const InvalidChoiceError& ) {
-            addError( option.getName(), INVALID_CHOICE );
+            addError( option.getHelpName(), INVALID_CHOICE );
          }
          catch ( const std::invalid_argument& ) {
-            addError( option.getName(), CONVERSION_ERROR );
+            addError( option.getHelpName(), CONVERSION_ERROR );
          }
          catch ( const std::out_of_range& ) {
-            addError( option.getName(), CONVERSION_ERROR );
+            addError( option.getHelpName(), CONVERSION_ERROR );
          }
       }
    };
@@ -1358,6 +1462,21 @@ public:
       mpActiveGroup = nullptr;
    }
 
+   ParseResult parse_args( int argc, char** argv, int skip_args = 1 )
+   {
+      if ( !argv ) {
+         auto res = ParseResultBuilder{};
+         res.addError( "argv", INVALID_ARGV );
+         return res.getResult();
+      }
+
+      std::vector<std::string> args;
+      for ( int i = std::max( 0, skip_args ); i < argc; ++i )
+         args.emplace_back( argv[i] );
+
+      return parse_args( std::begin( args ), std::end( args ) );
+   }
+
    ParseResult parse_args( const std::vector<std::string>& args, int skip_args = 0 )
    {
       auto ibegin = std::begin( args );
@@ -1371,29 +1490,17 @@ public:
          std::vector<std::string>::const_iterator iend )
    {
       verifyDefinedOptions();
+      ParseResultBuilder result;
+      parse_args( ibegin, iend, result );
 
-      for ( auto& option : mOptions )
-         option.resetValue();
-
-      for ( auto& option : mPositional )
-         option.resetValue();
-
-      for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
-         if ( mHelpOptionNames.count( *iarg ) > 0 ) {
-            generate_help();
-            return exit_parser( {}, *iarg, HELP_REQUESTED );
-         }
+      if ( result.hasArgumentProblems() ) {
+         result.signalErrorsShown();
+         auto res = std::move( result.getResult() );
+         describe_errors( res );
+         return std::move( res );
       }
 
-      Parser parser( *this );
-      auto result = parser.parse( ibegin, iend );
-      if ( result.wasExitRequested() )
-         return exit_parser( std::move( result ), "", EXIT_REQUESTED );
-
-      reportMissingOptions( result );
-      reportExclusiveViolations( result );
-      reportMissingGroups( result );
-      return result;
+      return std::move( result.getResult() );
    }
 
    ArgumentHelpResult describe_argument( std::string_view name ) const
@@ -1401,9 +1508,8 @@ public:
       bool isPositional = name.substr( 0, 1 ) != "-";
       const auto& args = isPositional ? mPositional : mOptions;
       for ( auto& opt : args )
-         if ( opt.hasName( name ) ) {
+         if ( opt.hasName( name ) )
             return describeOption( opt );
-         }
 
       throw std::invalid_argument( "Unknown option." );
    }
@@ -1425,6 +1531,43 @@ public:
    }
 
 private:
+   void parse_args( std::vector<std::string>::const_iterator ibegin,
+         std::vector<std::string>::const_iterator iend, ParseResultBuilder& result )
+   {
+      if ( ibegin == iend && hasRequiredArguments() ) {
+         generate_help();
+         result.signalHelpShown();
+         result.requestExit();
+         return;
+      }
+
+      for ( auto& option : mOptions )
+         option.resetValue();
+
+      for ( auto& option : mPositional )
+         option.resetValue();
+
+      for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
+         if ( mHelpOptionNames.count( *iarg ) > 0 ) {
+            generate_help();
+            result.signalHelpShown();
+            result.requestExit();
+            return;
+         }
+      }
+
+      Parser parser( *this, result );
+      parser.parse( ibegin, iend );
+      if ( result.wasExitRequested() ) {
+         result.addError( {}, EXIT_REQUESTED );
+         return;
+      }
+
+      reportMissingOptions( result );
+      reportExclusiveViolations( result );
+      reportMissingGroups( result );
+   }
+
    Option* findOption( std::string_view optionName )
    {
       for ( auto& option : mOptions )
@@ -1458,32 +1601,45 @@ private:
       }
    }
 
-   void reportMissingOptions( ParseResult& result )
+   void reportMissingOptions( ParseResultBuilder& result )
    {
       for ( auto& option : mOptions )
          if ( option.isRequired() && !option.wasAssigned() )
-            result.errors.emplace_back( option.getName(), MISSING_OPTION );
+            result.addError( option.getHelpName(), MISSING_OPTION );
 
       for ( auto& option : mPositional )
          if ( option.needsMoreArguments() )
-            result.errors.emplace_back( option.getName(), MISSING_ARGUMENT );
+            result.addError( option.getHelpName(), MISSING_ARGUMENT );
    }
 
-   void reportExclusiveViolations( ParseResult& result )
+   bool hasRequiredArguments() const
+   {
+      for ( auto& option : mOptions )
+         if ( option.isRequired() )
+            return true;
+
+      for ( auto& option : mPositional )
+         if ( option.isRequired() )
+            return true;
+
+      return false;
+   }
+
+   void reportExclusiveViolations( ParseResultBuilder& result )
    {
       std::map<std::string, std::vector<std::string>> counts;
       for ( auto& option : mOptions ) {
          auto pGroup = option.getGroup();
          if ( pGroup && pGroup->isExclusive() && option.wasAssigned() )
-            counts[pGroup->getName()].push_back( option.getName() );
+            counts[pGroup->getName()].push_back( option.getHelpName() );
       }
 
       for ( auto& c : counts )
          if ( c.second.size() > 1 )
-            result.errors.emplace_back( c.second.front(), EXCLUSIVE_OPTION );
+            result.addError( c.second.front(), EXCLUSIVE_OPTION );
    }
 
-   void reportMissingGroups( ParseResult& result )
+   void reportMissingGroups( ParseResultBuilder& result )
    {
       std::map<std::string, int> counts;
       for ( auto& option : mOptions ) {
@@ -1494,7 +1650,7 @@ private:
 
       for ( auto& c : counts )
          if ( c.second < 1 )
-            result.errors.emplace_back( c.first, MISSING_OPTION_GROUP );
+            result.addError( c.first, MISSING_OPTION_GROUP );
    }
 
    OptionConfig tryAddArgument( Option& newOption, std::vector<std::string_view> names )
@@ -1618,14 +1774,12 @@ private:
       return nullptr;
    }
 
-   ParseResult parseCommandArguments( Command& command,
-         std::vector<std::string>::const_iterator ibegin,
-         std::vector<std::string>::const_iterator iend )
+   void parseCommandArguments( Command& command, std::vector<std::string>::const_iterator ibegin,
+         std::vector<std::string>::const_iterator iend, ParseResultBuilder& result )
    {
       auto parser = argument_parser{};
-      parser.config().on_exit_return();
       parser.add_arguments( command.createOptions() );
-      return parser.parse_args( ibegin, iend );
+      parser.parse_args( ibegin, iend, result );
    }
 
    std::shared_ptr<OptionGroup> addGroup( std::string name, bool isExclusive )
@@ -1653,13 +1807,15 @@ private:
    ArgumentHelpResult describeOption( const Option& option ) const
    {
       ArgumentHelpResult help;
+      help.help_name = option.getHelpName();
       help.short_name = option.getShortName();
       help.long_name = option.getLongName();
+      help.metavar = option.getMetavar();
       help.help = option.getRawHelp();
       help.isRequired = option.isRequired();
 
       if ( option.acceptsAnyArguments() ) {
-         const auto& metavar = option.getMetavar();
+         const auto& metavar = help.metavar;
          auto [mmin, mmax] = option.getArgumentCounts();
          std::string res;
          if ( mmin > 0 ) {
@@ -1698,6 +1854,7 @@ private:
    {
       ArgumentHelpResult help;
       help.isCommand = true;
+      help.help_name = command.getName();
       help.long_name = command.getName();
       help.help = command.getHelp();
 
@@ -1715,19 +1872,59 @@ private:
       formatter.format( *this, *pStream );
    }
 
-   ParseResult exit_parser( ParseResult&& result, const std::string& arg, EError errorCode )
+   void describe_errors( ParseResult& result )
    {
-      switch ( getConfig().exitMode ) {
-         default:
-         case EXIT_THROW:
-            throw ParserTerminated( arg, errorCode );
-         case EXIT_RETURN: {
-            result.errors.emplace_back( arg, errorCode );
-            return result;
+      auto pStream = getConfig().pOutStream;
+      if ( !pStream )
+         pStream = &std::cout;
+
+      for ( const auto& e : result.errors ) {
+         switch ( e.errorCode ) {
+            case UNKNOWN_OPTION:
+               *pStream << "Error: Unknown option: '" << e.option << "'\n";
+               break;
+            case EXCLUSIVE_OPTION:
+               *pStream << "Error: Only one option from an exclusive group can be set. '"
+                        << e.option << "'\n";
+               break;
+            case MISSING_OPTION:
+               *pStream << "Error: A required option is missing: '" << e.option << "'\n";
+               break;
+            case MISSING_OPTION_GROUP:
+               *pStream << "Error: A required option from a group is missing: '" << e.option
+                        << "'\n";
+               break;
+            case MISSING_ARGUMENT:
+               *pStream << "Error: An argument is missing: '" << e.option << "'\n";
+               break;
+            case CONVERSION_ERROR:
+               *pStream << "Error: The argument could not be converted: '" << e.option << "'\n";
+               break;
+            case INVALID_CHOICE:
+               *pStream << "Error: The value is not in the list of valid values: '" << e.option
+                        << "'\n";
+               break;
+            case FLAG_PARAMETER:
+               *pStream << "Error: Flag options do not accep parameters: '" << e.option << "'\n";
+               break;
+            case EXIT_REQUESTED:
+               break;
+            case ACTION_ERROR:
+               *pStream << "Error: " << e.option << "\n";
+               break;
+            case INVALID_ARGV:
+               *pStream << "Error: Parser input is invalid.\n";
+               break;
          }
       }
 
-      return {};
+      if ( !result.ignoredArguments.empty() ) {
+         auto it = result.ignoredArguments.begin();
+         *pStream << "Error: Ignored arguments: " << *it;
+         for ( ++it; it != result.ignoredArguments.end(); ++it )
+            *pStream << ", " << *it;
+         *pStream << "\n";
+      }
    }
 };
 

@@ -38,7 +38,7 @@ TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    std::shared_ptr<CmdOneOptions> pCmdOne;
    std::shared_ptr<CmdTwoOptions> pCmdTwo;
@@ -84,6 +84,7 @@ TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
    res = parser.parse_args( { "-s", "works" } );
 
    // -- THEN
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_FALSE( res.errors.empty() );
    EXPECT_EQ( argument_parser::UNKNOWN_OPTION, res.errors.front().errorCode );
 }
@@ -93,7 +94,7 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    std::optional<std::string> global;
    parser.add_argument( global, "-s" ).nargs( 1 );
@@ -119,7 +120,7 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent2 )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    struct GlobalOptions : public argparse::Options
    {
@@ -154,7 +155,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredOptionsWhenCommandP
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    struct GlobalOptions : public argparse::Options
    {
@@ -176,6 +177,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredOptionsWhenCommandP
    } );
 
    auto res = parser.parse_args( { "one", "-s", "command-works" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_FALSE( res.errors.empty() );
    EXPECT_EQ( argument_parser::MISSING_OPTION, res.errors.front().errorCode );
 
@@ -190,7 +192,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredPositionalWhenComma
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    struct GlobalOptions : public argparse::Options
    {
@@ -212,6 +214,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredPositionalWhenComma
    } );
 
    auto res = parser.parse_args( { "one", "-s", "command-works" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_FALSE( res.errors.empty() );
    EXPECT_EQ( argument_parser::MISSING_ARGUMENT, res.errors.front().errorCode );
 

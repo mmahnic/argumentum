@@ -170,13 +170,35 @@ TEST( ArgumentParserActionTest, shouldTerminateParserThroughEnvironmentInAction 
 
    std::string result;
    auto parser = argument_parser{};
-   parser.config().on_exit_return();
    parser.add_argument( result, "-n" ).maxargs( 1 ).action( actionNormal );
    parser.add_argument( result, "-r" ).maxargs( 1 ).action( actionEnv );
 
    auto res = parser.parse_args( { "-n", "normal", "-r", "environment" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_FALSE( res.errors.empty() );
-   EXPECT_TRUE( res.wasExitRequested() );
+   EXPECT_TRUE( res.has_exited() );
+}
+
+TEST( ArgumentParserActionTest, shouldThrowWhenExitRequestIsUnchecked )
+{
+   auto actionEnv = []( std::string& target, const std::string& value,
+                          argument_parser::Environment& env ) {
+      target = value;
+      env.exit_parser();
+   };
+
+   std::string result;
+   auto parser = argument_parser{};
+   parser.add_argument( result, "-x" ).maxargs( 1 ).action( actionEnv );
+
+   bool caught = false;
+   try {
+      auto res = parser.parse_args( { "-x" } );
+   }
+   catch ( const argparse::UncheckedParseResult& e ) {
+      caught = true;
+   }
+   EXPECT_TRUE( caught );
 }
 
 TEST( ArgumentParserActionTest, shouldReadOptionNameFromActionEvnironment )
@@ -188,12 +210,11 @@ TEST( ArgumentParserActionTest, shouldReadOptionNameFromActionEvnironment )
 
    std::string result;
    auto parser = argument_parser{};
-   parser.config().on_exit_return();
    parser.add_argument( result, "--hide" ).maxargs( 1 ).action( actionEnv );
 
    auto res = parser.parse_args( { "--hide", "hidden-secret" } );
    EXPECT_TRUE( res.errors.empty() );
-   EXPECT_FALSE( res.wasExitRequested() );
+   EXPECT_FALSE( res.has_exited() );
    EXPECT_EQ( "hidden-secret--hide", result );
 }
 
@@ -206,11 +227,11 @@ TEST( ArgumentParserActionTest, shouldReportErrorsThroughActionEvnironment )
 
    std::string result;
    auto parser = argument_parser{};
-   parser.config().on_exit_return();
    parser.add_argument( result, "--wrong" ).maxargs( 1 ).action( actionEnv );
 
    auto res = parser.parse_args( { "--wrong", "wrong" } );
-   EXPECT_FALSE( res.wasExitRequested() );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_FALSE( res.has_exited() );
    EXPECT_EQ( "", result );
 
    ASSERT_FALSE( res.errors.empty() );
