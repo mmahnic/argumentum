@@ -38,7 +38,7 @@ TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    std::shared_ptr<CmdOneOptions> pCmdOne;
    std::shared_ptr<CmdTwoOptions> pCmdTwo;
@@ -93,7 +93,7 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    std::optional<std::string> global;
    parser.add_argument( global, "-s" ).nargs( 1 );
@@ -119,7 +119,7 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent2 )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    struct GlobalOptions : public argparse::Options
    {
@@ -154,7 +154,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredOptionsWhenCommandP
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    struct GlobalOptions : public argparse::Options
    {
@@ -190,7 +190,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredPositionalWhenComma
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    struct GlobalOptions : public argparse::Options
    {

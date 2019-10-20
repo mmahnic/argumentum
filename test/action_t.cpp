@@ -170,7 +170,6 @@ TEST( ArgumentParserActionTest, shouldTerminateParserThroughEnvironmentInAction 
 
    std::string result;
    auto parser = argument_parser{};
-   parser.config().on_exit_return();
    parser.add_argument( result, "-n" ).maxargs( 1 ).action( actionNormal );
    parser.add_argument( result, "-r" ).maxargs( 1 ).action( actionEnv );
 
@@ -211,7 +210,6 @@ TEST( ArgumentParserActionTest, shouldReadOptionNameFromActionEvnironment )
 
    std::string result;
    auto parser = argument_parser{};
-   parser.config().on_exit_return();
    parser.add_argument( result, "--hide" ).maxargs( 1 ).action( actionEnv );
 
    auto res = parser.parse_args( { "--hide", "hidden-secret" } );
@@ -229,7 +227,6 @@ TEST( ArgumentParserActionTest, shouldReportErrorsThroughActionEvnironment )
 
    std::string result;
    auto parser = argument_parser{};
-   parser.config().on_exit_return();
    parser.add_argument( result, "--wrong" ).maxargs( 1 ).action( actionEnv );
 
    auto res = parser.parse_args( { "--wrong", "wrong" } );

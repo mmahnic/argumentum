@@ -903,10 +903,6 @@ public:
          mData.pOutStream = &stream;
          return *this;
       }
-
-      [[deprecated]] ParserConfig& on_exit_return() { return *this; };
-
-      [[deprecated]] ParserConfig& on_exit_throw() { return *this; };
    };
 
    // Errors known by the parser
@@ -1701,7 +1697,6 @@ private:
          std::vector<std::string>::const_iterator iend )
    {
       auto parser = argument_parser{};
-      parser.config().on_exit_return();
       parser.add_arguments( command.createOptions() );
       return parser.parse_args( ibegin, iend );
    }

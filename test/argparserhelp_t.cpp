@@ -671,7 +671,6 @@ TEST( ArgumentParserCommandHelpTest, shouldOutputCommandSummary )
 {
    int dummy;
    auto parser = argument_parser{};
-   parser.config().on_exit_return();
 
    parser.add_arguments( std::make_shared<TestCommandOptions>() );
 
@@ -694,7 +693,6 @@ TEST( ArgumentParserCommandHelpTest, shouldPutUngroupedCommandsUnderCommandsTitl
 {
    int dummy;
    auto parser = argument_parser{};
-   parser.config().on_exit_return();
 
    parser.add_arguments( std::make_shared<TestCommandOptions>() );
 

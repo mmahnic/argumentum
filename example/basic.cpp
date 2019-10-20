@@ -12,7 +12,7 @@ int main( int argc, char** argv )
    bool isSum = false;
 
    auto parser = argument_parser{};
-   parser.config().program( argv[0] ).on_exit_return().description( "Accumulator" );
+   parser.config().program( argv[0] ).description( "Accumulator" );
    parser.add_argument( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
    parser.add_argument( isSum, "--sum", "-s" )
          .nargs( 0 )

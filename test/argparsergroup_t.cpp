@@ -15,7 +15,7 @@ TEST( ArgumentParserGroupsTest, shouldDefineExclusiveGroups )
 
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
    parser.add_exclusive_group( "maybies" );
    parser.add_argument( maybeInt, "--maybe" );
    parser.add_argument( maybeInt, "--possibly" );
@@ -59,7 +59,7 @@ TEST( ArgumentParserGroupsTest, shouldStartSameGroupMultipleTimes )
 
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
    parser.add_exclusive_group( "maybies" );
    parser.add_argument( maybeInt, "--maybe" );
    parser.add_argument( maybeInt, "--optional" );
@@ -91,7 +91,7 @@ TEST( ArgumentParserGroupsTest, shouldAddGroupsForHelpFormatting )
 
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
    parser.add_group( "ints" );
    parser.add_argument( first, "--first" );
    parser.add_argument( second, "--second" );
@@ -108,7 +108,7 @@ TEST( ArgumentParserGroupsTest, shouldNotMixSimpleAndExclusiveGroups )
 
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
    parser.add_group( "ints" );
    parser.add_argument( first, "--first" );
    parser.add_argument( second, "--second" );
@@ -122,7 +122,7 @@ TEST( ArgumentParserGroupsTest, shouldNotMixExclusiveAndSimpleGroups )
 
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
    parser.add_exclusive_group( "ints" );
    parser.add_argument( first, "--first" );
    parser.add_argument( second, "--second" );
@@ -136,7 +136,7 @@ TEST( ArgumentParserGroupsTest, shouldRequireOptionsFromRequiredExclusiveGroups 
 
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
    parser.add_exclusive_group( "ints" ).required( true );
    parser.add_argument( first, "--first" );
    parser.add_argument( second, "--second" );
@@ -154,7 +154,7 @@ TEST( ArgumentParserGroupsTest, shouldRequireOptionsFromRequiredSimpleGroups )
 
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
    parser.add_group( "ints" ).required( true );
    parser.add_argument( first, "--first" );
    parser.add_argument( second, "--second" );
@@ -172,7 +172,7 @@ TEST( ArgumentParserGroupsTest, shouldForbidRequiredOptionsInExclusiveGroup )
 
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
    parser.add_exclusive_group( "ints" );
    parser.add_argument( first, "--first" );
    parser.add_argument( second, "--second" ).required( true );
@@ -187,7 +187,7 @@ TEST( ArgumentParserGroupsTest, shouldNotAddDefaultHelpToGroupWhenHelpNotDefined
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
    parser.add_group( "simple" );
    try {
       parser.parse_args( {} );

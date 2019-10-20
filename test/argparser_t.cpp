@@ -769,7 +769,7 @@ TEST( ArgumentParserTest, shouldHaveHelpByDefault )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    // -- WHEN
    auto res = parser.parse_args( { "-h" } );
@@ -791,7 +791,7 @@ TEST( ArgumentParserTest, shouldNotAddDefaultHelpWhenDefined )
    std::optional<int> hide;
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
    parser.add_argument( hide, "-h" );
    parser.add_default_help_option();
 
@@ -815,7 +815,7 @@ TEST( ArgumentParserTest, shouldSetCustomHelpOptions )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    // -- WHEN
    parser.add_help_option( "-a", "--asistado" );
@@ -842,7 +842,7 @@ TEST( ArgumentParserTest, shouldSupportMultipleHelpOptions )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    // -- WHEN
    parser.add_default_help_option();
@@ -876,7 +876,7 @@ TEST( ArgumentParserTest, shouldThrowIfDefaultHelpOptionsCanNotBeSet )
    std::stringstream strout;
    int hide;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    // -- WHEN
    parser.add_argument( hide, "-h", "--help" );
@@ -903,7 +903,7 @@ TEST( ArgumentParserTest, shouldWriteHelpAndExitWhenHelpOptionIsPresent )
 
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
    parser.add_argument( maybeInt, "--maybe" ).nargs( 1 );
    parser.add_default_help_option().help( "Print this test help message and exit!" );
 
@@ -982,7 +982,7 @@ TEST( ArgumentParserTest, shouldShowHelpWhenHasRequiredArgumentsAndNoneAreGiven 
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
+   parser.config().cout( strout );
 
    int num = 0;
    parser.add_argument( num, "--num" ).nargs( 1 ).required( true );
