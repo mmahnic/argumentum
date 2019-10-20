@@ -31,15 +31,6 @@ public:
 class ParserTerminated : public std::exception
 {
 public:
-   const std::string arg;
-   const int errorCode;
-
-public:
-   ParserTerminated( const std::string& arg, int code )
-      : arg( arg )
-      , errorCode( code )
-   {}
-
    const char* what() const noexcept override
    {
       return "Parsing terminated.";
@@ -861,8 +852,6 @@ public:
       }
    };
 
-   enum EExitMode { EXIT_THROW, EXIT_RETURN };
-
    class ParserConfig
    {
    public:
@@ -873,7 +862,6 @@ public:
          std::string description;
          std::string epilog;
          std::ostream* pOutStream = nullptr;
-         EExitMode exitMode = EXIT_THROW;
       };
 
    private:
@@ -916,17 +904,9 @@ public:
          return *this;
       }
 
-      ParserConfig& on_exit_throw()
-      {
-         mData.exitMode = EXIT_THROW;
-         return *this;
-      }
+      [[deprecated]] ParserConfig& on_exit_return() { return *this; };
 
-      ParserConfig& on_exit_return()
-      {
-         mData.exitMode = EXIT_RETURN;
-         return *this;
-      }
+      [[deprecated]] ParserConfig& on_exit_throw() { return *this; };
    };
 
    // Errors known by the parser
@@ -965,18 +945,64 @@ public:
          : option( optionName )
          , errorCode( code )
       {}
+      ParseError( const ParseError& ) = default;
+      ParseError( ParseError&& ) = default;
    };
 
    class ParseResult
    {
+      struct RequireCheck
+      {
+         bool required = false;
+         RequireCheck() = default;
+         RequireCheck( RequireCheck&& other )
+         {
+            other.clear();
+         }
+         RequireCheck& operator=( RequireCheck&& other )
+         {
+            other.clear();
+            return *this;
+         }
+         RequireCheck( bool require )
+            : required( require )
+         {}
+         ~RequireCheck() throw()
+         {
+            if ( !std::current_exception() ) {
+               if ( required )
+                  throw ParserTerminated();
+            }
+         }
+
+         void activate()
+         {
+            required = true;
+         }
+
+         void clear()
+         {
+            required = false;
+         }
+      };
+
+   private:
       friend class Environment;
       bool exitRequested = false;
+      mutable RequireCheck mustCheck;
 
    public:
       std::vector<std::string> ignoredArguments;
       std::vector<ParseError> errors;
 
    public:
+      ParseResult() = default;
+      ParseResult( ParseResult&& ) = default;
+      ParseResult& operator=( ParseResult&& ) = default;
+
+      ~ParseResult() throw()
+      {}
+
       bool wasExitRequested() const
       {
          return exitRequested;
@@ -984,6 +1010,7 @@ public:
 
       operator bool() const
       {
+         mustCheck.clear();
          return errors.empty() && ignoredArguments.empty() && !exitRequested;
       }
 
@@ -1003,6 +1030,13 @@ public:
             errors.emplace_back( std::move( err ) );
          res.clear();
       }
+
+   private:
+      void requestExit()
+      {
+         exitRequested = true;
+         mustCheck.activate();
+      }
    };
 
    class Environment
@@ -1018,7 +1052,7 @@ public:
 
       void exit_parser()
       {
-         mResult.exitRequested = true;
+         mResult.requestExit();
       }
 
       const std::string& get_option_name() const
@@ -1758,17 +1792,8 @@ private:
 
    ParseResult exit_parser( ParseResult&& result, const std::string& arg, EError errorCode )
    {
-      switch ( getConfig().exitMode ) {
-         default:
-         case EXIT_THROW:
-            throw ParserTerminated( arg, errorCode );
-         case EXIT_RETURN: {
-            result.errors.emplace_back( arg, errorCode );
-            return result;
-         }
-      }
-
-      return {};
+      result.errors.emplace_back( arg, errorCode );
+      return std::move( result );
    }
 };
 

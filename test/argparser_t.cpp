@@ -915,37 +915,6 @@ TEST( ArgumentParserTest, shouldWriteHelpAndExitWhenHelpOptionIsPresent )
    EXPECT_FALSE( bool( maybeInt ) );
 }
 
-TEST( ArgumentParserTest, shouldConfigureExitMode_Return )
-{
-   std::stringstream strout;
-   auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_return();
-   parser.add_default_help_option();
-
-   auto res = parser.parse_args( { "-h" } );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
-}
-
-TEST( ArgumentParserTest, shouldConfigureExitMode_Throw )
-{
-   std::stringstream strout;
-   auto parser = argument_parser{};
-   parser.config().cout( strout ).on_exit_throw();
-   parser.add_default_help_option();
-
-   try {
-      auto res = parser.parse_args( { "-h" } );
-      EXPECT_TRUE( false );
-   }
-   catch ( const argparse::ParserTerminated& e ) {
-      EXPECT_TRUE( true );
-      EXPECT_EQ( argument_parser::HELP_REQUESTED, e.errorCode );
-      return;
-   }
-   EXPECT_TRUE( false );
-}
-
 TEST( ArgumentParserTest, shouldResetValuesWhenCalledMultipleTimes )
 {
    std::string first;

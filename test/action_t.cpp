@@ -175,6 +175,7 @@ TEST( ArgumentParserActionTest, shouldTerminateParserThroughEnvironmentInAction 
    parser.add_argument( result, "-r" ).maxargs( 1 ).action( actionEnv );
 
    auto res = parser.parse_args( { "-n", "normal", "-r", "environment" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_FALSE( res.errors.empty() );
    EXPECT_TRUE( res.wasExitRequested() );
 }
@@ -210,6 +211,7 @@ TEST( ArgumentParserActionTest, shouldReportErrorsThroughActionEvnironment )
    parser.add_argument( result, "--wrong" ).maxargs( 1 ).action( actionEnv );
 
    auto res = parser.parse_args( { "--wrong", "wrong" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_FALSE( res.wasExitRequested() );
    EXPECT_EQ( "", result );
 
