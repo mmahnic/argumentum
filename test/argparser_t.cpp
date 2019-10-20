@@ -795,16 +795,14 @@ TEST( ArgumentParserTest, shouldHaveHelpByDefault )
 
    // -- THEN
    EXPECT_FALSE( static_cast<bool>( res ) );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_TRUE( res.help_was_shown() );
 
    // -- WHEN
    res = parser.parse_args( { "--help" } );
 
    // -- THEN
    EXPECT_FALSE( static_cast<bool>( res ) );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_TRUE( res.help_was_shown() );
 }
 
 TEST( ArgumentParserTest, shouldNotAddDefaultHelpWhenDefined )
@@ -829,8 +827,7 @@ TEST( ArgumentParserTest, shouldNotAddDefaultHelpWhenDefined )
 
    // -- THEN
    EXPECT_FALSE( static_cast<bool>( res ) );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_TRUE( res.help_was_shown() );
    EXPECT_FALSE( hide.has_value() );
 }
 
@@ -846,13 +843,11 @@ TEST( ArgumentParserTest, shouldSetCustomHelpOptions )
    // -- THEN
    auto res = parser.parse_args( { "-a" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_TRUE( res.help_was_shown() );
 
    res = parser.parse_args( { "--asistado" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_TRUE( res.help_was_shown() );
 
    res = parser.parse_args( { "-h" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -879,28 +874,23 @@ TEST( ArgumentParserTest, shouldSupportMultipleHelpOptions )
    // -- THEN
    auto res = parser.parse_args( { "-a" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_TRUE( res.help_was_shown() );
 
    res = parser.parse_args( { "--asistado" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_TRUE( res.help_was_shown() );
 
    res = parser.parse_args( { "--advice" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_TRUE( res.help_was_shown() );
 
    res = parser.parse_args( { "-h" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_TRUE( res.help_was_shown() );
 
    res = parser.parse_args( { "--help" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_TRUE( res.help_was_shown() );
 }
 
 TEST( ArgumentParserTest, shouldThrowIfDefaultHelpOptionsCanNotBeSet )
@@ -1025,8 +1015,7 @@ TEST( ArgumentParserTest, shouldShowHelpWhenHasRequiredArgumentsAndNoneAreGiven 
    EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_FALSE( strout.str().empty() );
 
-   ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::HELP_REQUESTED, res.errors[0].errorCode );
+   EXPECT_TRUE( res.help_was_shown() );
 }
 
 TEST( ArgumentParserTest, shouldSignalHelpWasShownWhenHelpRequested )

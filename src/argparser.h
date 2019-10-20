@@ -923,8 +923,6 @@ public:
       INVALID_CHOICE,
       // Flags do not accept parameters.
       FLAG_PARAMETER,
-      // Signal that help was requested when on_exit_return is set.
-      HELP_REQUESTED,
       // Signal that exit was requested by an action.
       EXIT_REQUESTED,
       // An error signalled by an action.
@@ -995,6 +993,7 @@ public:
 
    private:
       bool exitRequested = false;
+      bool helpWasShown = false;
       mutable RequireCheck mustCheck;
 
    public:
@@ -1012,6 +1011,11 @@ public:
       bool has_exited() const
       {
          return exitRequested;
+      }
+
+      bool help_was_shown() const
+      {
+         return helpWasShown;
       }
 
       operator bool() const
@@ -1091,6 +1095,11 @@ private:
       {
          result.exitRequested = true;
          result.mustCheck.activate();
+      }
+
+      void signalHelpShown()
+      {
+         result.helpWasShown = true;
       }
 
       ParseResult&& getResult()
@@ -1493,7 +1502,7 @@ private:
    {
       if ( ibegin == iend && hasRequiredArguments() ) {
          generate_help();
-         result.addError( {}, HELP_REQUESTED );
+         result.signalHelpShown();
          result.requestExit();
          return;
       }
@@ -1507,7 +1516,7 @@ private:
       for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
          if ( mHelpOptionNames.count( *iarg ) > 0 ) {
             generate_help();
-            result.addError( {}, HELP_REQUESTED );
+            result.signalHelpShown();
             result.requestExit();
             return;
          }
