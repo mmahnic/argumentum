@@ -27,6 +27,7 @@ TEST( ArgumentParserGroupsTest, shouldDefineExclusiveGroups )
    auto res = parser.parse_args( { "--maybe", "--optional" } );
 
    // -- THEN fail
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( argument_parser::EXCLUSIVE_OPTION, res.errors[0].errorCode );
 
@@ -34,18 +35,21 @@ TEST( ArgumentParserGroupsTest, shouldDefineExclusiveGroups )
    res = parser.parse_args( { "--maybe" } );
 
    // -- THEN succeed
+   EXPECT_TRUE( static_cast<bool>( res ) );
    EXPECT_EQ( 0, res.errors.size() );
 
    // -- WHEN there are no options from the exclusive group
    res = parser.parse_args( { "--other" } );
 
    // -- THEN succeed
+   EXPECT_TRUE( static_cast<bool>( res ) );
    EXPECT_EQ( 0, res.errors.size() );
 
    // -- WHEN a non-exclusive option and an exclusive option are present
    res = parser.parse_args( { "--maybe", "--other" } );
 
    // -- THEN succeed
+   EXPECT_TRUE( static_cast<bool>( res ) );
    EXPECT_EQ( 0, res.errors.size() );
 }
 
@@ -73,6 +77,7 @@ TEST( ArgumentParserGroupsTest, shouldStartSameGroupMultipleTimes )
    auto res = parser.parse_args( { "--maybe", "--optional" } );
 
    // -- THEN fail
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( argument_parser::EXCLUSIVE_OPTION, res.errors[0].errorCode );
 
@@ -80,6 +85,7 @@ TEST( ArgumentParserGroupsTest, shouldStartSameGroupMultipleTimes )
    res = parser.parse_args( { "--maybe", "--possibly" } );
 
    // -- THEN fail
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( argument_parser::EXCLUSIVE_OPTION, res.errors[0].errorCode );
 }
@@ -144,6 +150,7 @@ TEST( ArgumentParserGroupsTest, shouldRequireOptionsFromRequiredExclusiveGroups 
    parser.add_argument( third, "--third" );
 
    auto res = parser.parse_args( { "--third" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( argument_parser::MISSING_OPTION_GROUP, res.errors[0].errorCode );
 }
@@ -162,6 +169,7 @@ TEST( ArgumentParserGroupsTest, shouldRequireOptionsFromRequiredSimpleGroups )
    parser.add_argument( third, "--third" );
 
    auto res = parser.parse_args( { "--third" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( argument_parser::MISSING_OPTION_GROUP, res.errors[0].errorCode );
 }

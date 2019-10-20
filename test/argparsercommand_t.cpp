@@ -84,6 +84,7 @@ TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
    res = parser.parse_args( { "-s", "works" } );
 
    // -- THEN
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_FALSE( res.errors.empty() );
    EXPECT_EQ( argument_parser::UNKNOWN_OPTION, res.errors.front().errorCode );
 }
@@ -176,6 +177,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredOptionsWhenCommandP
    } );
 
    auto res = parser.parse_args( { "one", "-s", "command-works" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_FALSE( res.errors.empty() );
    EXPECT_EQ( argument_parser::MISSING_OPTION, res.errors.front().errorCode );
 
@@ -212,6 +214,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredPositionalWhenComma
    } );
 
    auto res = parser.parse_args( { "one", "-s", "command-works" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_FALSE( res.errors.empty() );
    EXPECT_EQ( argument_parser::MISSING_ARGUMENT, res.errors.front().errorCode );
 
