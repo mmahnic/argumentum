@@ -1058,3 +1058,17 @@ TEST( ArgumentParserTest, shouldShowHelpWhenHasRequiredArgumentsAndNoneAreGiven 
 
    EXPECT_TRUE( res.help_was_shown() );
 }
+
+TEST( ArgumentParserTest, shouldReturnDefaultValueIfOptionMissing )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout );
+
+   int num = 3;
+   parser.add_argument( num, "--num" ).nargs( 1 ).required( false );
+
+   auto res = parser.parse_args( {} );
+   EXPECT_TRUE( static_cast<bool>( res ) );
+   EXPECT_EQ( 3, num );
+}
