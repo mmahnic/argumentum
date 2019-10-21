@@ -754,6 +754,7 @@ public:
       using this_t = OptionConfigA<TValue>;
       using assign_action_t = std::function<void( TValue&, const std::string& )>;
       using assign_action_env_t = std::function<void( TValue&, const std::string&, Environment& )>;
+      using assign_default_action_t = std::function<void( TValue& )>;
 
    public:
       using OptionConfigBaseT<this_t>::OptionConfigBaseT;
@@ -793,14 +794,28 @@ public:
       }
 
       // Define the value that will be assigned to the target if the option is
-      // not present in arguments.  If multiple options with default values have
-      // the same target, the result is undefined.
+      // not present in arguments.  If multiple options that are configured with
+      // absent() have the same target, the result is undefined.
       this_t& absent( const TValue& defaultValue )
       {
          auto wrapDefault = [=]( Value& target ) {
             auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
             if ( pConverted )
                pConverted->mValue = defaultValue;
+         };
+         OptionConfig::getOption().setAssignDefaultAction( wrapDefault );
+         return *this;
+      }
+
+      // Define the action that will assign the default value to the target if
+      // the option is not present in arguments.  If multiple options that are
+      // configured with absent() have the same target, the result is undefined.
+      this_t& absent( assign_default_action_t action )
+      {
+         auto wrapDefault = [=]( Value& target ) {
+            auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
+            if ( pConverted )
+               action( pConverted->mValue );
          };
          OptionConfig::getOption().setAssignDefaultAction( wrapDefault );
          return *this;

@@ -1065,8 +1065,24 @@ TEST( ArgumentParserTest, shouldReturnDefaultValueIfOptionMissing )
    auto parser = argument_parser{};
    parser.config().cout( strout );
 
-   int num = 3;
+   int num = 5;
    parser.add_argument( num, "--num" ).nargs( 1 ).required( false ).absent( 3 );
+
+   auto res = parser.parse_args( {} );
+   EXPECT_TRUE( static_cast<bool>( res ) );
+   EXPECT_EQ( 3, num );
+}
+
+TEST( ArgumentParserTest, shouldAssignDefaultValueWithAction )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout );
+
+   int num = 5;
+   parser.add_argument( num, "--num" ).nargs( 1 ).required( false ).absent( []( int& target ) {
+      target = 3;
+   } );
 
    auto res = parser.parse_args( {} );
    EXPECT_TRUE( static_cast<bool>( res ) );
