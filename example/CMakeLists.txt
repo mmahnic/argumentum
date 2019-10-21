@@ -10,6 +10,10 @@ add_executable( basic
    basic.cpp
    )
 
+add_executable( basic_action
+   basic_action.cpp
+   )
+
 add_executable( example1
    example1.cpp
    )
