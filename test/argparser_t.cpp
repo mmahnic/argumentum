@@ -1066,7 +1066,7 @@ TEST( ArgumentParserTest, shouldReturnDefaultValueIfOptionMissing )
    parser.config().cout( strout );
 
    int num = 3;
-   parser.add_argument( num, "--num" ).nargs( 1 ).required( false );
+   parser.add_argument( num, "--num" ).nargs( 1 ).required( false ).absent( 3 );
 
    auto res = parser.parse_args( {} );
    EXPECT_TRUE( static_cast<bool>( res ) );

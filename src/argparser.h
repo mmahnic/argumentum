@@ -98,6 +98,13 @@ private:
    using AssignAction =
          std::function<void( Value& target, const std::string& value, Environment& env )>;
 
+   /**
+    * The assign-default action is executed when an option with a default
+    * (absent) value is not set through arguments.  The default value is
+    * captured in the function.
+    */
+   using AssignDefaultAction = std::function<void( Value& target )>;
+
 public:
    class Value
    {
@@ -114,6 +121,15 @@ public:
             action = getDefaultAction();
          if ( action )
             action( *this, value, env );
+      }
+
+      void setDefault( AssignDefaultAction action )
+      {
+         if ( action ) {
+            ++mAssignCount;
+            ++mOptionAssignCount;
+            action( *this );
+         }
       }
 
       void markBadArgument()
@@ -368,6 +384,7 @@ public:
    private:
       std::unique_ptr<Value> mpValue;
       AssignAction mAssignAction;
+      AssignDefaultAction mAssignDefaultAction;
       std::string mShortName;
       std::string mLongName;
       std::string mMetavar;
@@ -466,6 +483,11 @@ public:
          mAssignAction = action;
       }
 
+      void setAssignDefaultAction( AssignDefaultAction action )
+      {
+         mAssignDefaultAction = action;
+      }
+
       void setGroup( const std::shared_ptr<OptionGroup>& pGroup )
       {
          mpGroup = pGroup;
@@ -538,6 +560,17 @@ public:
          // If mAssignAction is not set, mpValue->setValue will try to use a
          // default action.
          mpValue->setValue( value, mAssignAction, env );
+      }
+
+      void assignDefault()
+      {
+         if ( mAssignDefaultAction )
+            mpValue->setDefault( mAssignDefaultAction );
+      }
+
+      bool hasDefault() const
+      {
+         return mAssignDefaultAction != nullptr;
       }
 
       void resetValue()
@@ -756,6 +789,20 @@ public:
          }
          else
             OptionConfig::getOption().setAction( nullptr );
+         return *this;
+      }
+
+      // Define the value that will be assigned to the target if the option is
+      // not present in arguments.  If multiple options with default values have
+      // the same target, the result is undefined.
+      this_t& absent( const TValue& defaultValue )
+      {
+         auto wrapDefault = [=]( Value& target ) {
+            auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
+            if ( pConverted )
+               pConverted->mValue = defaultValue;
+         };
+         OptionConfig::getOption().setAssignDefaultAction( wrapDefault );
          return *this;
       }
    };
@@ -1563,6 +1610,8 @@ private:
          return;
       }
 
+      assignDefaultValues();
+
       reportMissingOptions( result );
       reportExclusiveViolations( result );
       reportMissingGroups( result );
@@ -1575,6 +1624,17 @@ private:
             return &option;
 
       return nullptr;
+   }
+
+   void assignDefaultValues()
+   {
+      for ( auto& option : mOptions )
+         if ( !option.wasAssigned() && option.hasDefault() )
+            option.assignDefault();
+
+      for ( auto& option : mPositional )
+         if ( !option.wasAssigned() && option.hasDefault() )
+            option.assignDefault();
    }
 
    void verifyDefinedOptions()
