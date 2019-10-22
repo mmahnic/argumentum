@@ -839,7 +839,7 @@ public:
          if ( action ) {
             auto wrapAction = [&]( Value& target, const std::string& value,
                                     Environment& env ) -> std::optional<std::string> {
-               auto pv = dynamic_cast<VoidOptionConfig*>( &target );
+               auto pv = dynamic_cast<VoidValue*>( &target );
                if ( pv )
                   action( value, env );
                return {};
