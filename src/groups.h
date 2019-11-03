@@ -62,7 +62,7 @@ public:
       return mDescription;
    }
 
-   const bool isExclusive() const
+   bool isExclusive() const
    {
       return mIsExclusive;
    }
