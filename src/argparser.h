@@ -9,6 +9,7 @@
 #include "groups.h"
 #include "helpformatter_i.h"
 #include "options.h"
+#include "parser.h"
 #include "parseresult.h"
 #include "values.h"
 
@@ -26,10 +27,11 @@
 
 namespace argparse {
 
-class argument_parser;
-
 class argument_parser
 {
+   // FIXME: the main parse_args should be a part of Parser
+   friend class Parser;
+
 public:
    class ParserConfig
    {
@@ -85,186 +87,8 @@ public:
    };
 
 private:
-   class Parser
-   {
-      argument_parser& mArgParser;
-      ParseResultBuilder& mResult;
-
-      bool mIgnoreOptions = false;
-      int mPosition = 0;
-      // The active option will receive additional argument(s)
-      Option* mpActiveOption = nullptr;
-
-   public:
-      Parser( argument_parser& argParser, ParseResultBuilder& result )
-         : mArgParser( argParser )
-         , mResult( result )
-      {}
-
-      void parse( std::vector<std::string>::const_iterator ibegin,
-            std::vector<std::string>::const_iterator iend )
-      {
-         mResult.clear();
-         for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
-            if ( *iarg == "--" ) {
-               mIgnoreOptions = true;
-               continue;
-            }
-
-            if ( mIgnoreOptions ) {
-               addFreeArgument( *iarg );
-               continue;
-            }
-
-            auto arg_view = std::string_view( *iarg );
-            if ( arg_view.substr( 0, 2 ) == "--" )
-               startOption( *iarg );
-            else if ( arg_view.substr( 0, 1 ) == "-" ) {
-               if ( iarg->size() == 2 )
-                  startOption( *iarg );
-               else {
-                  auto opt = std::string{ "--" };
-                  for ( int i = 1; i < arg_view.size(); ++i ) {
-                     opt[1] = arg_view[i];
-                     startOption( opt );
-                  }
-               }
-            }
-            else {
-               if ( haveActiveOption() ) {
-                  auto& option = *mpActiveOption;
-                  if ( option.willAcceptArgument() ) {
-                     setValue( option, *iarg );
-                     if ( !option.willAcceptArgument() )
-                        closeOption();
-                  }
-               }
-               else {
-                  auto pCommand = mArgParser.findCommand( *iarg );
-                  if ( pCommand ) {
-                     mArgParser.parseCommandArguments( *pCommand, iarg, iend, mResult );
-                     break;
-                  }
-                  else
-                     addFreeArgument( *iarg );
-               }
-            }
-
-            if ( mResult.wasExitRequested() )
-               break;
-         }
-
-         if ( haveActiveOption() )
-            closeOption();
-      }
-
-   private:
-      void startOption( std::string_view name )
-      {
-         if ( haveActiveOption() )
-            closeOption();
-
-         std::string_view arg;
-         auto eqpos = name.find( "=" );
-         if ( eqpos != std::string::npos ) {
-            arg = name.substr( eqpos + 1 );
-            name = name.substr( 0, eqpos );
-         }
-
-         auto pOption = findOption( name );
-         if ( pOption ) {
-            auto& option = *pOption;
-            option.onOptionStarted();
-            if ( option.willAcceptArgument() )
-               mpActiveOption = pOption;
-            else
-               setValue( option, option.getFlagValue() );
-
-            if ( !arg.empty() ) {
-               if ( option.willAcceptArgument() )
-                  setValue( option, std::string{ arg } );
-               else
-                  addError( pOption->getHelpName(), FLAG_PARAMETER );
-            }
-         }
-         else
-            addError( name, UNKNOWN_OPTION );
-      }
-
-      bool haveActiveOption() const
-      {
-         return mpActiveOption != nullptr;
-      }
-
-      void closeOption()
-      {
-         if ( haveActiveOption() ) {
-            auto& option = *mpActiveOption;
-            if ( option.needsMoreArguments() )
-               addError( option.getHelpName(), MISSING_ARGUMENT );
-            else if ( option.willAcceptArgument() && !option.wasAssignedThroughThisOption() )
-               setValue( option, option.getFlagValue() );
-         }
-         mpActiveOption = nullptr;
-      }
-
-      void addFreeArgument( const std::string& arg )
-      {
-         if ( mPosition < mArgParser.mPositional.size() ) {
-            auto& option = mArgParser.mPositional[mPosition];
-            if ( option.willAcceptArgument() ) {
-               setValue( option, arg );
-               return;
-            }
-            else {
-               ++mPosition;
-               while ( mPosition < mArgParser.mPositional.size() ) {
-                  auto& option = mArgParser.mPositional[mPosition];
-                  if ( option.willAcceptArgument() ) {
-                     setValue( option, arg );
-                     return;
-                  }
-                  ++mPosition;
-               }
-            }
-         }
-
-         mResult.addIgnored( arg );
-      }
-
-      void addError( std::string_view optionName, int errorCode )
-      {
-         mResult.addError( optionName, errorCode );
-      }
-
-      Option* findOption( std::string_view optionName ) const
-      {
-         return mArgParser.findOption( optionName );
-      }
-
-      void setValue( Option& option, const std::string& value )
-      {
-         try {
-            auto env = Environment{ option, mResult };
-            option.setValue( value, env );
-         }
-         catch ( const InvalidChoiceError& ) {
-            addError( option.getHelpName(), INVALID_CHOICE );
-         }
-         catch ( const std::invalid_argument& ) {
-            addError( option.getHelpName(), CONVERSION_ERROR );
-         }
-         catch ( const std::out_of_range& ) {
-            addError( option.getHelpName(), CONVERSION_ERROR );
-         }
-      }
-   };
-
-private:
    ParserConfig mConfig;
-   std::vector<Command> mCommands;
-   std::vector<Option> mOptions;
-   std::vector<Option> mPositional;
+   ParserDefinition mParserDef;
    std::set<std::string> mHelpOptionNames;
    std::vector<std::shared_ptr<Options>> mTargets;
    std::map<std::string, std::shared_ptr<OptionGroup>> mGroups;
@@ -341,8 +165,8 @@ public:
    {
       const auto shortName = "-h";
       const auto longName = "--help";
-      auto pShort = findOption( shortName );
-      auto pLong = findOption( longName );
+      auto pShort = mParserDef.findOption( shortName );
+      auto pLong = mParserDef.findOption( longName );
 
       if ( !pShort && !pLong )
          return add_help_option( shortName, longName );
@@ -456,7 +280,7 @@ public:
    ArgumentHelpResult describe_argument( std::string_view name ) const
    {
       bool isPositional = name.substr( 0, 1 ) != "-";
-      const auto& args = isPositional ? mPositional : mOptions;
+      const auto& args = isPositional ? mParserDef.mPositional : mParserDef.mOptions;
       for ( auto& opt : args )
          if ( opt.hasName( name ) )
             return describeOption( opt );
@@ -468,13 +292,13 @@ public:
    {
       std::vector<ArgumentHelpResult> descriptions;
 
-      for ( auto& opt : mOptions )
+      for ( auto& opt : mParserDef.mOptions )
          descriptions.push_back( describeOption( opt ) );
 
-      for ( auto& opt : mPositional )
+      for ( auto& opt : mParserDef.mPositional )
          descriptions.push_back( describeOption( opt ) );
 
-      for ( auto& cmd : mCommands )
+      for ( auto& cmd : mParserDef.mCommands )
          descriptions.push_back( describeCommand( cmd ) );
 
       return descriptions;
@@ -491,10 +315,10 @@ private:
          return;
       }
 
-      for ( auto& option : mOptions )
+      for ( auto& option : mParserDef.mOptions )
          option.resetValue();
 
-      for ( auto& option : mPositional )
+      for ( auto& option : mParserDef.mPositional )
          option.resetValue();
 
       for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
@@ -506,7 +330,7 @@ private:
          }
       }
 
-      Parser parser( *this, result );
+      Parser parser( mParserDef, result );
       parser.parse( ibegin, iend );
       if ( result.wasExitRequested() ) {
          result.addError( {}, EXIT_REQUESTED );
@@ -520,22 +344,13 @@ private:
       reportMissingGroups( result );
    }
 
-   Option* findOption( std::string_view optionName )
-   {
-      for ( auto& option : mOptions )
-         if ( option.hasName( optionName ) )
-            return &option;
-
-      return nullptr;
-   }
-
    void assignDefaultValues()
    {
-      for ( auto& option : mOptions )
+      for ( auto& option : mParserDef.mOptions )
          if ( !option.wasAssigned() && option.hasDefault() )
             option.assignDefault();
 
-      for ( auto& option : mPositional )
+      for ( auto& option : mParserDef.mPositional )
          if ( !option.wasAssigned() && option.hasDefault() )
             option.assignDefault();
    }
@@ -555,7 +370,7 @@ private:
       }
 
       // A required option can not be in an exclusive group.
-      for ( auto& opt : mOptions ) {
+      for ( auto& opt : mParserDef.mOptions ) {
          if ( opt.isRequired() ) {
             auto pGroup = opt.getGroup();
             if ( pGroup && pGroup->isExclusive() )
@@ -566,22 +381,22 @@ private:
 
    void reportMissingOptions( ParseResultBuilder& result )
    {
-      for ( auto& option : mOptions )
+      for ( auto& option : mParserDef.mOptions )
          if ( option.isRequired() && !option.wasAssigned() )
             result.addError( option.getHelpName(), MISSING_OPTION );
 
-      for ( auto& option : mPositional )
+      for ( auto& option : mParserDef.mPositional )
          if ( option.needsMoreArguments() )
             result.addError( option.getHelpName(), MISSING_ARGUMENT );
    }
 
    bool hasRequiredArguments() const
    {
-      for ( auto& option : mOptions )
+      for ( auto& option : mParserDef.mOptions )
          if ( option.isRequired() )
             return true;
 
-      for ( auto& option : mPositional )
+      for ( auto& option : mParserDef.mPositional )
          if ( option.isRequired() )
             return true;
 
@@ -591,7 +406,7 @@ private:
    void reportExclusiveViolations( ParseResultBuilder& result )
    {
       std::map<std::string, std::vector<std::string>> counts;
-      for ( auto& option : mOptions ) {
+      for ( auto& option : mParserDef.mOptions ) {
          auto pGroup = option.getGroup();
          if ( pGroup && pGroup->isExclusive() && option.wasAssigned() )
             counts[pGroup->getName()].push_back( option.getHelpName() );
@@ -605,7 +420,7 @@ private:
    void reportMissingGroups( ParseResultBuilder& result )
    {
       std::map<std::string, int> counts;
-      for ( auto& option : mOptions ) {
+      for ( auto& option : mParserDef.mOptions ) {
          auto pGroup = option.getGroup();
          if ( pGroup && pGroup->isRequired() )
             counts[pGroup->getName()] += option.wasAssigned() ? 1 : 0;
@@ -641,8 +456,8 @@ private:
       };
 
       if ( isPositional( names ) ) {
-         mPositional.push_back( std::move( newOption ) );
-         auto& option = mPositional.back();
+         mParserDef.mPositional.push_back( std::move( newOption ) );
+         auto& option = mParserDef.mPositional.back();
          option.setLongName( names.empty() ? "arg" : names[0] );
          option.setRequired( true );
 
@@ -656,20 +471,20 @@ private:
          if ( mpActiveGroup && !mpActiveGroup->isExclusive() )
             option.setGroup( mpActiveGroup );
 
-         return { mPositional, mPositional.size() - 1 };
+         return { mParserDef.mPositional, mParserDef.mPositional.size() - 1 };
       }
       else if ( isOption( names ) ) {
          trySetNames( newOption, names );
          ensureIsNewOption( newOption.getLongName() );
          ensureIsNewOption( newOption.getShortName() );
 
-         mOptions.push_back( std::move( newOption ) );
-         auto& option = mOptions.back();
+         mParserDef.mOptions.push_back( std::move( newOption ) );
+         auto& option = mParserDef.mOptions.back();
 
          if ( mpActiveGroup )
             option.setGroup( mpActiveGroup );
 
-         return { mOptions, mOptions.size() - 1 };
+         return { mParserDef.mOptions, mParserDef.mOptions.size() - 1 };
       }
 
       throw std::invalid_argument( "The argument must be either positional or an option." );
@@ -699,7 +514,7 @@ private:
       if ( name.empty() )
          return;
 
-      auto pOption = findOption( name );
+      auto pOption = mParserDef.findOption( name );
       if ( pOption ) {
          auto groupName = pOption->getGroup() ? pOption->getGroup()->getName() : "";
          throw DuplicateOption( groupName, name );
@@ -716,33 +531,16 @@ private:
          throw std::invalid_argument( "Command name must not start with a dash." );
 
       ensureIsNewCommand( command.getName() );
-      mCommands.push_back( std::move( command ) );
+      mParserDef.mCommands.push_back( std::move( command ) );
 
-      return { mCommands, mCommands.size() - 1 };
+      return { mParserDef.mCommands, mParserDef.mCommands.size() - 1 };
    }
 
    void ensureIsNewCommand( const std::string& name )
    {
-      auto pCommand = findCommand( name );
+      auto pCommand = mParserDef.findCommand( name );
       if ( pCommand )
          throw DuplicateCommand( name );
-   }
-
-   Command* findCommand( std::string_view commandName )
-   {
-      for ( auto& command : mCommands )
-         if ( command.hasName( commandName ) )
-            return &command;
-
-      return nullptr;
-   }
-
-   void parseCommandArguments( Command& command, std::vector<std::string>::const_iterator ibegin,
-         std::vector<std::string>::const_iterator iend, ParseResultBuilder& result )
-   {
-      auto parser = argument_parser{};
-      parser.add_arguments( command.createOptions() );
-      parser.parse_args( ibegin, iend, result );
    }
 
    std::shared_ptr<OptionGroup> addGroup( std::string name, bool isExclusive )
@@ -894,3 +692,4 @@ private:
 }   // namespace argparse
 
 #include "helpformatter.h"
+#include "parser_impl.h"
