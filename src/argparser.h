@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "commands.h"
 #include "environment.h"
 #include "exceptions.h"
 #include "helpformatter_i.h"
@@ -26,87 +27,9 @@ namespace argparse {
 
 class argument_parser;
 
-class Options
-{
-public:
-   virtual void add_arguments( argument_parser& parser ) = 0;
-};
-
 class argument_parser
 {
 public:
-   class Command
-   {
-   public:
-      using options_factory_t = std::function<std::shared_ptr<Options>()>;
-
-   private:
-      std::string mName;
-      options_factory_t mFactory;
-      std::string mHelp;
-
-   public:
-      Command( std::string_view name, options_factory_t factory )
-         : mName( name )
-         , mFactory( factory )
-      {}
-
-      void setHelp( std::string_view help )
-      {
-         mHelp = help;
-      }
-
-      const std::string& getName() const
-      {
-         return mName;
-      }
-
-      bool hasName( std::string_view name ) const
-      {
-         return name == mName;
-      }
-
-      bool hasFactory() const
-      {
-         return mFactory != nullptr;
-      }
-
-      const std::string& getHelp() const
-      {
-         return mHelp;
-      }
-
-      std::shared_ptr<Options> createOptions()
-      {
-         assert( mFactory != nullptr );
-         return mFactory();
-      }
-   };
-
-   class CommandConfig
-   {
-      std::vector<Command>& mCommands;
-      size_t mIndex = 0;
-
-   public:
-      CommandConfig( std::vector<Command>& commands, size_t index )
-         : mCommands( commands )
-         , mIndex( index )
-      {}
-
-      CommandConfig& help( std::string_view help )
-      {
-         getCommand().setHelp( help );
-         return *this;
-      }
-
-   private:
-      Command& getCommand()
-      {
-         return mCommands[mIndex];
-      }
-   };
-
    class ParserConfig
    {
    public:
