@@ -7,7 +7,7 @@
 #include "environment.h"
 #include "exceptions.h"
 #include "groups.h"
-#include "helpformatter_i.h"
+#include "helpformatter.h"
 #include "options.h"
 #include "parser.h"
 #include "parseresult.h"
@@ -691,5 +691,5 @@ private:
 
 }   // namespace argparse
 
-#include "helpformatter.h"
+#include "helpformatter_impl.h"
 #include "parser_impl.h"
