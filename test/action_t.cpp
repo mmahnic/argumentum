@@ -162,8 +162,7 @@ TEST( ArgumentParserActionTest, shouldSetSameVariableThroughMultipleActions )
 TEST( ArgumentParserActionTest, shouldTerminateParserThroughEnvironmentInAction )
 {
    auto actionNormal = []( std::string& target, const std::string& value ) { target = value; };
-   auto actionEnv = []( std::string& target, const std::string& value,
-                          argument_parser::Environment& env ) {
+   auto actionEnv = []( std::string& target, const std::string& value, Environment& env ) {
       target = value;
       env.exit_parser();
    };
@@ -181,8 +180,7 @@ TEST( ArgumentParserActionTest, shouldTerminateParserThroughEnvironmentInAction 
 
 TEST( ArgumentParserActionTest, shouldThrowWhenExitRequestIsUnchecked )
 {
-   auto actionEnv = []( std::string& target, const std::string& value,
-                          argument_parser::Environment& env ) {
+   auto actionEnv = []( std::string& target, const std::string& value, Environment& env ) {
       target = value;
       env.exit_parser();
    };
@@ -203,8 +201,7 @@ TEST( ArgumentParserActionTest, shouldThrowWhenExitRequestIsUnchecked )
 
 TEST( ArgumentParserActionTest, shouldReadOptionNameFromActionEvnironment )
 {
-   auto actionEnv = []( std::string& target, const std::string& value,
-                          argument_parser::Environment& env ) {
+   auto actionEnv = []( std::string& target, const std::string& value, Environment& env ) {
       target = value + env.get_option_name();
    };
 
@@ -220,8 +217,7 @@ TEST( ArgumentParserActionTest, shouldReadOptionNameFromActionEvnironment )
 
 TEST( ArgumentParserActionTest, shouldReportErrorsThroughActionEvnironment )
 {
-   auto actionEnv = []( std::string& target, const std::string& value,
-                          argument_parser::Environment& env ) {
+   auto actionEnv = []( std::string& target, const std::string& value, Environment& env ) {
       env.add_error( "Something is wrong" );
    };
 
@@ -235,7 +231,7 @@ TEST( ArgumentParserActionTest, shouldReportErrorsThroughActionEvnironment )
    EXPECT_EQ( "", result );
 
    ASSERT_FALSE( res.errors.empty() );
-   EXPECT_EQ( argument_parser::ACTION_ERROR, res.errors[0].errorCode );
+   EXPECT_EQ( ACTION_ERROR, res.errors[0].errorCode );
    EXPECT_NE( std::string::npos, res.errors[0].option.find( "--wrong" ) );
    EXPECT_NE( std::string::npos, res.errors[0].option.find( "Something is wrong" ) );
 }

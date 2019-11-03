@@ -3,8 +3,17 @@
 
 #pragma once
 
-#include "convert.h"
-#include "helpformatter_i.h"
+#include "argdescriber.h"
+#include "commands.h"
+#include "environment.h"
+#include "exceptions.h"
+#include "groups.h"
+#include "helpformatter.h"
+#include "options.h"
+#include "parser.h"
+#include "parserconfig.h"
+#include "parseresult.h"
+#include "values.h"
 
 #include <algorithm>
 #include <cassert>
@@ -20,1362 +29,13 @@
 
 namespace argparse {
 
-class InvalidChoiceError : public std::invalid_argument
-{
-public:
-   InvalidChoiceError( const std::string& value )
-      : std::invalid_argument( value )
-   {}
-};
-
-class UncheckedParseResult : public std::exception
-{
-public:
-   const char* what() const noexcept override
-   {
-      return "Unchecked parse result.";
-   }
-};
-
-class MixingGroupTypes : public std::runtime_error
-{
-public:
-   MixingGroupTypes( const std::string& groupName )
-      : runtime_error( std::string( "Mixing group types in group '" ) + groupName + "'." )
-   {}
-};
-
-class RequiredExclusiveOption : public std::runtime_error
-{
-public:
-   RequiredExclusiveOption( const std::string& groupName, const std::string& optionName )
-      : runtime_error( std::string( "Option '" ) + optionName + "' is required in exclusive group '"
-              + groupName + "'." )
-   {}
-};
-
-class DuplicateOption : public std::runtime_error
-{
-public:
-   DuplicateOption( const std::string& groupName, const std::string& optionName )
-      : runtime_error( std::string( "Option '" ) + optionName + "' is already defined in group '"
-              + groupName + "'." )
-   {}
-};
-
-class DuplicateCommand : public std::runtime_error
-{
-public:
-   DuplicateCommand( const std::string& commandName )
-      : runtime_error( std::string( "Command '" ) + commandName + "' is already defined." )
-   {}
-};
-
-class argument_parser;
-
-class Options
-{
-public:
-   virtual void add_arguments( argument_parser& parser ) = 0;
-};
-
 class argument_parser
 {
-public:
-   class Value;
-   class Environment;
+   // FIXME: the main parse_args should be a part of Parser
+   friend class Parser;
 
 private:
-   /**
-    * The assign-action is executed to set the value of a parameter.
-    *
-    * If an action is not provided with the OptionConfig::action method, a
-    * default action will be created and used.
-    *
-    * Action interfaces are different for different types of Value descendatns.
-    * All actions are wrapped into AssignAction interface.
-    */
-   using AssignAction =
-         std::function<void( Value& target, const std::string& value, Environment& env )>;
-
-   /**
-    * The assign-default action is executed when an option with a default
-    * (absent) value is not set through arguments.  The default value is
-    * captured in the function.
-    */
-   using AssignDefaultAction = std::function<void( Value& target )>;
-
-public:
-   class Value
-   {
-      int mAssignCount = 0;
-      int mOptionAssignCount = 0;
-      bool mHasErrors = false;
-
-   public:
-      void setValue( const std::string& value, AssignAction action, Environment& env )
-      {
-         ++mAssignCount;
-         ++mOptionAssignCount;
-         if ( action == nullptr )
-            action = getDefaultAction();
-         if ( action )
-            action( *this, value, env );
-      }
-
-      void setDefault( AssignDefaultAction action )
-      {
-         if ( action ) {
-            ++mAssignCount;
-            action( *this );
-         }
-      }
-
-      void markBadArgument()
-      {
-         // Increase the assign count so that flagValue will not be used.
-         ++mOptionAssignCount;
-         mHasErrors = true;
-      }
-
-      /**
-       * The count of assignments through all the options that share this value.
-       */
-      int getAssignCount() const
-      {
-         return mAssignCount;
-      }
-
-      /**
-       * The count of assignments through the current option.
-       */
-      int getOptionAssignCount() const
-      {
-         return mOptionAssignCount;
-      }
-
-      void onOptionStarted()
-      {
-         mOptionAssignCount = 0;
-      }
-
-      void reset()
-      {
-         mAssignCount = 0;
-         mOptionAssignCount = 0;
-         mHasErrors = false;
-         doReset();
-      }
-
-   protected:
-      virtual AssignAction getDefaultAction() = 0;
-      virtual void doReset()
-      {}
-   };
-
-   class VoidValue : public Value
-   {
-   protected:
-      AssignAction getDefaultAction() override
-      {
-         return {};
-      }
-   };
-
-   template<typename T>
-   class OptionConfigA;
-
-   template<typename TValue>
-   class ConvertedValue : public Value
-   {
-      template<typename T>
-      friend class ::argparse::argument_parser::OptionConfigA;
-
-      // Check if std::string can be converted to TVal with argparse::from_string.
-      template<typename TVal>
-      struct has_from_string
-      {
-      private:
-         typedef char YesType[1];
-         typedef char NoType[2];
-
-         template<typename C>
-         static YesType& test( decltype( &C::convert ) );
-         template<typename C>
-         static NoType& test( ... );
-
-      public:
-         enum { value = sizeof( test<from_string<TVal>>( 0 ) ) == sizeof( YesType ) };
-      };
-
-      // Check if std::string can be converted to TVal with constructors or
-      // assignment operators.
-      template<class TVal>
-      struct can_convert   // (clf)
-         : std::integral_constant<bool,   // (clf)
-                 std::is_constructible<std::string, TVal>::value   // (clf)
-                       || std::is_convertible<std::string, TVal>::value   // (clf)
-                       || std::is_assignable<TVal, std::string>::value   // (clf)
-                 >
-      {
-         template<typename T>
-         constexpr static bool has_from_string()
-         {
-            return true;
-         }
-      };
-
-   protected:
-      using result_t = typename convert_result<TValue>::type;
-      TValue& mValue;
-
-   public:
-      ConvertedValue( TValue& value )
-         : mValue( value )
-      {}
-
-   protected:
-      AssignAction getDefaultAction() override
-      {
-         return []( Value& target, const std::string& value, Environment& ) {
-            auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
-            if ( pConverted )
-               pConverted->assign( pConverted->mValue, value );
-         };
-      }
-
-      void doReset() override
-      {
-         mValue = TValue{};
-      }
-
-      template<typename TVar>
-      void assign( std::vector<TVar>& var, const std::string& value )
-      {
-         TVar target;
-         assign( target, value );
-         var.emplace_back( std::move( target ) );
-      }
-
-      template<typename TVar>
-      void assign( std::optional<TVar>& var, const std::string& value )
-      {
-         TVar target;
-         assign( target, value );
-         var = std::move( target );
-      }
-
-      template<typename TVar, std::enable_if_t<has_from_string<TVar>::value, int> = 0>
-      void assign( TVar& var, const std::string& value )
-      {
-         var = from_string<TVar>::convert( value );
-      }
-
-      template<typename TVar,
-            std::enable_if_t<!has_from_string<TVar>::value && can_convert<TVar>::value, int> = 0>
-      void assign( TVar& var, const std::string& value )
-      {
-         var = TVar{ value };
-      }
-
-      template<typename TVar,
-            std::enable_if_t<!has_from_string<TVar>::value && !can_convert<TVar>::value, int> = 0>
-      void assign( TVar& var, const std::string& value )
-      {
-         std::cerr << "*** No assignment\n";
-      }
-   };
-
-   // NOTE: An option group with the same name can be defined in multiple
-   // places.  When it is configured multiple times the last configured values
-   // will be used, except for setRequired().
-   class OptionGroup
-   {
-   private:
-      std::string mName;
-      std::string mTitle;
-      std::string mDescription;
-      bool mIsRequired = false;
-      bool mIsExclusive = false;
-
-   public:
-      OptionGroup( std::string_view name, bool isExclusive )
-         : mName( name )
-         , mTitle( name )
-         , mIsExclusive( isExclusive )
-      {}
-
-      void setTitle( std::string_view title )
-      {
-         mTitle = title;
-      }
-
-      void setDescription( std::string_view description )
-      {
-         mDescription = description;
-      }
-
-      // The required option can be set only when the group is not yet required.
-      // Because a group can be defined in multiple places, it is required as
-      // soon as it is required in one place.
-      void setRequired( bool isRequired )
-      {
-         if ( !mIsRequired )
-            mIsRequired = isRequired;
-      }
-
-      const std::string& getName() const
-      {
-         return mName;
-      }
-
-      const std::string& getTitle() const
-      {
-         return mTitle;
-      }
-
-      const std::string& getDescription() const
-      {
-         return mDescription;
-      }
-
-      const bool isExclusive() const
-      {
-         return mIsExclusive;
-      }
-
-      bool isRequired() const
-      {
-         return mIsRequired;
-      }
-   };
-
-   class GroupConfig
-   {
-      std::shared_ptr<OptionGroup> mpGroup;
-
-   public:
-      GroupConfig( std::shared_ptr<OptionGroup> pGroup )
-         : mpGroup( pGroup )
-      {}
-
-      GroupConfig& title( std::string_view title )
-      {
-         mpGroup->setTitle( title );
-         return *this;
-      }
-
-      GroupConfig& description( std::string_view description )
-      {
-         mpGroup->setDescription( description );
-         return *this;
-      }
-
-      GroupConfig& required( bool isRequired = true )
-      {
-         mpGroup->setRequired( isRequired );
-         return *this;
-      }
-   };
-
-   class Option
-   {
-   private:
-      std::unique_ptr<Value> mpValue;
-      AssignAction mAssignAction;
-      AssignDefaultAction mAssignDefaultAction;
-      std::string mShortName;
-      std::string mLongName;
-      std::string mMetavar;
-      std::string mHelp;
-      std::string mFlagValue = "1";
-      std::vector<std::string> mChoices;
-      std::shared_ptr<OptionGroup> mpGroup;
-      int mMinArgs = 0;
-      int mMaxArgs = 0;
-      bool mIsRequired = false;
-      bool mIsVectorValue = false;
-
-   public:
-      template<typename TValue>
-      Option( TValue& value )
-      {
-         if constexpr ( std::is_base_of<Value, TValue>::value ) {
-            mpValue = std::make_unique<TValue>( value );
-         }
-         else {
-            using wrap_type = ConvertedValue<TValue>;
-            mpValue = std::make_unique<wrap_type>( value );
-         }
-      }
-
-      template<typename TValue>
-      Option( std::vector<TValue>& value )
-      {
-         using val_vector = std::vector<TValue>;
-         if constexpr ( std::is_base_of<Value, TValue>::value ) {
-            mpValue = std::make_unique<val_vector>( value );
-         }
-         else {
-            using wrap_type = ConvertedValue<val_vector>;
-            mpValue = std::make_unique<wrap_type>( value );
-         }
-
-         mIsVectorValue = true;
-      }
-
-      void setShortName( std::string_view name )
-      {
-         mShortName = name;
-      }
-
-      void setLongName( std::string_view name )
-      {
-         mLongName = name;
-      }
-
-      void setMetavar( std::string_view varname )
-      {
-         mMetavar = varname;
-      }
-
-      void setHelp( std::string_view help )
-      {
-         mHelp = help;
-      }
-
-      void setNArgs( int count )
-      {
-         mMinArgs = std::max( 0, count );
-         mMaxArgs = mMinArgs;
-      }
-
-      void setMinArgs( int count )
-      {
-         mMinArgs = std::max( 0, count );
-         mMaxArgs = -1;
-      }
-
-      void setMaxArgs( int count )
-      {
-         mMinArgs = 0;
-         mMaxArgs = std::max( 0, count );
-      }
-
-      void setRequired( bool isRequired = true )
-      {
-         mIsRequired = isRequired;
-      }
-
-      void setFlagValue( std::string_view value )
-      {
-         mFlagValue = value;
-      }
-
-      void setChoices( const std::vector<std::string>& choices )
-      {
-         mChoices = choices;
-      }
-
-      void setAction( AssignAction action )
-      {
-         mAssignAction = action;
-      }
-
-      void setAssignDefaultAction( AssignDefaultAction action )
-      {
-         mAssignDefaultAction = action;
-      }
-
-      void setGroup( const std::shared_ptr<OptionGroup>& pGroup )
-      {
-         mpGroup = pGroup;
-      }
-
-      bool isRequired() const
-      {
-         return mIsRequired;
-      }
-
-      const std::string& getName() const
-      {
-         return mLongName.empty() ? mShortName : mLongName;
-      }
-
-      const std::string& getShortName() const
-      {
-         return mShortName;
-      }
-
-      const std::string& getLongName() const
-      {
-         return mLongName;
-      }
-
-      std::string getHelpName() const
-      {
-         auto is_positional = mShortName.substr( 0, 1 ) != "-" && mLongName.substr( 0, 1 ) != "-";
-         if ( is_positional ) {
-            const auto& name =
-                  !mMetavar.empty() ? mMetavar : !mLongName.empty() ? mLongName : mShortName;
-            return !name.empty() ? name : "ARG";
-         }
-         return !mLongName.empty() ? mLongName : mShortName;
-      }
-
-      bool hasName( std::string_view name ) const
-      {
-         return name == mShortName || name == mLongName;
-      }
-
-      const std::string& getRawHelp() const
-      {
-         return mHelp;
-      }
-
-      std::string getMetavar() const
-      {
-         if ( !mMetavar.empty() )
-            return mMetavar;
-
-         auto& name = getName();
-         auto pos = name.find_first_not_of( "-" );
-         auto metavar = name.substr( pos );
-         auto isPositional = pos == 0;
-         std::transform(
-               metavar.begin(), metavar.end(), metavar.begin(), isPositional ? tolower : toupper );
-         return metavar;
-      }
-
-      void setValue( const std::string& value, Environment& env )
-      {
-         if ( !mChoices.empty()
-               && std::none_of( mChoices.begin(), mChoices.end(),
-                        [&value]( auto v ) { return v == value; } ) ) {
-            mpValue->markBadArgument();
-            throw InvalidChoiceError( value );
-         }
-
-         // If mAssignAction is not set, mpValue->setValue will try to use a
-         // default action.
-         mpValue->setValue( value, mAssignAction, env );
-      }
-
-      void assignDefault()
-      {
-         if ( mAssignDefaultAction )
-            mpValue->setDefault( mAssignDefaultAction );
-      }
-
-      bool hasDefault() const
-      {
-         return mAssignDefaultAction != nullptr;
-      }
-
-      void resetValue()
-      {
-         mpValue->reset();
-      }
-
-      void onOptionStarted()
-      {
-         mpValue->onOptionStarted();
-      }
-
-      bool acceptsAnyArguments() const
-      {
-         return mMinArgs > 0 || mMaxArgs != 0;
-      }
-
-      bool willAcceptArgument() const
-      {
-         return mMaxArgs < 0 || mpValue->getOptionAssignCount() < mMaxArgs;
-      }
-
-      bool needsMoreArguments() const
-      {
-         return mpValue->getOptionAssignCount() < mMinArgs;
-      }
-
-      bool hasVectorValue() const
-      {
-         return mIsVectorValue;
-      }
-
-      /**
-       * @returns true if the value was assigned through any option that shares
-       * this option's value.
-       */
-      bool wasAssigned() const
-      {
-         return mpValue->getAssignCount() > 0;
-      }
-
-      bool wasAssignedThroughThisOption() const
-      {
-         return mpValue->getOptionAssignCount() > 0;
-      }
-
-      const std::string& getFlagValue() const
-      {
-         return mFlagValue;
-      }
-
-      std::tuple<int, int> getArgumentCounts() const
-      {
-         return std::make_tuple( mMinArgs, mMaxArgs );
-      }
-
-      std::shared_ptr<OptionGroup> getGroup() const
-      {
-         return mpGroup;
-      }
-   };
-
-   /**
-    * OptionConfig is used to configure an option after an option was created with add_argument.
-    */
-   class OptionConfig
-   {
-   protected:
-      std::vector<Option>& mOptions;
-      size_t mIndex = 0;
-      bool mCountWasSet = false;
-
-   public:
-      OptionConfig( std::vector<Option>& options, size_t index )
-         : mOptions( options )
-         , mIndex( index )
-      {}
-
-      OptionConfig& action( AssignAction action )
-      {
-         getOption().setAction( action );
-         return *this;
-      }
-
-   protected:
-      void ensureCountWasNotSet() const
-      {
-         if ( mCountWasSet )
-            throw std::invalid_argument( "Only one of nargs, minargs and maxargs can be used." );
-      }
-
-      Option& getOption()
-      {
-         return mOptions[mIndex];
-      }
-   };
-
-   template<typename TDerived>
-   class OptionConfigBaseT : public OptionConfig
-   {
-   public:
-      using this_t = TDerived;
-
-   public:
-      using OptionConfig::OptionConfig;
-
-      OptionConfigBaseT( OptionConfig&& wrapped )
-         : OptionConfig( std::move( wrapped ) )
-      {}
-
-      this_t& setShortName( std::string_view name )
-      {
-         getOption().setShortName( name );
-         return *static_cast<this_t*>( this );
-      }
-
-      this_t& setLongName( std::string_view name )
-      {
-         getOption().setLongName( name );
-         return *static_cast<this_t*>( this );
-      }
-
-      this_t& metavar( std::string_view varname )
-      {
-         getOption().setMetavar( varname );
-         return *static_cast<this_t*>( this );
-      }
-
-      this_t& help( std::string_view help )
-      {
-         getOption().setHelp( help );
-         return *static_cast<this_t*>( this );
-      }
-
-      this_t& nargs( int count )
-      {
-         ensureCountWasNotSet();
-         getOption().setNArgs( count );
-         mCountWasSet = true;
-         return *static_cast<this_t*>( this );
-      }
-
-      this_t& minargs( int count )
-      {
-         ensureCountWasNotSet();
-         getOption().setMinArgs( count );
-         mCountWasSet = true;
-         return *static_cast<this_t*>( this );
-      }
-
-      this_t& maxargs( int count )
-      {
-         ensureCountWasNotSet();
-         getOption().setMaxArgs( count );
-         mCountWasSet = true;
-         return *static_cast<this_t*>( this );
-      }
-
-      this_t& required( bool isRequired = true )
-      {
-         getOption().setRequired( isRequired );
-         return *static_cast<this_t*>( this );
-      }
-
-      this_t& flagValue( std::string_view value )
-      {
-         getOption().setFlagValue( value );
-         return *static_cast<this_t*>( this );
-      }
-
-      this_t& choices( const std::vector<std::string>& choices )
-      {
-         getOption().setChoices( choices );
-         return *static_cast<this_t*>( this );
-      }
-   };
-
-   template<typename TValue>
-   class OptionConfigA : public OptionConfigBaseT<OptionConfigA<TValue>>
-   {
-      using this_t = OptionConfigA<TValue>;
-      using assign_action_t = std::function<void( TValue&, const std::string& )>;
-      using assign_action_env_t = std::function<void( TValue&, const std::string&, Environment& )>;
-      using assign_default_action_t = std::function<void( TValue& )>;
-
-   public:
-      using OptionConfigBaseT<this_t>::OptionConfigBaseT;
-
-      OptionConfigA( OptionConfig&& wrapped )
-         : OptionConfigBaseT<this_t>( std::move( wrapped ) )
-      {}
-
-      this_t& action( assign_action_t action )
-      {
-         if ( action ) {
-            auto wrapAction = [=]( Value& target, const std::string& value, Environment& ) {
-               auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
-               if ( pConverted )
-                  action( pConverted->mValue, value );
-            };
-            OptionConfig::getOption().setAction( wrapAction );
-         }
-         else
-            OptionConfig::getOption().setAction( nullptr );
-         return *this;
-      }
-
-      this_t& action( assign_action_env_t action )
-      {
-         if ( action ) {
-            auto wrapAction = [=]( Value& target, const std::string& value, Environment& env ) {
-               auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
-               if ( pConverted )
-                  action( pConverted->mValue, value, env );
-            };
-            OptionConfig::getOption().setAction( wrapAction );
-         }
-         else
-            OptionConfig::getOption().setAction( nullptr );
-         return *this;
-      }
-
-      // Define the value that will be assigned to the target if the option is
-      // not present in arguments.  If multiple options that are configured with
-      // absent() have the same target, the result is undefined.
-      this_t& absent( const TValue& defaultValue )
-      {
-         auto wrapDefault = [=]( Value& target ) {
-            auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
-            if ( pConverted )
-               pConverted->mValue = defaultValue;
-         };
-         OptionConfig::getOption().setAssignDefaultAction( wrapDefault );
-         return *this;
-      }
-
-      // Define the action that will assign the default value to the target if
-      // the option is not present in arguments.  If multiple options that are
-      // configured with absent() have the same target, the result is undefined.
-      this_t& absent( assign_default_action_t action )
-      {
-         auto wrapDefault = [=]( Value& target ) {
-            auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
-            if ( pConverted )
-               action( pConverted->mValue );
-         };
-         OptionConfig::getOption().setAssignDefaultAction( wrapDefault );
-         return *this;
-      }
-   };
-
-   class VoidOptionConfig : public OptionConfigBaseT<VoidOptionConfig>
-   {
-   public:
-      using this_t = VoidOptionConfig;
-      using assign_action_env_t = std::function<void( const std::string&, Environment& )>;
-
-   public:
-      using OptionConfigBaseT<this_t>::OptionConfigBaseT;
-
-      VoidOptionConfig( OptionConfig&& wrapped )
-         : OptionConfigBaseT<this_t>( std::move( wrapped ) )
-      {}
-
-      this_t& action( assign_action_env_t action )
-      {
-         if ( action ) {
-            auto wrapAction = [&]( Value& target, const std::string& value,
-                                    Environment& env ) -> std::optional<std::string> {
-               auto pv = dynamic_cast<VoidValue*>( &target );
-               if ( pv )
-                  action( value, env );
-               return {};
-            };
-            OptionConfig::getOption().setAction( wrapAction );
-         }
-         else
-            OptionConfig::getOption().setAction( nullptr );
-         return *this;
-      }
-   };
-
-   class Command
-   {
-   public:
-      using options_factory_t = std::function<std::shared_ptr<Options>()>;
-
-   private:
-      std::string mName;
-      options_factory_t mFactory;
-      std::string mHelp;
-
-   public:
-      Command( std::string_view name, options_factory_t factory )
-         : mName( name )
-         , mFactory( factory )
-      {}
-
-      void setHelp( std::string_view help )
-      {
-         mHelp = help;
-      }
-
-      const std::string& getName() const
-      {
-         return mName;
-      }
-
-      bool hasName( std::string_view name ) const
-      {
-         return name == mName;
-      }
-
-      bool hasFactory() const
-      {
-         return mFactory != nullptr;
-      }
-
-      const std::string& getHelp() const
-      {
-         return mHelp;
-      }
-
-      std::shared_ptr<Options> createOptions()
-      {
-         assert( mFactory != nullptr );
-         return mFactory();
-      }
-   };
-
-   class CommandConfig
-   {
-      std::vector<Command>& mCommands;
-      size_t mIndex = 0;
-
-   public:
-      CommandConfig( std::vector<Command>& commands, size_t index )
-         : mCommands( commands )
-         , mIndex( index )
-      {}
-
-      CommandConfig& help( std::string_view help )
-      {
-         getCommand().setHelp( help );
-         return *this;
-      }
-
-   private:
-      Command& getCommand()
-      {
-         return mCommands[mIndex];
-      }
-   };
-
-   class ParserConfig
-   {
-   public:
-      struct Data
-      {
-         std::string program;
-         std::string usage;
-         std::string description;
-         std::string epilog;
-         std::ostream* pOutStream = nullptr;
-      };
-
-   private:
-      Data mData;
-
-   public:
-      const Data& data() const
-      {
-         return mData;
-      }
-
-      ParserConfig& program( std::string_view program )
-      {
-         mData.program = program;
-         return *this;
-      }
-
-      ParserConfig& usage( std::string_view usage )
-      {
-         mData.usage = usage;
-         return *this;
-      }
-
-      ParserConfig& description( std::string_view description )
-      {
-         mData.description = description;
-         return *this;
-      }
-
-      ParserConfig& epilog( std::string_view epilog )
-      {
-         mData.epilog = epilog;
-         return *this;
-      }
-
-      // NOTE: The @p stream must outlive the parser.
-      ParserConfig& cout( std::ostream& stream )
-      {
-         mData.pOutStream = &stream;
-         return *this;
-      }
-   };
-
-   // Errors known by the parser
-   enum EError {
-      // The option is not known by the argument parser.
-      UNKNOWN_OPTION,
-      // Multiple options from an exclusive group are present.
-      EXCLUSIVE_OPTION,
-      // A required option is missing.
-      MISSING_OPTION,
-      // An option from a required (exclusive) group is missing.
-      MISSING_OPTION_GROUP,
-      // An required argument is missing.
-      MISSING_ARGUMENT,
-      // The input argument could not be converted.
-      CONVERSION_ERROR,
-      // The argument value is not in the set of valid argument values.
-      INVALID_CHOICE,
-      // Flags do not accept parameters.
-      FLAG_PARAMETER,
-      // Signal that exit was requested by an action.
-      EXIT_REQUESTED,
-      // An error signalled by an action.
-      ACTION_ERROR,
-      // The parser received invalid argv input.
-      INVALID_ARGV
-   };
-
-   struct ParseError
-   {
-      const std::string option;
-      const int errorCode;
-      ParseError( std::string_view optionName, int code )
-         : option( optionName )
-         , errorCode( code )
-      {}
-      ParseError( const ParseError& ) = default;
-      ParseError( ParseError&& ) = default;
-   };
-
-private:
-   class ParseResultBuilder;
-
-public:
-   class ParseResult
-   {
-      friend class ParseResultBuilder;
-
-   private:
-      struct RequireCheck
-      {
-         bool required = false;
-
-         RequireCheck() = default;
-         RequireCheck( RequireCheck&& other )
-         {
-            required = other.required;
-            other.clear();
-         }
-         RequireCheck& operator=( RequireCheck&& other )
-         {
-            required = other.required;
-            other.clear();
-            return *this;
-         }
-         RequireCheck( bool require )
-            : required( require )
-         {}
-
-         ~RequireCheck() noexcept( false )
-         {
-            if ( !std::current_exception() ) {
-               if ( required )
-                  throw UncheckedParseResult();
-            }
-         }
-
-         void activate()
-         {
-            required = true;
-         }
-
-         void clear()
-         {
-            required = false;
-         }
-      };
-
-   private:
-      bool exitRequested = false;
-      bool helpWasShown = false;
-      bool errorsWereShown = false;
-      mutable RequireCheck mustCheck;
-
-   public:
-      std::vector<std::string> ignoredArguments;
-      std::vector<ParseError> errors;
-
-   public:
-      ParseResult() = default;
-      ParseResult( ParseResult&& ) = default;
-      ParseResult& operator=( ParseResult&& ) = default;
-
-      ~ParseResult() noexcept( false )
-      {}
-
-      bool has_exited() const
-      {
-         return exitRequested;
-      }
-
-      bool help_was_shown() const
-      {
-         return helpWasShown;
-      }
-
-      bool errors_were_shown() const
-      {
-         return errorsWereShown;
-      }
-
-      operator bool() const
-      {
-         mustCheck.clear();
-         return errors.empty() && ignoredArguments.empty() && !exitRequested;
-      }
-
-   private:
-      void clear()
-      {
-         ignoredArguments.clear();
-         errors.clear();
-         mustCheck.clear();
-         exitRequested = false;
-      }
-   };
-
-   class Environment
-   {
-      Option& mOption;
-      ParseResultBuilder& mResult;
-
-   public:
-      Environment( Option& option, ParseResultBuilder& result )
-         : mOption( option )
-         , mResult( result )
-      {}
-
-      void exit_parser()
-      {
-         mResult.requestExit();
-      }
-
-      std::string get_option_name() const
-      {
-         return mOption.getHelpName();
-      }
-
-      void add_error( std::string_view error )
-      {
-         if ( error.empty() )
-            mResult.addError( get_option_name(), ACTION_ERROR );
-         else
-            mResult.addError( get_option_name() + ": " + std::string( error ), ACTION_ERROR );
-      }
-   };
-
-private:
-   class ParseResultBuilder
-   {
-      ParseResult result;
-
-   public:
-      void clear()
-      {
-         result.clear();
-      }
-
-      bool wasExitRequested() const
-      {
-         return result.exitRequested;
-      }
-
-      void addError( std::string_view optionName, int error )
-      {
-         result.errors.emplace_back( optionName, error );
-         result.mustCheck.activate();
-      }
-
-      void addIgnored( const std::string& arg )
-      {
-         result.ignoredArguments.push_back( arg );
-      }
-
-      void requestExit()
-      {
-         result.exitRequested = true;
-         result.mustCheck.activate();
-      }
-
-      void signalHelpShown()
-      {
-         result.helpWasShown = true;
-      }
-
-      void signalErrorsShown()
-      {
-         result.errorsWereShown = true;
-      }
-
-      ParseResult&& getResult()
-      {
-         return std::move( result );
-      }
-
-      bool hasArgumentProblems() const
-      {
-         return !result.errors.empty() || !result.ignoredArguments.empty();
-      }
-   };
-
-   class Parser
-   {
-      argument_parser& mArgParser;
-      ParseResultBuilder& mResult;
-
-      bool mIgnoreOptions = false;
-      int mPosition = 0;
-      // The active option will receive additional argument(s)
-      Option* mpActiveOption = nullptr;
-
-   public:
-      Parser( argument_parser& argParser, ParseResultBuilder& result )
-         : mArgParser( argParser )
-         , mResult( result )
-      {}
-
-      void parse( std::vector<std::string>::const_iterator ibegin,
-            std::vector<std::string>::const_iterator iend )
-      {
-         mResult.clear();
-         for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
-            if ( *iarg == "--" ) {
-               mIgnoreOptions = true;
-               continue;
-            }
-
-            if ( mIgnoreOptions ) {
-               addFreeArgument( *iarg );
-               continue;
-            }
-
-            auto arg_view = std::string_view( *iarg );
-            if ( arg_view.substr( 0, 2 ) == "--" )
-               startOption( *iarg );
-            else if ( arg_view.substr( 0, 1 ) == "-" ) {
-               if ( iarg->size() == 2 )
-                  startOption( *iarg );
-               else {
-                  auto opt = std::string{ "--" };
-                  for ( int i = 1; i < arg_view.size(); ++i ) {
-                     opt[1] = arg_view[i];
-                     startOption( opt );
-                  }
-               }
-            }
-            else {
-               if ( haveActiveOption() ) {
-                  auto& option = *mpActiveOption;
-                  if ( option.willAcceptArgument() ) {
-                     setValue( option, *iarg );
-                     if ( !option.willAcceptArgument() )
-                        closeOption();
-                  }
-               }
-               else {
-                  auto pCommand = mArgParser.findCommand( *iarg );
-                  if ( pCommand ) {
-                     mArgParser.parseCommandArguments( *pCommand, iarg, iend, mResult );
-                     break;
-                  }
-                  else
-                     addFreeArgument( *iarg );
-               }
-            }
-
-            if ( mResult.wasExitRequested() )
-               break;
-         }
-
-         if ( haveActiveOption() )
-            closeOption();
-      }
-
-   private:
-      void startOption( std::string_view name )
-      {
-         if ( haveActiveOption() )
-            closeOption();
-
-         std::string_view arg;
-         auto eqpos = name.find( "=" );
-         if ( eqpos != std::string::npos ) {
-            arg = name.substr( eqpos + 1 );
-            name = name.substr( 0, eqpos );
-         }
-
-         auto pOption = findOption( name );
-         if ( pOption ) {
-            auto& option = *pOption;
-            option.onOptionStarted();
-            if ( option.willAcceptArgument() )
-               mpActiveOption = pOption;
-            else
-               setValue( option, option.getFlagValue() );
-
-            if ( !arg.empty() ) {
-               if ( option.willAcceptArgument() )
-                  setValue( option, std::string{ arg } );
-               else
-                  addError( pOption->getHelpName(), FLAG_PARAMETER );
-            }
-         }
-         else
-            addError( name, UNKNOWN_OPTION );
-      }
-
-      bool haveActiveOption() const
-      {
-         return mpActiveOption != nullptr;
-      }
-
-      void closeOption()
-      {
-         if ( haveActiveOption() ) {
-            auto& option = *mpActiveOption;
-            if ( option.needsMoreArguments() )
-               addError( option.getHelpName(), MISSING_ARGUMENT );
-            else if ( option.willAcceptArgument() && !option.wasAssignedThroughThisOption() )
-               setValue( option, option.getFlagValue() );
-         }
-         mpActiveOption = nullptr;
-      }
-
-      void addFreeArgument( const std::string& arg )
-      {
-         if ( mPosition < mArgParser.mPositional.size() ) {
-            auto& option = mArgParser.mPositional[mPosition];
-            if ( option.willAcceptArgument() ) {
-               setValue( option, arg );
-               return;
-            }
-            else {
-               ++mPosition;
-               while ( mPosition < mArgParser.mPositional.size() ) {
-                  auto& option = mArgParser.mPositional[mPosition];
-                  if ( option.willAcceptArgument() ) {
-                     setValue( option, arg );
-                     return;
-                  }
-                  ++mPosition;
-               }
-            }
-         }
-
-         mResult.addIgnored( arg );
-      }
-
-      void addError( std::string_view optionName, int errorCode )
-      {
-         mResult.addError( optionName, errorCode );
-      }
-
-      Option* findOption( std::string_view optionName ) const
-      {
-         return mArgParser.findOption( optionName );
-      }
-
-      void setValue( Option& option, const std::string& value )
-      {
-         try {
-            auto env = Environment{ option, mResult };
-            option.setValue( value, env );
-         }
-         catch ( const InvalidChoiceError& ) {
-            addError( option.getHelpName(), INVALID_CHOICE );
-         }
-         catch ( const std::invalid_argument& ) {
-            addError( option.getHelpName(), CONVERSION_ERROR );
-         }
-         catch ( const std::out_of_range& ) {
-            addError( option.getHelpName(), CONVERSION_ERROR );
-         }
-      }
-   };
-
-private:
-   ParserConfig mConfig;
-   std::vector<Command> mCommands;
-   std::vector<Option> mOptions;
-   std::vector<Option> mPositional;
+   ParserDefinition mParserDef;
    std::set<std::string> mHelpOptionNames;
    std::vector<std::shared_ptr<Options>> mTargets;
    std::map<std::string, std::shared_ptr<OptionGroup>> mGroups;
@@ -1388,7 +48,7 @@ public:
     */
    ParserConfig& config()
    {
-      return mConfig;
+      return mParserDef.mConfig;
    }
 
    /**
@@ -1396,7 +56,15 @@ public:
     */
    const ParserConfig::Data& getConfig() const
    {
-      return mConfig.data();
+      return mParserDef.getConfig();
+   }
+
+   /**
+    * Get a reference to the definition of the parser for inspection.
+    */
+   const ParserDefinition& getDefinition() const
+   {
+      return mParserDef;
    }
 
    CommandConfig add_command( const std::string& name, Command::options_factory_t factory )
@@ -1452,8 +120,8 @@ public:
    {
       const auto shortName = "-h";
       const auto longName = "--help";
-      auto pShort = findOption( shortName );
-      auto pLong = findOption( longName );
+      auto pShort = mParserDef.findOption( shortName );
+      auto pLong = mParserDef.findOption( longName );
 
       if ( !pShort && !pLong )
          return add_help_option( shortName, longName );
@@ -1566,29 +234,14 @@ public:
 
    ArgumentHelpResult describe_argument( std::string_view name ) const
    {
-      bool isPositional = name.substr( 0, 1 ) != "-";
-      const auto& args = isPositional ? mPositional : mOptions;
-      for ( auto& opt : args )
-         if ( opt.hasName( name ) )
-            return describeOption( opt );
-
-      throw std::invalid_argument( "Unknown option." );
+      ArgumentDescriber describer;
+      return describer.describe_argument( mParserDef, name );
    }
 
    std::vector<ArgumentHelpResult> describe_arguments() const
    {
-      std::vector<ArgumentHelpResult> descriptions;
-
-      for ( auto& opt : mOptions )
-         descriptions.push_back( describeOption( opt ) );
-
-      for ( auto& opt : mPositional )
-         descriptions.push_back( describeOption( opt ) );
-
-      for ( auto& cmd : mCommands )
-         descriptions.push_back( describeCommand( cmd ) );
-
-      return descriptions;
+      ArgumentDescriber describer;
+      return describer.describe_arguments( mParserDef );
    }
 
 private:
@@ -1602,10 +255,10 @@ private:
          return;
       }
 
-      for ( auto& option : mOptions )
+      for ( auto& option : mParserDef.mOptions )
          option.resetValue();
 
-      for ( auto& option : mPositional )
+      for ( auto& option : mParserDef.mPositional )
          option.resetValue();
 
       for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
@@ -1617,7 +270,7 @@ private:
          }
       }
 
-      Parser parser( *this, result );
+      Parser parser( mParserDef, result );
       parser.parse( ibegin, iend );
       if ( result.wasExitRequested() ) {
          result.addError( {}, EXIT_REQUESTED );
@@ -1631,22 +284,13 @@ private:
       reportMissingGroups( result );
    }
 
-   Option* findOption( std::string_view optionName )
-   {
-      for ( auto& option : mOptions )
-         if ( option.hasName( optionName ) )
-            return &option;
-
-      return nullptr;
-   }
-
    void assignDefaultValues()
    {
-      for ( auto& option : mOptions )
+      for ( auto& option : mParserDef.mOptions )
          if ( !option.wasAssigned() && option.hasDefault() )
             option.assignDefault();
 
-      for ( auto& option : mPositional )
+      for ( auto& option : mParserDef.mPositional )
          if ( !option.wasAssigned() && option.hasDefault() )
             option.assignDefault();
    }
@@ -1666,7 +310,7 @@ private:
       }
 
       // A required option can not be in an exclusive group.
-      for ( auto& opt : mOptions ) {
+      for ( auto& opt : mParserDef.mOptions ) {
          if ( opt.isRequired() ) {
             auto pGroup = opt.getGroup();
             if ( pGroup && pGroup->isExclusive() )
@@ -1677,22 +321,22 @@ private:
 
    void reportMissingOptions( ParseResultBuilder& result )
    {
-      for ( auto& option : mOptions )
+      for ( auto& option : mParserDef.mOptions )
          if ( option.isRequired() && !option.wasAssigned() )
             result.addError( option.getHelpName(), MISSING_OPTION );
 
-      for ( auto& option : mPositional )
+      for ( auto& option : mParserDef.mPositional )
          if ( option.needsMoreArguments() )
             result.addError( option.getHelpName(), MISSING_ARGUMENT );
    }
 
    bool hasRequiredArguments() const
    {
-      for ( auto& option : mOptions )
+      for ( auto& option : mParserDef.mOptions )
          if ( option.isRequired() )
             return true;
 
-      for ( auto& option : mPositional )
+      for ( auto& option : mParserDef.mPositional )
          if ( option.isRequired() )
             return true;
 
@@ -1702,7 +346,7 @@ private:
    void reportExclusiveViolations( ParseResultBuilder& result )
    {
       std::map<std::string, std::vector<std::string>> counts;
-      for ( auto& option : mOptions ) {
+      for ( auto& option : mParserDef.mOptions ) {
          auto pGroup = option.getGroup();
          if ( pGroup && pGroup->isExclusive() && option.wasAssigned() )
             counts[pGroup->getName()].push_back( option.getHelpName() );
@@ -1716,7 +360,7 @@ private:
    void reportMissingGroups( ParseResultBuilder& result )
    {
       std::map<std::string, int> counts;
-      for ( auto& option : mOptions ) {
+      for ( auto& option : mParserDef.mOptions ) {
          auto pGroup = option.getGroup();
          if ( pGroup && pGroup->isRequired() )
             counts[pGroup->getName()] += option.wasAssigned() ? 1 : 0;
@@ -1752,8 +396,8 @@ private:
       };
 
       if ( isPositional( names ) ) {
-         mPositional.push_back( std::move( newOption ) );
-         auto& option = mPositional.back();
+         mParserDef.mPositional.push_back( std::move( newOption ) );
+         auto& option = mParserDef.mPositional.back();
          option.setLongName( names.empty() ? "arg" : names[0] );
          option.setRequired( true );
 
@@ -1767,20 +411,20 @@ private:
          if ( mpActiveGroup && !mpActiveGroup->isExclusive() )
             option.setGroup( mpActiveGroup );
 
-         return { mPositional, mPositional.size() - 1 };
+         return { mParserDef.mPositional, mParserDef.mPositional.size() - 1 };
       }
       else if ( isOption( names ) ) {
          trySetNames( newOption, names );
          ensureIsNewOption( newOption.getLongName() );
          ensureIsNewOption( newOption.getShortName() );
 
-         mOptions.push_back( std::move( newOption ) );
-         auto& option = mOptions.back();
+         mParserDef.mOptions.push_back( std::move( newOption ) );
+         auto& option = mParserDef.mOptions.back();
 
          if ( mpActiveGroup )
             option.setGroup( mpActiveGroup );
 
-         return { mOptions, mOptions.size() - 1 };
+         return { mParserDef.mOptions, mParserDef.mOptions.size() - 1 };
       }
 
       throw std::invalid_argument( "The argument must be either positional or an option." );
@@ -1810,7 +454,7 @@ private:
       if ( name.empty() )
          return;
 
-      auto pOption = findOption( name );
+      auto pOption = mParserDef.findOption( name );
       if ( pOption ) {
          auto groupName = pOption->getGroup() ? pOption->getGroup()->getName() : "";
          throw DuplicateOption( groupName, name );
@@ -1827,33 +471,16 @@ private:
          throw std::invalid_argument( "Command name must not start with a dash." );
 
       ensureIsNewCommand( command.getName() );
-      mCommands.push_back( std::move( command ) );
+      mParserDef.mCommands.push_back( std::move( command ) );
 
-      return { mCommands, mCommands.size() - 1 };
+      return { mParserDef.mCommands, mParserDef.mCommands.size() - 1 };
    }
 
    void ensureIsNewCommand( const std::string& name )
    {
-      auto pCommand = findCommand( name );
+      auto pCommand = mParserDef.findCommand( name );
       if ( pCommand )
          throw DuplicateCommand( name );
-   }
-
-   Command* findCommand( std::string_view commandName )
-   {
-      for ( auto& command : mCommands )
-         if ( command.hasName( commandName ) )
-            return &command;
-
-      return nullptr;
-   }
-
-   void parseCommandArguments( Command& command, std::vector<std::string>::const_iterator ibegin,
-         std::vector<std::string>::const_iterator iend, ParseResultBuilder& result )
-   {
-      auto parser = argument_parser{};
-      parser.add_arguments( command.createOptions() );
-      parser.parse_args( ibegin, iend, result );
    }
 
    std::shared_ptr<OptionGroup> addGroup( std::string name, bool isExclusive )
@@ -1878,77 +505,20 @@ private:
       return igrp->second;
    }
 
-   ArgumentHelpResult describeOption( const Option& option ) const
-   {
-      ArgumentHelpResult help;
-      help.help_name = option.getHelpName();
-      help.short_name = option.getShortName();
-      help.long_name = option.getLongName();
-      help.metavar = option.getMetavar();
-      help.help = option.getRawHelp();
-      help.isRequired = option.isRequired();
-
-      if ( option.acceptsAnyArguments() ) {
-         const auto& metavar = help.metavar;
-         auto [mmin, mmax] = option.getArgumentCounts();
-         std::string res;
-         if ( mmin > 0 ) {
-            res = metavar;
-            for ( int i = 1; i < mmin; ++i )
-               res = res + " " + metavar;
-         }
-         if ( mmax < mmin ) {
-            auto opt = ( res.empty() ? "[" : " [" ) + metavar + " ...]";
-            res += opt;
-         }
-         else if ( mmax - mmin == 1 )
-            res += "[" + metavar + "]";
-         else if ( mmax > mmin ) {
-            auto opt = ( res.empty() ? "[" : " [" ) + metavar + " {0.."
-                  + std::to_string( mmax - mmin ) + "}]";
-            res += opt;
-         }
-
-         help.arguments = std::move( res );
-      }
-
-      auto pGroup = option.getGroup();
-      if ( pGroup ) {
-         help.group.name = pGroup->getName();
-         help.group.title = pGroup->getTitle();
-         help.group.description = pGroup->getDescription();
-         help.group.isExclusive = pGroup->isExclusive();
-         help.group.isRequired = pGroup->isRequired();
-      }
-
-      return help;
-   }
-
-   ArgumentHelpResult describeCommand( const Command& command ) const
-   {
-      ArgumentHelpResult help;
-      help.isCommand = true;
-      help.help_name = command.getName();
-      help.long_name = command.getName();
-      help.help = command.getHelp();
-
-      return help;
-   }
-
    void generate_help()
    {
       // TODO: The formatter should be configurable
       auto formatter = HelpFormatter();
-      auto pStream = getConfig().pOutStream;
+      auto pStream = mParserDef.getConfig().pOutStream;
       if ( !pStream )
          pStream = &std::cout;
 
-      formatter.format( *this, *pStream );
+      formatter.format( mParserDef, *pStream );
    }
 
    void describe_errors( ParseResult& result )
    {
-      auto pStream = getConfig().pOutStream;
+      auto pStream = mParserDef.getConfig().pOutStream;
       if ( !pStream )
          pStream = &std::cout;
 
@@ -2004,4 +574,5 @@ private:
 
 }   // namespace argparse
 
-#include "helpformatter.h"
+#include "helpformatter_impl.h"
+#include "parser_impl.h"

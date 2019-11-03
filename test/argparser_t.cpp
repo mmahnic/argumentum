@@ -136,7 +136,7 @@ TEST( ArgumentParserTest, shouldReportErrorForMissingArgument )
    EXPECT_EQ( "-a", res.errors.front().option );
    ASSERT_EQ( 1, res.ignoredArguments.size() );
    EXPECT_EQ( "freearg", res.ignoredArguments.front() );
-   EXPECT_EQ( argument_parser::MISSING_ARGUMENT, res.errors.front().errorCode );
+   EXPECT_EQ( MISSING_ARGUMENT, res.errors.front().errorCode );
 }
 
 TEST( ArgumentParserTest, shouldReportUnknownOptionError )
@@ -150,7 +150,7 @@ TEST( ArgumentParserTest, shouldReportUnknownOptionError )
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "--unknown", res.errors.front().option );
-   EXPECT_EQ( argument_parser::UNKNOWN_OPTION, res.errors.front().errorCode );
+   EXPECT_EQ( UNKNOWN_OPTION, res.errors.front().errorCode );
 }
 
 TEST( ArgumentParserTest, shouldReportMissingRequiredOptionError )
@@ -166,7 +166,7 @@ TEST( ArgumentParserTest, shouldReportMissingRequiredOptionError )
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "-b", res.errors.front().option );
-   EXPECT_EQ( argument_parser::MISSING_OPTION, res.errors.front().errorCode );
+   EXPECT_EQ( MISSING_OPTION, res.errors.front().errorCode );
 }
 
 TEST( ArgumentParserTest, shouldAcceptOptionNamesInConstructor )
@@ -295,7 +295,7 @@ TEST( ArgumentParserTest, shouldFailWhenOptionArgumentCountsAreWrong )
 
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "-t", res.errors.front().option );
-   EXPECT_EQ( argument_parser::MISSING_ARGUMENT, res.errors.front().errorCode );
+   EXPECT_EQ( MISSING_ARGUMENT, res.errors.front().errorCode );
 
    EXPECT_TRUE( vector_eq( { "not-file3" }, res.ignoredArguments ) );
 }
@@ -362,7 +362,7 @@ TEST( ArgumentParserTest, shouldSupportExactNumberOfOptionArguments )
    EXPECT_EQ( 0, res.ignoredArguments.size() );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "-t", res.errors[0].option );
-   EXPECT_EQ( argument_parser::MISSING_ARGUMENT, res.errors[0].errorCode );
+   EXPECT_EQ( MISSING_ARGUMENT, res.errors[0].errorCode );
 }
 
 TEST( ArgumentParserTest, shouldSupportExactNumberOfPositionalArguments )
@@ -407,7 +407,7 @@ TEST( ArgumentParserTest, shouldSupportExactNumberOfPositionalArguments )
    EXPECT_EQ( 0, res.ignoredArguments.size() );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "text", res.errors[0].option );
-   EXPECT_EQ( argument_parser::MISSING_ARGUMENT, res.errors[0].errorCode );
+   EXPECT_EQ( MISSING_ARGUMENT, res.errors[0].errorCode );
 }
 
 TEST( ArgumentParserTest, shouldSupportMinNumberOfOptionArguments )
@@ -435,7 +435,7 @@ TEST( ArgumentParserTest, shouldSupportMinNumberOfOptionArguments )
    EXPECT_EQ( 0, res.ignoredArguments.size() );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "-t", res.errors[0].option );
-   EXPECT_EQ( argument_parser::MISSING_ARGUMENT, res.errors[0].errorCode );
+   EXPECT_EQ( MISSING_ARGUMENT, res.errors[0].errorCode );
 }
 
 TEST( ArgumentParserTest, shouldSupportMaxNumberOfOptionArguments )
@@ -499,7 +499,7 @@ TEST( ArgumentParserTest, shouldSupportMinNumberOfPositionalArguments )
    EXPECT_EQ( 0, res.ignoredArguments.size() );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "text", res.errors[0].option );
-   EXPECT_EQ( argument_parser::MISSING_ARGUMENT, res.errors[0].errorCode );
+   EXPECT_EQ( MISSING_ARGUMENT, res.errors[0].errorCode );
 }
 
 TEST( ArgumentParserTest, shouldSupportMaxNumberOfPositionalArguments )
@@ -622,7 +622,7 @@ TEST( ArgumentParserTest, shouldFailIfArgumentIsNotInChoices )
    EXPECT_TRUE( strvalue.empty() );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "-s", res.errors[0].option );
-   EXPECT_EQ( argument_parser::INVALID_CHOICE, res.errors[0].errorCode );
+   EXPECT_EQ( INVALID_CHOICE, res.errors[0].errorCode );
 }
 
 TEST( ArgumentParserTest, shouldFailIfPositionalArgumentIsNotInChoices )
@@ -636,7 +636,7 @@ TEST( ArgumentParserTest, shouldFailIfPositionalArgumentIsNotInChoices )
    EXPECT_TRUE( strvalue.empty() );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "string", res.errors[0].option );
-   EXPECT_EQ( argument_parser::INVALID_CHOICE, res.errors[0].errorCode );
+   EXPECT_EQ( INVALID_CHOICE, res.errors[0].errorCode );
 }
 
 TEST( ArgumentParserTest, shouldDistinguishLongAndShortAndPositionalNames )
@@ -762,7 +762,7 @@ TEST( ArgumentParserTest, shouldFailIfArgumentFollowsFlagWithEquals )
    EXPECT_EQ( "1", strvalue );
    ASSERT_EQ( 1, res.errors.size() );
    EXPECT_EQ( "--string", res.errors.front().option );
-   EXPECT_EQ( argument_parser::FLAG_PARAMETER, res.errors.front().errorCode );
+   EXPECT_EQ( FLAG_PARAMETER, res.errors.front().errorCode );
 }
 
 // The program name must be set explicitly with parser.config().program().
@@ -893,12 +893,12 @@ TEST( ArgumentParserTest, shouldSetCustomHelpOptions )
    res = parser.parse_args( { "-h" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::UNKNOWN_OPTION, res.errors[0].errorCode );
+   EXPECT_EQ( UNKNOWN_OPTION, res.errors[0].errorCode );
 
    res = parser.parse_args( { "--help" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::UNKNOWN_OPTION, res.errors[0].errorCode );
+   EXPECT_EQ( UNKNOWN_OPTION, res.errors[0].errorCode );
 }
 
 TEST( ArgumentParserTest, shouldSupportMultipleHelpOptions )

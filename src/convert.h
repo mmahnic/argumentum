@@ -1,6 +1,8 @@
 // Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
+#pragma once
+
 #include <optional>
 #include <string>
 #include <vector>

@@ -29,7 +29,7 @@ TEST( ArgumentParserGroupsTest, shouldDefineExclusiveGroups )
    // -- THEN fail
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::EXCLUSIVE_OPTION, res.errors[0].errorCode );
+   EXPECT_EQ( EXCLUSIVE_OPTION, res.errors[0].errorCode );
 
    // -- WHEN there is only one option from the exclusive group
    res = parser.parse_args( { "--maybe" } );
@@ -79,7 +79,7 @@ TEST( ArgumentParserGroupsTest, shouldStartSameGroupMultipleTimes )
    // -- THEN fail
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::EXCLUSIVE_OPTION, res.errors[0].errorCode );
+   EXPECT_EQ( EXCLUSIVE_OPTION, res.errors[0].errorCode );
 
    // -- WHEN the second argument is from the second group definition
    res = parser.parse_args( { "--maybe", "--possibly" } );
@@ -87,7 +87,7 @@ TEST( ArgumentParserGroupsTest, shouldStartSameGroupMultipleTimes )
    // -- THEN fail
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::EXCLUSIVE_OPTION, res.errors[0].errorCode );
+   EXPECT_EQ( EXCLUSIVE_OPTION, res.errors[0].errorCode );
 }
 
 // These groups affect the grouping of the options in the formatted text.
@@ -152,7 +152,7 @@ TEST( ArgumentParserGroupsTest, shouldRequireOptionsFromRequiredExclusiveGroups 
    auto res = parser.parse_args( { "--third" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::MISSING_OPTION_GROUP, res.errors[0].errorCode );
+   EXPECT_EQ( MISSING_OPTION_GROUP, res.errors[0].errorCode );
 }
 
 TEST( ArgumentParserGroupsTest, shouldRequireOptionsFromRequiredSimpleGroups )
@@ -171,7 +171,7 @@ TEST( ArgumentParserGroupsTest, shouldRequireOptionsFromRequiredSimpleGroups )
    auto res = parser.parse_args( { "--third" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_EQ( 1, res.errors.size() );
-   EXPECT_EQ( argument_parser::MISSING_OPTION_GROUP, res.errors[0].errorCode );
+   EXPECT_EQ( MISSING_OPTION_GROUP, res.errors[0].errorCode );
 }
 
 TEST( ArgumentParserGroupsTest, shouldForbidRequiredOptionsInExclusiveGroup )
