@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "argdescriber.h"
 #include "commands.h"
 #include "environment.h"
 #include "exceptions.h"
@@ -10,6 +11,7 @@
 #include "helpformatter.h"
 #include "options.h"
 #include "parser.h"
+#include "parserconfig.h"
 #include "parseresult.h"
 #include "values.h"
 
@@ -32,62 +34,7 @@ class argument_parser
    // FIXME: the main parse_args should be a part of Parser
    friend class Parser;
 
-public:
-   class ParserConfig
-   {
-   public:
-      struct Data
-      {
-         std::string program;
-         std::string usage;
-         std::string description;
-         std::string epilog;
-         std::ostream* pOutStream = nullptr;
-      };
-
-   private:
-      Data mData;
-
-   public:
-      const Data& data() const
-      {
-         return mData;
-      }
-
-      ParserConfig& program( std::string_view program )
-      {
-         mData.program = program;
-         return *this;
-      }
-
-      ParserConfig& usage( std::string_view usage )
-      {
-         mData.usage = usage;
-         return *this;
-      }
-
-      ParserConfig& description( std::string_view description )
-      {
-         mData.description = description;
-         return *this;
-      }
-
-      ParserConfig& epilog( std::string_view epilog )
-      {
-         mData.epilog = epilog;
-         return *this;
-      }
-
-      // NOTE: The @p stream must outlive the parser.
-      ParserConfig& cout( std::ostream& stream )
-      {
-         mData.pOutStream = &stream;
-         return *this;
-      }
-   };
-
 private:
-   ParserConfig mConfig;
    ParserDefinition mParserDef;
    std::set<std::string> mHelpOptionNames;
    std::vector<std::shared_ptr<Options>> mTargets;
@@ -101,7 +48,7 @@ public:
     */
    ParserConfig& config()
    {
-      return mConfig;
+      return mParserDef.mConfig;
    }
 
    /**
@@ -109,7 +56,15 @@ public:
     */
    const ParserConfig::Data& getConfig() const
    {
-      return mConfig.data();
+      return mParserDef.getConfig();
+   }
+
+   /**
+    * Get a reference to the definition of the parser for inspection.
+    */
+   const ParserDefinition& getDefinition() const
+   {
+      return mParserDef;
    }
 
    CommandConfig add_command( const std::string& name, Command::options_factory_t factory )
@@ -279,29 +234,14 @@ public:
 
    ArgumentHelpResult describe_argument( std::string_view name ) const
    {
-      bool isPositional = name.substr( 0, 1 ) != "-";
-      const auto& args = isPositional ? mParserDef.mPositional : mParserDef.mOptions;
-      for ( auto& opt : args )
-         if ( opt.hasName( name ) )
-            return describeOption( opt );
-
-      throw std::invalid_argument( "Unknown option." );
+      ArgumentDescriber describer;
+      return describer.describe_argument( mParserDef, name );
    }
 
    std::vector<ArgumentHelpResult> describe_arguments() const
    {
-      std::vector<ArgumentHelpResult> descriptions;
-
-      for ( auto& opt : mParserDef.mOptions )
-         descriptions.push_back( describeOption( opt ) );
-
-      for ( auto& opt : mParserDef.mPositional )
-         descriptions.push_back( describeOption( opt ) );
-
-      for ( auto& cmd : mParserDef.mCommands )
-         descriptions.push_back( describeCommand( cmd ) );
-
-      return descriptions;
+      ArgumentDescriber describer;
+      return describer.describe_arguments( mParserDef );
    }
 
 private:
@@ -565,77 +505,20 @@ private:
       return igrp->second;
    }
 
-   ArgumentHelpResult describeOption( const Option& option ) const
-   {
-      ArgumentHelpResult help;
-      help.help_name = option.getHelpName();
-      help.short_name = option.getShortName();
-      help.long_name = option.getLongName();
-      help.metavar = option.getMetavar();
-      help.help = option.getRawHelp();
-      help.isRequired = option.isRequired();
-
-      if ( option.acceptsAnyArguments() ) {
-         const auto& metavar = help.metavar;
-         auto [mmin, mmax] = option.getArgumentCounts();
-         std::string res;
-         if ( mmin > 0 ) {
-            res = metavar;
-            for ( int i = 1; i < mmin; ++i )
-               res = res + " " + metavar;
-         }
-         if ( mmax < mmin ) {
-            auto opt = ( res.empty() ? "[" : " [" ) + metavar + " ...]";
-            res += opt;
-         }
-         else if ( mmax - mmin == 1 )
-            res += "[" + metavar + "]";
-         else if ( mmax > mmin ) {
-            auto opt = ( res.empty() ? "[" : " [" ) + metavar + " {0.."
-                  + std::to_string( mmax - mmin ) + "}]";
-            res += opt;
-         }
-
-         help.arguments = std::move( res );
-      }
-
-      auto pGroup = option.getGroup();
-      if ( pGroup ) {
-         help.group.name = pGroup->getName();
-         help.group.title = pGroup->getTitle();
-         help.group.description = pGroup->getDescription();
-         help.group.isExclusive = pGroup->isExclusive();
-         help.group.isRequired = pGroup->isRequired();
-      }
-
-      return help;
-   }
-
-   ArgumentHelpResult describeCommand( const Command& command ) const
-   {
-      ArgumentHelpResult help;
-      help.isCommand = true;
-      help.help_name = command.getName();
-      help.long_name = command.getName();
-      help.help = command.getHelp();
-
-      return help;
-   }
-
    void generate_help()
    {
       // TODO: The formatter should be configurable
       auto formatter = HelpFormatter();
-      auto pStream = getConfig().pOutStream;
+      auto pStream = mParserDef.getConfig().pOutStream;
       if ( !pStream )
          pStream = &std::cout;
 
-      formatter.format( *this, *pStream );
+      formatter.format( mParserDef, *pStream );
    }
 
    void describe_errors( ParseResult& result )
    {
-      auto pStream = getConfig().pOutStream;
+      auto pStream = mParserDef.getConfig().pOutStream;
       if ( !pStream )
          pStream = &std::cout;
 

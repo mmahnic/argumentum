@@ -182,7 +182,7 @@ template<typename P, typename F>
 std::string getTestHelp( P&& parser, F&& formatter )
 {
    std::stringstream strout;
-   formatter.format( parser, strout );
+   formatter.format( parser.getDefinition(), strout );
    return strout.str();
 }
 

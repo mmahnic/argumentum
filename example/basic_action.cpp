@@ -1,5 +1,6 @@
 #include <climits>
 #include <cppargparse/argparse.h>
+#include <iostream>
 #include <numeric>
 #include <vector>
 

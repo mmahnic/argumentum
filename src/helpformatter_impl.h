@@ -5,8 +5,9 @@
 
 #include "helpformatter.h"
 
-#include "argparser.h"
+#include "argdescriber.h"
 #include "optionsorter.h"
+#include "parser.h"
 #include "writer.h"
 
 namespace argparse {
@@ -44,9 +45,9 @@ inline size_t HelpFormatter::deriveMaxArgumentWidth(
 }
 
 inline void HelpFormatter::formatUsage(
-      const argument_parser& parser, std::vector<ArgumentHelpResult>& args, Writer& writer )
+      const ParserDefinition& parserDef, std::vector<ArgumentHelpResult>& args, Writer& writer )
 {
-   const auto& config = parser.getConfig();
+   const auto& config = parserDef.getConfig();
    if ( !config.program.empty() )
       writer.write( config.program );
 
@@ -92,17 +93,18 @@ inline void HelpFormatter::formatUsage(
    }
 }
 
-inline void HelpFormatter::format( const argument_parser& parser, std::ostream& out )
+inline void HelpFormatter::format( const ParserDefinition& parserDef, std::ostream& out )
 {
-   const auto& config = parser.getConfig();
-   auto args = parser.describe_arguments();
+   const auto& config = parserDef.getConfig();
+   ArgumentDescriber describer;
+   auto args = describer.describe_arguments( parserDef );
 
    Writer writer( out, mTextWidth );
    writer.write( "usage: " );
    if ( !config.usage.empty() )
       writer.write( config.usage );
    else
-      formatUsage( parser, args, writer );
+      formatUsage( parserDef, args, writer );
    writer.startParagraph();
 
    auto desctiptionIndent = deriveMaxArgumentWidth( args ) + mArgumentIndent + 1;

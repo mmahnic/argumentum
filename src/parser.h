@@ -5,6 +5,7 @@
 
 #include "commands.h"
 #include "options.h"
+#include "parserconfig.h"
 
 #include <string>
 #include <string_view>
@@ -18,6 +19,7 @@ class ParseResultBuilder;
 
 struct ParserDefinition
 {
+   ParserConfig mConfig;
    std::vector<Command> mCommands;
    std::vector<Option> mOptions;
    std::vector<Option> mPositional;
@@ -38,6 +40,14 @@ struct ParserDefinition
             return &command;
 
       return nullptr;
+   }
+
+   /**
+    * Get a reference to the parser configuration for inspection.
+    */
+   const ParserConfig::Data& getConfig() const
+   {
+      return mConfig.data();
    }
 };
 
