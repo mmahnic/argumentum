@@ -6,6 +6,7 @@
 #include "commands.h"
 #include "environment.h"
 #include "exceptions.h"
+#include "groups.h"
 #include "helpformatter_i.h"
 #include "options.h"
 #include "parseresult.h"
