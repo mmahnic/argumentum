@@ -86,7 +86,7 @@ TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
    // -- THEN
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_FALSE( res.errors.empty() );
-   EXPECT_EQ( argument_parser::UNKNOWN_OPTION, res.errors.front().errorCode );
+   EXPECT_EQ( UNKNOWN_OPTION, res.errors.front().errorCode );
 }
 
 // Form: program --global-options command --command-options
@@ -179,7 +179,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredOptionsWhenCommandP
    auto res = parser.parse_args( { "one", "-s", "command-works" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_FALSE( res.errors.empty() );
-   EXPECT_EQ( argument_parser::MISSING_OPTION, res.errors.front().errorCode );
+   EXPECT_EQ( MISSING_OPTION, res.errors.front().errorCode );
 
    ASSERT_NE( nullptr, pCmdOne );
    EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
@@ -216,7 +216,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredPositionalWhenComma
    auto res = parser.parse_args( { "one", "-s", "command-works" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_FALSE( res.errors.empty() );
-   EXPECT_EQ( argument_parser::MISSING_ARGUMENT, res.errors.front().errorCode );
+   EXPECT_EQ( MISSING_ARGUMENT, res.errors.front().errorCode );
 
    ASSERT_NE( nullptr, pCmdOne );
    EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
