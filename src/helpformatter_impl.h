@@ -11,6 +11,38 @@
 
 namespace argparse {
 
+inline std::string HelpFormatter::formatArgument( const ArgumentHelpResult& arg ) const
+{
+   if ( arg.isCommand )
+      return arg.help_name;
+   else if ( arg.is_positional() )
+      return arg.help_name;
+
+   std::string res;
+   if ( !arg.short_name.empty() && !arg.long_name.empty() )
+      res = arg.short_name + ", " + arg.long_name;
+   else if ( !arg.short_name.empty() )
+      res = arg.short_name;
+   else if ( !arg.long_name.empty() )
+      res = "    " + arg.long_name;
+
+   return !arg.arguments.empty() ? res + " " + arg.arguments : res;
+}
+
+inline size_t HelpFormatter::deriveMaxArgumentWidth(
+      const std::vector<ArgumentHelpResult>& args ) const
+{
+   if ( args.empty() )
+      return 0U;
+
+   auto imax =
+         std::max_element( std::begin( args ), std::end( args ), [this]( auto&& a, auto&& b ) {
+            return formatArgument( a ).size() < formatArgument( b ).size();
+         } );
+
+   return formatArgument( *imax ).size();
+}
+
 inline void HelpFormatter::formatUsage(
       const argument_parser& parser, std::vector<ArgumentHelpResult>& args, Writer& writer )
 {
