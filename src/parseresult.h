@@ -53,6 +53,7 @@ class ParseResult
    friend class ParseResultBuilder;
 
 private:
+   // The parse result must be checked. If it is not, the destructor will throw.
    struct RequireCheck
    {
       bool required = false;
@@ -77,7 +78,7 @@ private:
       {
          if ( !std::current_exception() ) {
             if ( required )
-               throw UncheckedParseResult();
+               throw UncheckedParseResult(); // lgtm [cpp/throw-in-destructor]
          }
       }
 
