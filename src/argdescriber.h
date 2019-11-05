@@ -53,29 +53,8 @@ public:
       help.help = option.getRawHelp();
       help.isRequired = option.isRequired();
 
-      if ( option.acceptsAnyArguments() ) {
-         const auto& metavar = help.metavar;
-         auto [mmin, mmax] = option.getArgumentCounts();
-         std::string res;
-         if ( mmin > 0 ) {
-            res = metavar;
-            for ( int i = 1; i < mmin; ++i )
-               res = res + " " + metavar;
-         }
-         if ( mmax < mmin ) {
-            auto opt = ( res.empty() ? "[" : " [" ) + metavar + " ...]";
-            res += opt;
-         }
-         else if ( mmax - mmin == 1 )
-            res += "[" + metavar + "]";
-         else if ( mmax > mmin ) {
-            auto opt = ( res.empty() ? "[" : " [" ) + metavar + " {0.."
-                  + std::to_string( mmax - mmin ) + "}]";
-            res += opt;
-         }
-
-         help.arguments = std::move( res );
-      }
+      if ( option.acceptsAnyArguments() )
+         help.arguments = describeArguments( option, help.metavar );
 
       auto pGroup = option.getGroup();
       if ( pGroup ) {
@@ -98,6 +77,31 @@ public:
       help.help = command.getHelp();
 
       return help;
+   }
+
+private:
+   std::string describeArguments( const Option& option, const std::string& metavar ) const
+   {
+      std::string res;
+      auto [mmin, mmax] = option.getArgumentCounts();
+      if ( mmin > 0 ) {
+         res = metavar;
+         for ( int i = 1; i < mmin; ++i )
+            res = res + " " + metavar;
+      }
+      if ( mmax < mmin ) {
+         auto opt = ( res.empty() ? "[" : " [" ) + metavar + " ...]";
+         res += opt;
+      }
+      else if ( mmax - mmin == 1 )
+         res += "[" + metavar + "]";
+      else if ( mmax > mmin ) {
+         auto opt = ( res.empty() ? "[" : " [" ) + metavar + " {0.." + std::to_string( mmax - mmin )
+               + "}]";
+         res += opt;
+      }
+
+      return res;
    }
 };
 
