@@ -248,10 +248,14 @@ private:
    void parse_args( std::vector<std::string>::const_iterator ibegin,
          std::vector<std::string>::const_iterator iend, ParseResultBuilder& result )
    {
-      if ( ibegin == iend && hasRequiredArguments() ) {
+      auto showHelp = [&]() {
          generate_help();
          result.signalHelpShown();
          result.requestExit();
+      };
+
+      if ( ibegin == iend && hasRequiredArguments() ) {
+         showHelp();
          return;
       }
 
@@ -263,9 +267,7 @@ private:
 
       for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
          if ( mHelpOptionNames.count( *iarg ) > 0 ) {
-            generate_help();
-            result.signalHelpShown();
-            result.requestExit();
+            showHelp();
             return;
          }
       }
