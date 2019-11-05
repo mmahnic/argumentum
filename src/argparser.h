@@ -9,6 +9,7 @@
 #include "exceptions.h"
 #include "groups.h"
 #include "helpformatter.h"
+#include "notifier.h"
 #include "options.h"
 #include "parser.h"
 #include "parserconfig.h"
@@ -248,10 +249,14 @@ private:
    void parse_args( std::vector<std::string>::const_iterator ibegin,
          std::vector<std::string>::const_iterator iend, ParseResultBuilder& result )
    {
-      if ( ibegin == iend && hasRequiredArguments() ) {
+      auto showHelp = [&]() {
          generate_help();
          result.signalHelpShown();
          result.requestExit();
+      };
+
+      if ( ibegin == iend && hasRequiredArguments() ) {
+         showHelp();
          return;
       }
 
@@ -263,9 +268,7 @@ private:
 
       for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
          if ( mHelpOptionNames.count( *iarg ) > 0 ) {
-            generate_help();
-            result.signalHelpShown();
-            result.requestExit();
+            showHelp();
             return;
          }
       }
@@ -297,15 +300,14 @@ private:
 
    void verifyDefinedOptions()
    {
-      // Check if any options are defined and add the default if not.
+      // Check if any help options are defined and add the default if not.
       if ( mHelpOptionNames.empty() ) {
          end_group();
          try {
             add_default_help_option();
          }
          catch ( const std::invalid_argument& ) {
-            // TODO: write a warning through a logging system proxy:
-            // argparser::logger().warn( "...", __FILE__, __LINE__ );
+            Notifier::warn( "Failed to add default help options." );
          }
       }
 
@@ -395,39 +397,47 @@ private:
          return std::none_of( names.begin(), names.end(), has_dash );
       };
 
-      if ( isPositional( names ) ) {
-         mParserDef.mPositional.push_back( std::move( newOption ) );
-         auto& option = mParserDef.mPositional.back();
-         option.setLongName( names.empty() ? "arg" : names[0] );
-         option.setRequired( true );
-
-         if ( option.hasVectorValue() )
-            option.setMinArgs( 0 );
-         else
-            option.setNArgs( 1 );
-
-         // Positional parameters are required so they can't be in an exclusive
-         // group.  We simply ignore them.
-         if ( mpActiveGroup && !mpActiveGroup->isExclusive() )
-            option.setGroup( mpActiveGroup );
-
-         return { mParserDef.mPositional, mParserDef.mPositional.size() - 1 };
-      }
-      else if ( isOption( names ) ) {
-         trySetNames( newOption, names );
-         ensureIsNewOption( newOption.getLongName() );
-         ensureIsNewOption( newOption.getShortName() );
-
-         mParserDef.mOptions.push_back( std::move( newOption ) );
-         auto& option = mParserDef.mOptions.back();
-
-         if ( mpActiveGroup )
-            option.setGroup( mpActiveGroup );
-
-         return { mParserDef.mOptions, mParserDef.mOptions.size() - 1 };
-      }
+      if ( isPositional( names ) )
+         return addPositional( std::move( newOption ), names );
+      else if ( isOption( names ) )
+         return addOption( std::move( newOption ), names );
 
       throw std::invalid_argument( "The argument must be either positional or an option." );
+   }
+
+   OptionConfig addPositional( Option&& newOption, const std::vector<std::string_view>& names )
+   {
+      mParserDef.mPositional.push_back( std::move( newOption ) );
+      auto& option = mParserDef.mPositional.back();
+      option.setLongName( names.empty() ? "arg" : names[0] );
+      option.setRequired( true );
+
+      if ( option.hasVectorValue() )
+         option.setMinArgs( 0 );
+      else
+         option.setNArgs( 1 );
+
+      // Positional parameters are required so they can't be in an exclusive
+      // group.  We simply ignore them.
+      if ( mpActiveGroup && !mpActiveGroup->isExclusive() )
+         option.setGroup( mpActiveGroup );
+
+      return { mParserDef.mPositional, mParserDef.mPositional.size() - 1 };
+   }
+
+   OptionConfig addOption( Option&& newOption, const std::vector<std::string_view>& names )
+   {
+      trySetNames( newOption, names );
+      ensureIsNewOption( newOption.getLongName() );
+      ensureIsNewOption( newOption.getShortName() );
+
+      mParserDef.mOptions.push_back( std::move( newOption ) );
+      auto& option = mParserDef.mOptions.back();
+
+      if ( mpActiveGroup )
+         option.setGroup( mpActiveGroup );
+
+      return { mParserDef.mOptions, mParserDef.mOptions.size() - 1 };
    }
 
    void trySetNames( Option& option, const std::vector<std::string_view>& names ) const
@@ -522,45 +532,8 @@ private:
       if ( !pStream )
          pStream = &std::cout;
 
-      for ( const auto& e : result.errors ) {
-         switch ( e.errorCode ) {
-            case UNKNOWN_OPTION:
-               *pStream << "Error: Unknown option: '" << e.option << "'\n";
-               break;
-            case EXCLUSIVE_OPTION:
-               *pStream << "Error: Only one option from an exclusive group can be set. '"
-                        << e.option << "'\n";
-               break;
-            case MISSING_OPTION:
-               *pStream << "Error: A required option is missing: '" << e.option << "'\n";
-               break;
-            case MISSING_OPTION_GROUP:
-               *pStream << "Error: A required option from a group is missing: '" << e.option
-                        << "'\n";
-               break;
-            case MISSING_ARGUMENT:
-               *pStream << "Error: An argument is missing: '" << e.option << "'\n";
-               break;
-            case CONVERSION_ERROR:
-               *pStream << "Error: The argument could not be converted: '" << e.option << "'\n";
-               break;
-            case INVALID_CHOICE:
-               *pStream << "Error: The value is not in the list of valid values: '" << e.option
-                        << "'\n";
-               break;
-            case FLAG_PARAMETER:
-               *pStream << "Error: Flag options do not accep parameters: '" << e.option << "'\n";
-               break;
-            case EXIT_REQUESTED:
-               break;
-            case ACTION_ERROR:
-               *pStream << "Error: " << e.option << "\n";
-               break;
-            case INVALID_ARGV:
-               *pStream << "Error: Parser input is invalid.\n";
-               break;
-         }
-      }
+      for ( const auto& e : result.errors )
+         e.describeError( *pStream );
 
       if ( !result.ignoredArguments.empty() ) {
          auto it = result.ignoredArguments.begin();
