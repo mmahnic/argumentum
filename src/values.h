@@ -4,8 +4,8 @@
 #pragma once
 
 #include "convert.h"
+#include "notifier.h"
 #include <functional>
-#include <iostream>   // FIXME: remove direct writing to cerr
 #include <string>
 
 namespace argparse {
@@ -208,7 +208,7 @@ protected:
          std::enable_if_t<!has_from_string<TVar>::value && !can_convert<TVar>::value, int> = 0>
    void assign( TVar& var, const std::string& value )
    {
-      std::cerr << "*** No assignment\n";
+      Notifier::warn( "Assignment is not implemented. ('" + value + "')" );
    }
 };
 

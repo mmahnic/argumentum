@@ -9,6 +9,7 @@
 #include "exceptions.h"
 #include "groups.h"
 #include "helpformatter.h"
+#include "notifier.h"
 #include "options.h"
 #include "parser.h"
 #include "parserconfig.h"
@@ -299,15 +300,14 @@ private:
 
    void verifyDefinedOptions()
    {
-      // Check if any options are defined and add the default if not.
+      // Check if any help options are defined and add the default if not.
       if ( mHelpOptionNames.empty() ) {
          end_group();
          try {
             add_default_help_option();
          }
          catch ( const std::invalid_argument& ) {
-            // TODO: write a warning through a logging system proxy:
-            // argparser::logger().warn( "...", __FILE__, __LINE__ );
+            Notifier::warn( "Failed to add default help options." );
          }
       }
 
