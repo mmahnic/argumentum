@@ -395,39 +395,47 @@ private:
          return std::none_of( names.begin(), names.end(), has_dash );
       };
 
-      if ( isPositional( names ) ) {
-         mParserDef.mPositional.push_back( std::move( newOption ) );
-         auto& option = mParserDef.mPositional.back();
-         option.setLongName( names.empty() ? "arg" : names[0] );
-         option.setRequired( true );
-
-         if ( option.hasVectorValue() )
-            option.setMinArgs( 0 );
-         else
-            option.setNArgs( 1 );
-
-         // Positional parameters are required so they can't be in an exclusive
-         // group.  We simply ignore them.
-         if ( mpActiveGroup && !mpActiveGroup->isExclusive() )
-            option.setGroup( mpActiveGroup );
-
-         return { mParserDef.mPositional, mParserDef.mPositional.size() - 1 };
-      }
-      else if ( isOption( names ) ) {
-         trySetNames( newOption, names );
-         ensureIsNewOption( newOption.getLongName() );
-         ensureIsNewOption( newOption.getShortName() );
-
-         mParserDef.mOptions.push_back( std::move( newOption ) );
-         auto& option = mParserDef.mOptions.back();
-
-         if ( mpActiveGroup )
-            option.setGroup( mpActiveGroup );
-
-         return { mParserDef.mOptions, mParserDef.mOptions.size() - 1 };
-      }
+      if ( isPositional( names ) )
+         return addPositional( std::move( newOption ), names );
+      else if ( isOption( names ) )
+         return addOption( std::move( newOption ), names );
 
       throw std::invalid_argument( "The argument must be either positional or an option." );
+   }
+
+   OptionConfig addPositional( Option&& newOption, const std::vector<std::string_view>& names )
+   {
+      mParserDef.mPositional.push_back( std::move( newOption ) );
+      auto& option = mParserDef.mPositional.back();
+      option.setLongName( names.empty() ? "arg" : names[0] );
+      option.setRequired( true );
+
+      if ( option.hasVectorValue() )
+         option.setMinArgs( 0 );
+      else
+         option.setNArgs( 1 );
+
+      // Positional parameters are required so they can't be in an exclusive
+      // group.  We simply ignore them.
+      if ( mpActiveGroup && !mpActiveGroup->isExclusive() )
+         option.setGroup( mpActiveGroup );
+
+      return { mParserDef.mPositional, mParserDef.mPositional.size() - 1 };
+   }
+
+   OptionConfig addOption( Option&& newOption, const std::vector<std::string_view>& names )
+   {
+      trySetNames( newOption, names );
+      ensureIsNewOption( newOption.getLongName() );
+      ensureIsNewOption( newOption.getShortName() );
+
+      mParserDef.mOptions.push_back( std::move( newOption ) );
+      auto& option = mParserDef.mOptions.back();
+
+      if ( mpActiveGroup )
+         option.setGroup( mpActiveGroup );
+
+      return { mParserDef.mOptions, mParserDef.mOptions.size() - 1 };
    }
 
    void trySetNames( Option& option, const std::vector<std::string_view>& names ) const
