@@ -4,6 +4,7 @@
 #pragma once
 
 #include "exceptions.h"
+#include "notifier.h"
 #include <string>
 #include <string_view>
 #include <vector>
@@ -92,7 +93,8 @@ class ParseResult
    friend class ParseResultBuilder;
 
 private:
-   // The parse result must be checked. If it is not, the destructor will throw.
+   // The parse result must be checked. If it is not, the destructor will throw
+   // if no exception is currently being handled.
    struct RequireCheck
    {
       bool required = false;
@@ -115,9 +117,11 @@ private:
 
       ~RequireCheck() noexcept( false )
       {
-         if ( !std::current_exception() ) {
-            if ( required )
-               throw UncheckedParseResult(); // lgtm [cpp/throw-in-destructor]
+         if ( required ) {
+            if ( !std::current_exception() )
+               throw UncheckedParseResult();   // lgtm [cpp/throw-in-destructor]
+            else
+               Notifier::warn( "Unchecked Parse Result." );
          }
       }
 
