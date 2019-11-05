@@ -532,45 +532,8 @@ private:
       if ( !pStream )
          pStream = &std::cout;
 
-      for ( const auto& e : result.errors ) {
-         switch ( e.errorCode ) {
-            case UNKNOWN_OPTION:
-               *pStream << "Error: Unknown option: '" << e.option << "'\n";
-               break;
-            case EXCLUSIVE_OPTION:
-               *pStream << "Error: Only one option from an exclusive group can be set. '"
-                        << e.option << "'\n";
-               break;
-            case MISSING_OPTION:
-               *pStream << "Error: A required option is missing: '" << e.option << "'\n";
-               break;
-            case MISSING_OPTION_GROUP:
-               *pStream << "Error: A required option from a group is missing: '" << e.option
-                        << "'\n";
-               break;
-            case MISSING_ARGUMENT:
-               *pStream << "Error: An argument is missing: '" << e.option << "'\n";
-               break;
-            case CONVERSION_ERROR:
-               *pStream << "Error: The argument could not be converted: '" << e.option << "'\n";
-               break;
-            case INVALID_CHOICE:
-               *pStream << "Error: The value is not in the list of valid values: '" << e.option
-                        << "'\n";
-               break;
-            case FLAG_PARAMETER:
-               *pStream << "Error: Flag options do not accep parameters: '" << e.option << "'\n";
-               break;
-            case EXIT_REQUESTED:
-               break;
-            case ACTION_ERROR:
-               *pStream << "Error: " << e.option << "\n";
-               break;
-            case INVALID_ARGV:
-               *pStream << "Error: Parser input is invalid.\n";
-               break;
-         }
-      }
+      for ( const auto& e : result.errors )
+         e.describeError( *pStream );
 
       if ( !result.ignoredArguments.empty() ) {
          auto it = result.ignoredArguments.begin();

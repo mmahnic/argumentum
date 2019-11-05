@@ -46,6 +46,45 @@ struct ParseError
    {}
    ParseError( const ParseError& ) = default;
    ParseError( ParseError&& ) = default;
+
+   void describeError( std::ostream& stream ) const
+   {
+      switch ( errorCode ) {
+         case UNKNOWN_OPTION:
+            stream << "Error: Unknown option: '" << option << "'\n";
+            break;
+         case EXCLUSIVE_OPTION:
+            stream << "Error: Only one option from an exclusive group can be set. '" << option
+                   << "'\n";
+            break;
+         case MISSING_OPTION:
+            stream << "Error: A required option is missing: '" << option << "'\n";
+            break;
+         case MISSING_OPTION_GROUP:
+            stream << "Error: A required option from a group is missing: '" << option << "'\n";
+            break;
+         case MISSING_ARGUMENT:
+            stream << "Error: An argument is missing: '" << option << "'\n";
+            break;
+         case CONVERSION_ERROR:
+            stream << "Error: The argument could not be converted: '" << option << "'\n";
+            break;
+         case INVALID_CHOICE:
+            stream << "Error: The value is not in the list of valid values: '" << option << "'\n";
+            break;
+         case FLAG_PARAMETER:
+            stream << "Error: Flag options do not accep parameters: '" << option << "'\n";
+            break;
+         case EXIT_REQUESTED:
+            break;
+         case ACTION_ERROR:
+            stream << "Error: " << option << "\n";
+            break;
+         case INVALID_ARGV:
+            stream << "Error: Parser input is invalid.\n";
+            break;
+      }
+   }
 };
 
 class ParseResult
