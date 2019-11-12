@@ -4,12 +4,15 @@
 #pragma once
 
 #include "argdescriber.h"
+#include "commandconfig.h"
 #include "commands.h"
 #include "environment.h"
 #include "exceptions.h"
+#include "groupconfig.h"
 #include "groups.h"
 #include "helpformatter.h"
 #include "notifier.h"
+#include "optionconfig.h"
 #include "options.h"
 #include "parser.h"
 #include "parserconfig.h"
