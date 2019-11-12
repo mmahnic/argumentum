@@ -4,6 +4,7 @@
 #pragma once
 
 #include "argdescriber.h"
+#include "commandconfig.h"
 #include "commands.h"
 #include "environment.h"
 #include "exceptions.h"
