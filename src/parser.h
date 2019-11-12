@@ -20,24 +20,24 @@ class ParseResultBuilder;
 struct ParserDefinition
 {
    ParserConfig mConfig;
-   std::vector<Command> mCommands;
-   std::vector<Option> mOptions;
-   std::vector<Option> mPositional;
+   std::vector<std::shared_ptr<Command>> mCommands;
+   std::vector<std::shared_ptr<Option>> mOptions;
+   std::vector<std::shared_ptr<Option>> mPositional;
 
    Option* findOption( std::string_view optionName )
    {
-      for ( auto& option : mOptions )
-         if ( option.hasName( optionName ) )
-            return &option;
+      for ( auto& pOption : mOptions )
+         if ( pOption->hasName( optionName ) )
+            return pOption.get();
 
       return nullptr;
    }
 
    Command* findCommand( std::string_view commandName )
    {
-      for ( auto& command : mCommands )
-         if ( command.hasName( commandName ) )
-            return &command;
+      for ( auto& pCommand : mCommands )
+         if ( pCommand->hasName( commandName ) )
+            return pCommand.get();
 
       return nullptr;
    }

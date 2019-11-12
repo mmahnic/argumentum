@@ -70,14 +70,16 @@ public:
 
 class CommandConfig
 {
-   std::vector<Command>& mCommands;
-   size_t mIndex = 0;
+   std::shared_ptr<Command> mpCommand;
 
 public:
-   CommandConfig( std::vector<Command>& commands, size_t index )
-      : mCommands( commands )
-      , mIndex( index )
-   {}
+   CommandConfig( const std::shared_ptr<Command>& pCommand )
+      : mpCommand( pCommand )
+   {
+      assert( pCommand );
+      if ( !mpCommand )
+         throw std::invalid_argument( "CommandConfig requires a command." );
+   }
 
    CommandConfig& help( std::string_view help )
    {
@@ -88,7 +90,7 @@ public:
 private:
    Command& getCommand()
    {
-      return mCommands[mIndex];
+      return *mpCommand;
    }
 };
 
