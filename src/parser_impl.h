@@ -125,7 +125,7 @@ inline void Parser::closeOption()
 inline void Parser::addFreeArgument( const std::string& arg )
 {
    if ( mPosition < mParserDef.mPositional.size() ) {
-      auto& option = mParserDef.mPositional[mPosition];
+      auto& option = *mParserDef.mPositional[mPosition];
       if ( option.willAcceptArgument() ) {
          setValue( option, arg );
          return;
@@ -133,7 +133,7 @@ inline void Parser::addFreeArgument( const std::string& arg )
       else {
          ++mPosition;
          while ( mPosition < mParserDef.mPositional.size() ) {
-            auto& option = mParserDef.mPositional[mPosition];
+            auto& option = *mParserDef.mPositional[mPosition];
             if ( option.willAcceptArgument() ) {
                setValue( option, arg );
                return;

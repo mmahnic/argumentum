@@ -20,9 +20,9 @@ public:
    {
       bool isPositional = name.substr( 0, 1 ) != "-";
       const auto& args = isPositional ? parserDef.mPositional : parserDef.mOptions;
-      for ( auto& opt : args )
-         if ( opt.hasName( name ) )
-            return describeOption( opt );
+      for ( auto& pOpt : args )
+         if ( pOpt->hasName( name ) )
+            return describeOption( *pOpt );
 
       throw std::invalid_argument( "Unknown option." );
    }
@@ -31,14 +31,14 @@ public:
    {
       std::vector<ArgumentHelpResult> descriptions;
 
-      for ( auto& opt : parserDef.mOptions )
-         descriptions.push_back( describeOption( opt ) );
+      for ( auto& pOpt : parserDef.mOptions )
+         descriptions.push_back( describeOption( *pOpt ) );
 
-      for ( auto& opt : parserDef.mPositional )
-         descriptions.push_back( describeOption( opt ) );
+      for ( auto& pOpt : parserDef.mPositional )
+         descriptions.push_back( describeOption( *pOpt ) );
 
-      for ( auto& cmd : parserDef.mCommands )
-         descriptions.push_back( describeCommand( cmd ) );
+      for ( auto& pCmd : parserDef.mCommands )
+         descriptions.push_back( describeCommand( *pCmd ) );
 
       return descriptions;
    }

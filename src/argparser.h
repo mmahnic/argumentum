@@ -260,11 +260,11 @@ private:
          return;
       }
 
-      for ( auto& option : mParserDef.mOptions )
-         option.resetValue();
+      for ( auto& pOption : mParserDef.mOptions )
+         pOption->resetValue();
 
-      for ( auto& option : mParserDef.mPositional )
-         option.resetValue();
+      for ( auto& pOption : mParserDef.mPositional )
+         pOption->resetValue();
 
       for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
          if ( mHelpOptionNames.count( *iarg ) > 0 ) {
@@ -289,13 +289,13 @@ private:
 
    void assignDefaultValues()
    {
-      for ( auto& option : mParserDef.mOptions )
-         if ( !option.wasAssigned() && option.hasDefault() )
-            option.assignDefault();
+      for ( auto& pOption : mParserDef.mOptions )
+         if ( !pOption->wasAssigned() && pOption->hasDefault() )
+            pOption->assignDefault();
 
-      for ( auto& option : mParserDef.mPositional )
-         if ( !option.wasAssigned() && option.hasDefault() )
-            option.assignDefault();
+      for ( auto& pOption : mParserDef.mPositional )
+         if ( !pOption->wasAssigned() && pOption->hasDefault() )
+            pOption->assignDefault();
    }
 
    void verifyDefinedOptions()
@@ -312,34 +312,34 @@ private:
       }
 
       // A required option can not be in an exclusive group.
-      for ( auto& opt : mParserDef.mOptions ) {
-         if ( opt.isRequired() ) {
-            auto pGroup = opt.getGroup();
+      for ( auto& pOption : mParserDef.mOptions ) {
+         if ( pOption->isRequired() ) {
+            auto pGroup = pOption->getGroup();
             if ( pGroup && pGroup->isExclusive() )
-               throw RequiredExclusiveOption( opt.getName(), pGroup->getName() );
+               throw RequiredExclusiveOption( pOption->getName(), pGroup->getName() );
          }
       }
    }
 
    void reportMissingOptions( ParseResultBuilder& result )
    {
-      for ( auto& option : mParserDef.mOptions )
-         if ( option.isRequired() && !option.wasAssigned() )
-            result.addError( option.getHelpName(), MISSING_OPTION );
+      for ( auto& pOption : mParserDef.mOptions )
+         if ( pOption->isRequired() && !pOption->wasAssigned() )
+            result.addError( pOption->getHelpName(), MISSING_OPTION );
 
-      for ( auto& option : mParserDef.mPositional )
-         if ( option.needsMoreArguments() )
-            result.addError( option.getHelpName(), MISSING_ARGUMENT );
+      for ( auto& pOption : mParserDef.mPositional )
+         if ( pOption->needsMoreArguments() )
+            result.addError( pOption->getHelpName(), MISSING_ARGUMENT );
    }
 
    bool hasRequiredArguments() const
    {
-      for ( auto& option : mParserDef.mOptions )
-         if ( option.isRequired() )
+      for ( auto& pOption : mParserDef.mOptions )
+         if ( pOption->isRequired() )
             return true;
 
-      for ( auto& option : mParserDef.mPositional )
-         if ( option.isRequired() )
+      for ( auto& pOption : mParserDef.mPositional )
+         if ( pOption->isRequired() )
             return true;
 
       return false;
@@ -348,10 +348,10 @@ private:
    void reportExclusiveViolations( ParseResultBuilder& result )
    {
       std::map<std::string, std::vector<std::string>> counts;
-      for ( auto& option : mParserDef.mOptions ) {
-         auto pGroup = option.getGroup();
-         if ( pGroup && pGroup->isExclusive() && option.wasAssigned() )
-            counts[pGroup->getName()].push_back( option.getHelpName() );
+      for ( auto& pOption : mParserDef.mOptions ) {
+         auto pGroup = pOption->getGroup();
+         if ( pGroup && pGroup->isExclusive() && pOption->wasAssigned() )
+            counts[pGroup->getName()].push_back( pOption->getHelpName() );
       }
 
       for ( auto& c : counts )
@@ -362,10 +362,10 @@ private:
    void reportMissingGroups( ParseResultBuilder& result )
    {
       std::map<std::string, int> counts;
-      for ( auto& option : mParserDef.mOptions ) {
-         auto pGroup = option.getGroup();
+      for ( auto& pOption : mParserDef.mOptions ) {
+         auto pGroup = pOption->getGroup();
          if ( pGroup && pGroup->isRequired() )
-            counts[pGroup->getName()] += option.wasAssigned() ? 1 : 0;
+            counts[pGroup->getName()] += pOption->wasAssigned() ? 1 : 0;
       }
 
       for ( auto& c : counts )
@@ -407,8 +407,9 @@ private:
 
    OptionConfig addPositional( Option&& newOption, const std::vector<std::string_view>& names )
    {
-      mParserDef.mPositional.push_back( std::move( newOption ) );
-      auto& option = mParserDef.mPositional.back();
+      auto pOption = std::make_shared<Option>( std::move( newOption ) );
+      auto& option = *pOption;
+
       option.setLongName( names.empty() ? "arg" : names[0] );
       option.setRequired( true );
 
@@ -422,7 +423,8 @@ private:
       if ( mpActiveGroup && !mpActiveGroup->isExclusive() )
          option.setGroup( mpActiveGroup );
 
-      return { mParserDef.mPositional, mParserDef.mPositional.size() - 1 };
+      mParserDef.mPositional.push_back( pOption );
+      return { pOption };
    }
 
    OptionConfig addOption( Option&& newOption, const std::vector<std::string_view>& names )
@@ -431,13 +433,13 @@ private:
       ensureIsNewOption( newOption.getLongName() );
       ensureIsNewOption( newOption.getShortName() );
 
-      mParserDef.mOptions.push_back( std::move( newOption ) );
-      auto& option = mParserDef.mOptions.back();
+      auto pOption = std::make_shared<Option>( std::move( newOption ) );
 
       if ( mpActiveGroup )
-         option.setGroup( mpActiveGroup );
+         pOption->setGroup( mpActiveGroup );
 
-      return { mParserDef.mOptions, mParserDef.mOptions.size() - 1 };
+      mParserDef.mOptions.push_back( pOption );
+      return { pOption };
    }
 
    void trySetNames( Option& option, const std::vector<std::string_view>& names ) const
@@ -481,9 +483,10 @@ private:
          throw std::invalid_argument( "Command name must not start with a dash." );
 
       ensureIsNewCommand( command.getName() );
-      mParserDef.mCommands.push_back( std::move( command ) );
 
-      return { mParserDef.mCommands, mParserDef.mCommands.size() - 1 };
+      auto pCommand = std::make_shared<Command>( std::move( command ) );
+      mParserDef.mCommands.push_back( pCommand );
+      return { pCommand };
    }
 
    void ensureIsNewCommand( const std::string& name )

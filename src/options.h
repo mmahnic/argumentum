@@ -269,20 +269,21 @@ public:
 };
 
 /**
-    * OptionConfig is used to configure an option after an option was created with add_argument.
-    */
+ * OptionConfig is used to configure an option after an option was created with add_argument.
+ */
 class OptionConfig
 {
-protected:
-   std::vector<Option>& mOptions;
-   size_t mIndex = 0;
+   std::shared_ptr<Option> mpOption;
    bool mCountWasSet = false;
 
 public:
-   OptionConfig( std::vector<Option>& options, size_t index )
-      : mOptions( options )
-      , mIndex( index )
-   {}
+   OptionConfig( const std::shared_ptr<Option>& pOption )
+      : mpOption( pOption )
+   {
+      assert( pOption );
+      if ( !mpOption )
+         throw std::invalid_argument( "OptionConfig requires an option." );
+   }
 
    OptionConfig& action( AssignAction action )
    {
@@ -291,15 +292,20 @@ public:
    }
 
 protected:
+   Option& getOption()
+   {
+      return *mpOption;
+   }
+
+   void markCountWasSet()
+   {
+      mCountWasSet = true;
+   }
+
    void ensureCountWasNotSet() const
    {
       if ( mCountWasSet )
          throw std::invalid_argument( "Only one of nargs, minargs and maxargs can be used." );
-   }
-
-   Option& getOption()
-   {
-      return mOptions[mIndex];
    }
 };
 
@@ -344,7 +350,7 @@ public:
    {
       ensureCountWasNotSet();
       getOption().setNArgs( count );
-      mCountWasSet = true;
+      markCountWasSet();
       return *static_cast<this_t*>( this );
    }
 
@@ -352,7 +358,7 @@ public:
    {
       ensureCountWasNotSet();
       getOption().setMinArgs( count );
-      mCountWasSet = true;
+      markCountWasSet();
       return *static_cast<this_t*>( this );
    }
 
@@ -360,7 +366,7 @@ public:
    {
       ensureCountWasNotSet();
       getOption().setMaxArgs( count );
-      mCountWasSet = true;
+      markCountWasSet();
       return *static_cast<this_t*>( this );
    }
 
