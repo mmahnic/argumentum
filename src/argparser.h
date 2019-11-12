@@ -8,6 +8,7 @@
 #include "commands.h"
 #include "environment.h"
 #include "exceptions.h"
+#include "groupconfig.h"
 #include "groups.h"
 #include "helpformatter.h"
 #include "notifier.h"
