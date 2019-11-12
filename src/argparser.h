@@ -11,6 +11,7 @@
 #include "groups.h"
 #include "helpformatter.h"
 #include "notifier.h"
+#include "optionconfig.h"
 #include "options.h"
 #include "parser.h"
 #include "parserconfig.h"
