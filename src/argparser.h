@@ -376,7 +376,7 @@ private:
    OptionConfig tryAddArgument( Option& newOption, std::vector<std::string_view> names )
    {
       // Remove empty names
-      auto is_empty = [&]( auto name ) { return name.empty(); };
+      auto is_empty = [&]( auto&& name ) { return name.empty(); };
       names.erase( std::remove_if( names.begin(), names.end(), is_empty ), names.end() );
 
       if ( names.empty() )
@@ -389,11 +389,11 @@ private:
 
       auto has_dash = []( auto name ) { return name[0] == '-'; };
 
-      auto isOption = [&]( auto names ) -> bool {
+      auto isOption = [&]( auto&& names ) -> bool {
          return std::all_of( names.begin(), names.end(), has_dash );
       };
 
-      auto isPositional = [&]( auto names ) -> bool {
+      auto isPositional = [&]( auto&& names ) -> bool {
          return std::none_of( names.begin(), names.end(), has_dash );
       };
 
