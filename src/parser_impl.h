@@ -176,7 +176,7 @@ inline void Parser::parseCommandArguments( Command& command,
 {
    auto parser = argument_parser{};
    parser.add_arguments( command.createOptions() );
-   parser.parse_args( ibegin, iend, result );
+   result.addResult( parser.parse_args( ibegin, iend ) );
 }
 
 }   // namespace argparse

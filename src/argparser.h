@@ -35,9 +35,6 @@ namespace argparse {
 
 class argument_parser
 {
-   // FIXME: the main parse_args should be a part of Parser
-   friend class Parser;
-
 private:
    ParserDefinition mParserDef;
    std::set<std::string> mHelpOptionNames;
@@ -252,28 +249,13 @@ private:
    void parse_args( std::vector<std::string>::const_iterator ibegin,
          std::vector<std::string>::const_iterator iend, ParseResultBuilder& result )
    {
-      auto showHelp = [&]() {
+      resetOptionValues();
+
+      if ( mustDisplayHelp( ibegin, iend ) ) {
          generate_help();
          result.signalHelpShown();
          result.requestExit();
-      };
-
-      if ( ibegin == iend && hasRequiredArguments() ) {
-         showHelp();
          return;
-      }
-
-      for ( auto& pOption : mParserDef.mOptions )
-         pOption->resetValue();
-
-      for ( auto& pOption : mParserDef.mPositional )
-         pOption->resetValue();
-
-      for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
-         if ( mHelpOptionNames.count( *iarg ) > 0 ) {
-            showHelp();
-            return;
-         }
       }
 
       Parser parser( mParserDef, result );
@@ -284,10 +266,26 @@ private:
       }
 
       assignDefaultValues();
+      validateParsedOptions( result );
+   }
 
-      reportMissingOptions( result );
-      reportExclusiveViolations( result );
-      reportMissingGroups( result );
+   void resetOptionValues()
+   {
+      for ( auto& pOption : mParserDef.mOptions )
+         pOption->resetValue();
+
+      for ( auto& pOption : mParserDef.mPositional )
+         pOption->resetValue();
+   }
+
+   bool mustDisplayHelp( std::vector<std::string>::const_iterator ibegin,
+         std::vector<std::string>::const_iterator iend ) const
+   {
+      if ( ibegin == iend && hasRequiredArguments() )
+         return true;
+
+      auto isHelpOption = [this]( auto&& arg ) { return mHelpOptionNames.count( arg ) > 0; };
+      return std::any_of( ibegin, iend, isHelpOption );
    }
 
    void assignDefaultValues()
@@ -322,6 +320,13 @@ private:
                throw RequiredExclusiveOption( pOption->getName(), pGroup->getName() );
          }
       }
+   }
+
+   void validateParsedOptions( ParseResultBuilder& result )
+   {
+      reportMissingOptions( result );
+      reportExclusiveViolations( result );
+      reportMissingGroups( result );
    }
 
    void reportMissingOptions( ParseResultBuilder& result )
