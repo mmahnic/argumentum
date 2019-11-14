@@ -20,6 +20,8 @@ public:
          throw std::invalid_argument( "CommandConfig requires a command." );
    }
 
+   // Define the description of the command that will be displayed in the
+   // generated help.
    CommandConfig& help( std::string_view help )
    {
       getCommand().setHelp( help );

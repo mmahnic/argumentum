@@ -68,6 +68,8 @@ public:
       return mParserDef;
    }
 
+   // Add a factory that will create an Options structure for subcommand
+   // arguments for the command @p name.
    CommandConfig add_command( const std::string& name, Command::options_factory_t factory )
    {
       auto command = Command( name, factory );
@@ -84,7 +86,7 @@ public:
 
    /**
     * Add an argument with names @p name and @p altName and store the reference
-    * to @p value that will receive the parsed parameter(s).
+    * to @p target value that will receive the parsed parameter(s).
     */
    template<typename TValue, typename = std::enable_if_t<!std::is_base_of<Value, TValue>::value>>
    OptionConfigA<TValue> add_argument(
@@ -159,6 +161,8 @@ public:
       return optionConfig;
    }
 
+   // Begin a group of options named @p name. The group definition ends at
+   // end_group().
    GroupConfig add_group( const std::string& name )
    {
       auto pGroup = findGroup( name );
@@ -173,6 +177,9 @@ public:
       return GroupConfig( mpActiveGroup );
    }
 
+   // Begin an exclusive group of options named @p name.  At most one of the
+   // options from an exclusive can be used in input arguments.  The group
+   // definition ends at end_group().
    GroupConfig add_exclusive_group( const std::string& name )
    {
       auto pGroup = findGroup( name );
@@ -187,11 +194,13 @@ public:
       return GroupConfig( mpActiveGroup );
    }
 
+   // End a group.
    void end_group()
    {
       mpActiveGroup = nullptr;
    }
 
+   // Parse input arguments and return errors in a ParseResult.
    ParseResult parse_args( int argc, char** argv, int skip_args = 1 )
    {
       if ( !argv ) {
@@ -207,6 +216,7 @@ public:
       return parse_args( std::begin( args ), std::end( args ) );
    }
 
+   // Parse input arguments and return errors in a ParseResult.
    ParseResult parse_args( const std::vector<std::string>& args, int skip_args = 0 )
    {
       auto ibegin = std::begin( args );
@@ -216,6 +226,7 @@ public:
       return parse_args( ibegin, std::end( args ) );
    }
 
+   // Parse input arguments and return errors in a ParseResult.
    ParseResult parse_args( std::vector<std::string>::const_iterator ibegin,
          std::vector<std::string>::const_iterator iend )
    {
