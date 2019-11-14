@@ -24,6 +24,9 @@ public:
          throw std::invalid_argument( "OptionConfig requires an option." );
    }
 
+   // Define an action to execute when the option is present in input arguments.
+   // The action is executed instead of the default assignment action and can
+   // set the value of the target variable associated with the option.
    OptionConfig& action( AssignAction action )
    {
       getOption().setAction( action );
@@ -73,18 +76,23 @@ public:
       return *static_cast<this_t*>( this );
    }
 
+   // Define the name of the meta variable of the option that will be used as a
+   // placeholder for option values in the generated help.
    this_t& metavar( std::string_view varname )
    {
       getOption().setMetavar( varname );
       return *static_cast<this_t*>( this );
    }
 
+   // Define the description of the option that will be displayed in the
+   // generated help.
    this_t& help( std::string_view help )
    {
       getOption().setHelp( help );
       return *static_cast<this_t*>( this );
    }
 
+   // Define the exact number of values that an option can accept.
    this_t& nargs( int count )
    {
       ensureCountWasNotSet();
@@ -93,6 +101,7 @@ public:
       return *static_cast<this_t*>( this );
    }
 
+   // Define the minimum number of values that an option can accept.
    this_t& minargs( int count )
    {
       ensureCountWasNotSet();
@@ -101,6 +110,7 @@ public:
       return *static_cast<this_t*>( this );
    }
 
+   // Define the maximum number of values that an option can accept.
    this_t& maxargs( int count )
    {
       ensureCountWasNotSet();
@@ -109,18 +119,22 @@ public:
       return *static_cast<this_t*>( this );
    }
 
+   // Set to true if the option must be present in the input arguments.
    this_t& required( bool isRequired = true )
    {
       getOption().setRequired( isRequired );
       return *static_cast<this_t*>( this );
    }
 
+   // Define the value that will be stored in the target variable.  Only valid
+   // if this is a flag option and action is not set.
    this_t& flagValue( std::string_view value )
    {
       getOption().setFlagValue( value );
       return *static_cast<this_t*>( this );
    }
 
+   // Define the values accepted by an option.
    this_t& choices( const std::vector<std::string>& choices )
    {
       getOption().setChoices( choices );
@@ -143,6 +157,9 @@ public:
       : OptionConfigBaseT<this_t>( std::move( wrapped ) )
    {}
 
+   // Define an action to execute when the option is present in input arguments.
+   // The action is executed instead of the default assignment action and can
+   // set the value of the target variable associated with the option.
    this_t& action( assign_action_t action )
    {
       if ( action ) {
@@ -158,6 +175,10 @@ public:
       return *this;
    }
 
+   // Define an action to execute when the option is present in input arguments.
+   // The action is executed instead of the default assignment action and can
+   // set the value of the target variable associated with the option.
+   // This version has access to the parsing environment.
    this_t& action( assign_action_env_t action )
    {
       if ( action ) {
