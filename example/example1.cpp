@@ -52,11 +52,13 @@ int main( int argc, char** argv )
       cout << "'" << param << "' ";
    cout << "\n";
 
-   if ( res.errors.size() ) {
-      cout << "Errors: ";
-      for ( auto& err : res.errors )
-         cout << "'" << err.option << "':" << err.errorCode << " ";
-      cout << "\n";
+   if ( !res ) {
+      if ( res.errors.size() ) {
+         cout << "Errors: ";
+         for ( auto& err : res.errors )
+            cout << "'" << err.option << "':" << err.errorCode << " ";
+         cout << "\n";
+      }
    }
 
    return 0;
