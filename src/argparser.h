@@ -35,9 +35,6 @@ namespace argparse {
 
 class argument_parser
 {
-   // TODO: the main parse_args should be a part of Parser
-   friend class Parser;
-
 private:
    ParserDefinition mParserDef;
    std::set<std::string> mHelpOptionNames;

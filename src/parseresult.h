@@ -47,6 +47,8 @@ struct ParseError
    {}
    ParseError( const ParseError& ) = default;
    ParseError( ParseError&& ) = default;
+   ParseError& operator=( const ParseError& ) = default;
+   ParseError& operator=( ParseError&& ) = default;
 
    void describeError( std::ostream& stream ) const
    {
@@ -187,54 +189,70 @@ private:
 
 class ParseResultBuilder
 {
-   ParseResult result;
+   ParseResult mResult;
 
 public:
    void clear()
    {
-      result.clear();
+      mResult.clear();
    }
 
    bool wasExitRequested() const
    {
-      return result.exitRequested;
+      return mResult.exitRequested;
    }
 
    void addError( std::string_view optionName, int error )
    {
-      result.errors.emplace_back( optionName, error );
-      result.mustCheck.activate();
+      mResult.errors.emplace_back( optionName, error );
+      mResult.mustCheck.activate();
    }
 
    void addIgnored( const std::string& arg )
    {
-      result.ignoredArguments.push_back( arg );
+      mResult.ignoredArguments.push_back( arg );
    }
 
    void requestExit()
    {
-      result.exitRequested = true;
-      result.mustCheck.activate();
+      mResult.exitRequested = true;
+      mResult.mustCheck.activate();
    }
 
    void signalHelpShown()
    {
-      result.helpWasShown = true;
+      mResult.helpWasShown = true;
    }
 
    void signalErrorsShown()
    {
-      result.errorsWereShown = true;
+      mResult.errorsWereShown = true;
    }
 
    ParseResult&& getResult()
    {
-      return std::move( result );
+      return std::move( mResult );
    }
 
    bool hasArgumentProblems() const
    {
-      return !result.errors.empty() || !result.ignoredArguments.empty();
+      return !mResult.errors.empty() || !mResult.ignoredArguments.empty();
+   }
+
+   void addResult( ParseResult&& result )
+   {
+      mResult.exitRequested |= result.exitRequested;
+      mResult.helpWasShown |= result.helpWasShown;
+      mResult.errorsWereShown |= result.errorsWereShown;
+
+      mResult.mustCheck.required |= result.mustCheck.required;
+      result.mustCheck.required = false;
+
+      for ( auto&& error : result.errors )
+         mResult.errors.push_back( std::move( error ) );
+
+      for ( auto&& arg : result.ignoredArguments )
+         mResult.ignoredArguments.push_back( std::move( arg ) );
    }
 };
 
