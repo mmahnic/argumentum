@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "filesystem.h"
+
 #include <ostream>
 #include <string>
 #include <string_view>
@@ -19,6 +21,7 @@ public:
       std::string description;
       std::string epilog;
       std::ostream* pOutStream = nullptr;
+      std::shared_ptr<Filesystem> pFilesystem = std::make_shared<DefaultFilesystem>();
    };
 
 private:
@@ -65,6 +68,16 @@ public:
    ParserConfig& cout( std::ostream& stream )
    {
       mData.pOutStream = &stream;
+      return *this;
+   }
+
+   // Set the filesystem implementation that will be used to open files with
+   // additional parameters parameters.  If the filesystem is not set the parser
+   // will use the default filesystem implementation.
+   ParserConfig& filesystem( const std::shared_ptr<Filesystem> pFilesystem )
+   {
+      if ( pFilesystem )
+         mData.pFilesystem = pFilesystem;
       return *this;
    }
 };
