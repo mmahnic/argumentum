@@ -13,6 +13,7 @@ add_executable( runUnitTests
    action_t.cpp
    argparserhelp_t.cpp
    helpwriter_t.cpp
+   streamarguments_t.cpp
    ${PARSER_SOURCES}
    )
 
