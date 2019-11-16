@@ -72,7 +72,7 @@ class IncludeDepthExceeded : public std::runtime_error
 {
 public:
    IncludeDepthExceeded( const std::string& streamName )
-      : runtime_error( "Include depth exceeded when opening '" + streamName + "'." )
+      : runtime_error( streamName )
    {}
 };
 

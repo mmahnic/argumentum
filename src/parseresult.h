@@ -34,7 +34,9 @@ enum EError {
    // An error signalled by an action.
    ACTION_ERROR,
    // The parser received invalid argv input.
-   INVALID_ARGV
+   INVALID_ARGV,
+   // The argument stream include depth was exceeded.
+   INCLUDE_TOO_DEEP
 };
 
 struct ParseError
@@ -85,6 +87,9 @@ struct ParseError
             break;
          case INVALID_ARGV:
             stream << "Error: Parser input is invalid.\n";
+            break;
+         case INCLUDE_TOO_DEEP:
+            stream << "Include depth exceeded: '" << option << "'\n";
             break;
       }
    }

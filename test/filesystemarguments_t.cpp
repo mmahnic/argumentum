@@ -88,7 +88,7 @@ TEST( FilesystemArguments, shouldReadArgumentsFromFilesystemRecursively )
       EXPECT_TRUE( flag );
 }
 
-TEST( FilesystemArguments, shouldFailWhenFilesRecursedTooDeep )
+TEST( FilesystemArguments, shouldFailWhenStreamsRecursedTooDeep )
 {
    auto pfs = std::make_shared<TestFilesystem>();
    pfs->addFile( "a.opt", { "--alpha", "--beta", "@a.opt" } );
@@ -105,4 +105,5 @@ TEST( FilesystemArguments, shouldFailWhenFilesRecursedTooDeep )
    auto res = parser.parse_args( { "--alice", "@a.opt", "--bob" } );
 
    EXPECT_FALSE( !!res );
+   EXPECT_EQ( INCLUDE_TOO_DEEP, res.errors.front().errorCode );
 }

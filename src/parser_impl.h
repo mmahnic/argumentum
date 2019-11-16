@@ -21,7 +21,12 @@ inline void Parser::parse( ArgumentStream& argStream )
 {
    mResult.clear();
 
-   parse( argStream, 0 );
+   try {
+      parse( argStream, 0 );
+   }
+   catch ( const IncludeDepthExceeded& e ) {
+      mResult.addError( e.what(), INCLUDE_TOO_DEEP );
+   }
 
    if ( haveActiveOption() )
       closeOption();
