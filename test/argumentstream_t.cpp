@@ -22,3 +22,32 @@ TEST( ArgumentStream, shouldUseIteratorsAsAStream )
    for ( unsigned i = 0; i < args.size(); ++i )
       EXPECT_EQ( args[i], res[i] );
 }
+
+TEST( ArgumentStream, shouldPeekNextArgumentsInStream )
+{
+   std::vector<std::string> args{ "one", "two", "three" };
+
+   IteratorArgumentStream stream( args.begin(), args.end() );
+   auto arg = stream.next();
+   EXPECT_EQ( "one", arg );
+
+   bool foundOne = false;
+   bool foundTwo = false;
+   bool foundThree = false;
+   stream.peek( [&]( auto& arg ) {
+      if ( arg == "two" ) {
+         foundTwo = true;
+         return ArgumentStream::peekDone;
+      }
+      else if ( arg == "one" )
+         foundTwo = true;
+      else if ( arg == "three" )
+         foundThree = true;
+
+      return ArgumentStream::peekNext;
+   } );
+
+   EXPECT_FALSE( foundOne );
+   EXPECT_TRUE( foundTwo );
+   EXPECT_FALSE( foundThree );
+}
