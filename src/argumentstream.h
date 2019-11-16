@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <istream>
+
 namespace argparse {
 
 class ArgumentStream
@@ -28,6 +30,8 @@ public:
    {}
 };
 
+// An implementation of ArgumentStream that reads arguments from a string
+// container.
 template<typename TIter>
 class IteratorArgumentStream : public ArgumentStream
 {
@@ -56,6 +60,30 @@ public:
       for ( auto iarg = current; iarg != end; ++iarg )
          if ( fnPeek( *iarg ) == peekDone )
             break;
+   }
+};
+
+// An implementation of ArgumentStream that reads characters from an istream and
+// merges them into string arguments.
+class StdStreamArgumentStream : public ArgumentStream
+{
+   std::shared_ptr<std::istream> mpStream;
+   std::string mCurrent;
+
+public:
+   StdStreamArgumentStream( const std::shared_ptr<std::istream>& pStream )
+      : mpStream( pStream )
+   {}
+
+   std::optional<std::string_view> next() override
+   {
+      if ( !mpStream )
+         return {};
+
+      if ( !std::getline( *mpStream, mCurrent ) )
+         return {};
+
+      return mCurrent;
    }
 };
 

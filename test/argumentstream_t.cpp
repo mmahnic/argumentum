@@ -53,11 +53,11 @@ TEST( ArgumentStream, shouldPeekNextArgumentsInStream )
    EXPECT_FALSE( foundThree );
 }
 
-TEST( ArgumentStream, shouldCreateArgumentStreamFromIStream )
+TEST( ArgumentStream, shouldCreateArgumentStreamFromStdStream )
 {
-   std::stringstream istr( "one two three" );
+   auto pInput = std::make_shared<std::stringstream>( "one\ntwo\nthree" );
 
-   IstreamArgumentStream stream( istr );
+   StdStreamArgumentStream stream( pInput );
    std::vector<std::string> res;
    for ( auto arg = stream.next(); !!arg; arg = stream.next() )
       res.push_back( std::string{ *arg } );
