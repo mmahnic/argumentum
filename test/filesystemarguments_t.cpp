@@ -15,13 +15,16 @@ class TestFilesystem : public Filesystem
    std::map<std::string, std::string> mFiles;
 
 public:
-   std::unique_ptr<std::istream> open( const std::string& filename ) override
+   std::unique_ptr<ArgumentStream> open( const std::string& filename ) override
    {
+      return nullptr;
+#if 0
       auto pStream = std::make_unique<std::stringstream>();
       if ( mFiles.find( filename ) != mFiles.end() )
          pStream->str( mFiles[filename] );
 
       return pStream;
+#endif
    }
 
    void addFile( const std::string& name, const std::string& content )

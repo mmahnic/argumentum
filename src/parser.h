@@ -73,8 +73,11 @@ private:
    void addFreeArgument( std::string_view arg );
    void addError( std::string_view optionName, int errorCode );
    void setValue( Option& option, std::string_view value );
+
+   void parse( ArgumentStream& argStream, unsigned depth );
    void parseCommandArguments(
          Command& command, ArgumentStream& argStream, ParseResultBuilder& result );
+   void parseSubstream( std::string_view streamName, unsigned depth );
 };
 
 }   // namespace argparse

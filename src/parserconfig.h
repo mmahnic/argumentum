@@ -22,6 +22,7 @@ public:
       std::string epilog;
       std::ostream* pOutStream = nullptr;
       std::shared_ptr<Filesystem> pFilesystem = std::make_shared<DefaultFilesystem>();
+      unsigned maxIncludeDepth = 8;
    };
 
 private:

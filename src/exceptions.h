@@ -59,4 +59,21 @@ public:
    {}
 };
 
+class MissingFilesystem : public std::exception
+{
+public:
+   const char* what() const noexcept override
+   {
+      return "The filesystem for opening argument streams is not defined.";
+   }
+};
+
+class IncludeDepthExceeded : public std::runtime_error
+{
+public:
+   IncludeDepthExceeded( const std::string& streamName )
+      : runtime_error( "Include depth exceeded when opening '" + streamName + "'." )
+   {}
+};
+
 }   // namespace argparse

@@ -20,7 +20,21 @@ inline Parser::Parser( ParserDefinition& parserDef, ParseResultBuilder& result )
 inline void Parser::parse( ArgumentStream& argStream )
 {
    mResult.clear();
+
+   parse( argStream, 0 );
+
+   if ( haveActiveOption() )
+      closeOption();
+}
+
+inline void Parser::parse( ArgumentStream& argStream, unsigned depth )
+{
    for ( auto optArg = argStream.next(); !!optArg; optArg = argStream.next() ) {
+      if ( optArg->substr( 0, 1 ) == "@" ) {
+         parseSubstream( optArg->substr( 1 ), depth );
+         continue;
+      }
+
       if ( *optArg == "--" ) {
          mIgnoreOptions = true;
          continue;
@@ -68,10 +82,7 @@ inline void Parser::parse( ArgumentStream& argStream )
       if ( mResult.wasExitRequested() )
          break;
    }
-
-   if ( haveActiveOption() )
-      closeOption();
-}   // namespace argparse
+}
 
 inline void Parser::startOption( std::string_view name )
 {
@@ -176,6 +187,19 @@ inline void Parser::parseCommandArguments(
    auto parser = argument_parser{};
    parser.add_arguments( command.createOptions() );
    result.addResult( parser.parse_args( argStream ) );
+}
+
+inline void Parser::parseSubstream( std::string_view streamName, unsigned depth )
+{
+   if ( !mParserDef.getConfig().pFilesystem )
+      throw MissingFilesystem();
+
+   if ( depth > mParserDef.getConfig().maxIncludeDepth )
+      throw IncludeDepthExceeded( std::string{ streamName } );
+
+   auto pSubstream = mParserDef.getConfig().pFilesystem->open( std::string{ streamName } );
+   if ( pSubstream )
+      parse( *pSubstream, depth + 1 );
 }
 
 }   // namespace argparse
