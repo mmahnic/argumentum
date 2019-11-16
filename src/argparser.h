@@ -245,14 +245,12 @@ public:
 
       ParseResultBuilder result;
 
-#if 0
-      if ( mustDisplayHelp( ibegin, iend ) ) {
+      if ( mustDisplayHelp( args ) ) {
          generate_help();
          result.signalHelpShown();
          result.requestExit();
          return std::move( result.getResult() );
       }
-#endif
 
       Parser parser( mParserDef, result );
       parser.parse( args );
@@ -294,14 +292,26 @@ private:
          pOption->resetValue();
    }
 
-   bool mustDisplayHelp( std::vector<std::string>::const_iterator ibegin,
-         std::vector<std::string>::const_iterator iend ) const
+   bool mustDisplayHelp( ArgumentStream& argStream ) const
    {
+#if 0
       if ( ibegin == iend && hasRequiredArguments() )
          return true;
+#endif
 
-      auto isHelpOption = [this]( auto&& arg ) { return mHelpOptionNames.count( arg ) > 0; };
-      return std::any_of( ibegin, iend, isHelpOption );
+      bool mustDisplay = false;
+      auto isHelpOption = [this]( auto&& arg ) {
+         return mHelpOptionNames.count( std::string{ arg } ) > 0;
+      };
+      argStream.peek( [&]( auto&& arg ) {
+         if ( isHelpOption( arg ) ) {
+            mustDisplay = true;
+            return ArgumentStream::peekDone;
+         }
+         return ArgumentStream::peekNext;
+      } );
+
+      return mustDisplay;
    }
 
    void assignDefaultValues()
