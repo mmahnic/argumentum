@@ -35,7 +35,7 @@ public:
    }
 };
 
-TEST( StreamArguments, shouldReadArgumentsFromFilesystem )
+TEST( FilesystemArguments, shouldReadArgumentsFromFilesystem )
 {
    auto pfs = std::make_shared<TestFilesystem>();
    pfs->addFile( "a.opt", "--alpha --beta" );
