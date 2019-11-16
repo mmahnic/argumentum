@@ -4,6 +4,7 @@
 #pragma once
 
 #include "argparser.h"
+#include "argumentstream.h"
 #include "commands.h"
 #include "options.h"
 #include "parser.h"
@@ -16,27 +17,26 @@ inline Parser::Parser( ParserDefinition& parserDef, ParseResultBuilder& result )
    , mResult( result )
 {}
 
-inline void Parser::parse( std::vector<std::string>::const_iterator ibegin,
-      std::vector<std::string>::const_iterator iend )
+inline void Parser::parse( ArgumentStream& argStream )
 {
    mResult.clear();
-   for ( auto iarg = ibegin; iarg != iend; ++iarg ) {
-      if ( *iarg == "--" ) {
+   for ( auto optArg = argStream.next(); !!optArg; optArg = argStream.next() ) {
+      if ( *optArg == "--" ) {
          mIgnoreOptions = true;
          continue;
       }
 
       if ( mIgnoreOptions ) {
-         addFreeArgument( *iarg );
+         addFreeArgument( *optArg );
          continue;
       }
 
-      auto arg_view = std::string_view( *iarg );
+      auto arg_view = std::string_view( *optArg );
       if ( arg_view.substr( 0, 2 ) == "--" )
-         startOption( *iarg );
+         startOption( *optArg );
       else if ( arg_view.substr( 0, 1 ) == "-" ) {
-         if ( iarg->size() == 2 )
-            startOption( *iarg );
+         if ( optArg->size() == 2 )
+            startOption( *optArg );
          else {
             auto opt = std::string{ "--" };
             for ( int i = 1; i < arg_view.size(); ++i ) {
@@ -49,19 +49,19 @@ inline void Parser::parse( std::vector<std::string>::const_iterator ibegin,
          if ( haveActiveOption() ) {
             auto& option = *mpActiveOption;
             if ( option.willAcceptArgument() ) {
-               setValue( option, *iarg );
+               setValue( option, *optArg );
                if ( !option.willAcceptArgument() )
                   closeOption();
             }
          }
          else {
-            auto pCommand = mParserDef.findCommand( *iarg );
+            auto pCommand = mParserDef.findCommand( *optArg );
             if ( pCommand ) {
-               parseCommandArguments( *pCommand, iarg, iend, mResult );
+               parseCommandArguments( *pCommand, argStream, mResult );
                break;
             }
             else
-               addFreeArgument( *iarg );
+               addFreeArgument( *optArg );
          }
       }
 
@@ -71,7 +71,7 @@ inline void Parser::parse( std::vector<std::string>::const_iterator ibegin,
 
    if ( haveActiveOption() )
       closeOption();
-}
+}   // namespace argparse
 
 inline void Parser::startOption( std::string_view name )
 {
@@ -122,7 +122,7 @@ inline void Parser::closeOption()
    mpActiveOption = nullptr;
 }
 
-inline void Parser::addFreeArgument( const std::string& arg )
+inline void Parser::addFreeArgument( std::string_view arg )
 {
    if ( mPosition < mParserDef.mPositional.size() ) {
       auto& option = *mParserDef.mPositional[mPosition];
@@ -151,7 +151,7 @@ inline void Parser::addError( std::string_view optionName, int errorCode )
    mResult.addError( optionName, errorCode );
 }
 
-inline void Parser::setValue( Option& option, const std::string& value )
+inline void Parser::setValue( Option& option, std::string_view value )
 {
    try {
       auto env = Environment{ option, mResult };
@@ -170,13 +170,12 @@ inline void Parser::setValue( Option& option, const std::string& value )
 
 // A parser for command's (sub)options is instantiated only when a command is
 // selected by an input argument.
-inline void Parser::parseCommandArguments( Command& command,
-      std::vector<std::string>::const_iterator ibegin,
-      std::vector<std::string>::const_iterator iend, ParseResultBuilder& result )
+inline void Parser::parseCommandArguments(
+      Command& command, ArgumentStream& argStream, ParseResultBuilder& result )
 {
    auto parser = argument_parser{};
    parser.add_arguments( command.createOptions() );
-   result.addResult( parser.parse_args( ibegin, iend ) );
+   result.addResult( parser.parse_args( argStream ) );
 }
 
 }   // namespace argparse

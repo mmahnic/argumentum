@@ -39,14 +39,14 @@ class Value
    bool mHasErrors = false;
 
 public:
-   void setValue( const std::string& value, AssignAction action, Environment& env )
+   void setValue( std::string_view value, AssignAction action, Environment& env )
    {
       ++mAssignCount;
       ++mOptionAssignCount;
       if ( action == nullptr )
          action = getDefaultAction();
       if ( action )
-         action( *this, value, env );
+         action( *this, std::string{ value }, env );
    }
 
    void setDefault( AssignDefaultAction action )

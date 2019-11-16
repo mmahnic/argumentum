@@ -183,7 +183,7 @@ public:
       return metavar;
    }
 
-   void setValue( const std::string& value, Environment& env )
+   void setValue( std::string_view value, Environment& env )
    {
       if ( !mChoices.empty() && std::none_of( mChoices.begin(), mChoices.end(), [&value]( auto v ) {
               return v == value;

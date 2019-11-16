@@ -4,6 +4,7 @@
 #pragma once
 
 #include "argdescriber.h"
+#include "argumentstream.h"
 #include "commandconfig.h"
 #include "commands.h"
 #include "environment.h"
@@ -213,7 +214,8 @@ public:
       for ( int i = std::max( 0, skip_args ); i < argc; ++i )
          args.emplace_back( argv[i] );
 
-      return parse_args( std::begin( args ), std::end( args ) );
+      auto argStream = IteratorArgumentStream( std::begin( args ), std::end( args ) );
+      return parse_args( argStream );
    }
 
    // Parse input arguments and return errors in a ParseResult.
@@ -223,27 +225,37 @@ public:
       if ( skip_args > 0 )
          ibegin += std::min<size_t>( skip_args, args.size() );
 
-      return parse_args( ibegin, std::end( args ) );
+      auto argStream = IteratorArgumentStream( ibegin, std::end( args ) );
+      return parse_args( argStream );
    }
 
    // Parse input arguments and return errors in a ParseResult.
    ParseResult parse_args( std::vector<std::string>::const_iterator ibegin,
          std::vector<std::string>::const_iterator iend )
    {
+      auto argStream = IteratorArgumentStream( ibegin, iend );
+      return parse_args( argStream );
+   }
+
+   // Parse input arguments and return errors in a ParseResult.
+   ParseResult parse_args( ArgumentStream& args )
+   {
       verifyDefinedOptions();
       resetOptionValues();
 
       ParseResultBuilder result;
 
+#if 0
       if ( mustDisplayHelp( ibegin, iend ) ) {
          generate_help();
          result.signalHelpShown();
          result.requestExit();
          return std::move( result.getResult() );
       }
+#endif
 
       Parser parser( mParserDef, result );
-      parser.parse( ibegin, iend );
+      parser.parse( args );
       if ( result.wasExitRequested() )
          return std::move( result.getResult() );
 

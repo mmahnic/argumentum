@@ -11,8 +11,8 @@ namespace argparse {
 class InvalidChoiceError : public std::invalid_argument
 {
 public:
-   InvalidChoiceError( const std::string& value )
-      : std::invalid_argument( value )
+   InvalidChoiceError( std::string_view value )
+      : std::invalid_argument( std::string{ value } )
    {}
 };
 
