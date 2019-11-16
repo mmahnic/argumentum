@@ -17,10 +17,11 @@ TEST( ArgumentStream, shouldUseIteratorsAsAStream )
    for ( auto arg = stream.next(); !!arg; arg = stream.next() )
       res.push_back( std::string{ *arg } );
 
-   ASSERT_EQ( args.size(), res.size() );
+   ASSERT_EQ( 3, res.size() );
 
-   for ( unsigned i = 0; i < args.size(); ++i )
-      EXPECT_EQ( args[i], res[i] );
+   EXPECT_EQ( "one", res[0] );
+   EXPECT_EQ( "two", res[1] );
+   EXPECT_EQ( "three", res[2] );
 }
 
 TEST( ArgumentStream, shouldPeekNextArgumentsInStream )
@@ -50,4 +51,20 @@ TEST( ArgumentStream, shouldPeekNextArgumentsInStream )
    EXPECT_FALSE( foundOne );
    EXPECT_TRUE( foundTwo );
    EXPECT_FALSE( foundThree );
+}
+
+TEST( ArgumentStream, shouldCreateArgumentStreamFromIStream )
+{
+   std::stringstream istr( "one two three" );
+
+   IstreamArgumentStream stream( istr );
+   std::vector<std::string> res;
+   for ( auto arg = stream.next(); !!arg; arg = stream.next() )
+      res.push_back( std::string{ *arg } );
+
+   ASSERT_EQ( 3, res.size() );
+
+   EXPECT_EQ( "one", res[0] );
+   EXPECT_EQ( "two", res[1] );
+   EXPECT_EQ( "three", res[2] );
 }
