@@ -16,6 +16,7 @@ namespace argparse {
 class Command;
 class Option;
 class ParseResultBuilder;
+class ArgumentStream;
 
 struct ParserDefinition
 {
@@ -63,18 +64,20 @@ class Parser
 
 public:
    Parser( ParserDefinition& argParser, ParseResultBuilder& result );
-   void parse( std::vector<std::string>::const_iterator ibegin,
-         std::vector<std::string>::const_iterator iend );
+   void parse( ArgumentStream& argStream );
 
 private:
    void startOption( std::string_view name );
    bool haveActiveOption() const;
    void closeOption();
-   void addFreeArgument( const std::string& arg );
+   void addFreeArgument( std::string_view arg );
    void addError( std::string_view optionName, int errorCode );
-   void setValue( Option& option, const std::string& value );
-   void parseCommandArguments( Command& command, std::vector<std::string>::const_iterator ibegin,
-         std::vector<std::string>::const_iterator iend, ParseResultBuilder& result );
+   void setValue( Option& option, std::string_view value );
+
+   void parse( ArgumentStream& argStream, unsigned depth );
+   void parseCommandArguments(
+         Command& command, ArgumentStream& argStream, ParseResultBuilder& result );
+   void parseSubstream( std::string_view streamName, unsigned depth );
 };
 
 }   // namespace argparse

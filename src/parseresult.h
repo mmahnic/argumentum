@@ -34,7 +34,9 @@ enum EError {
    // An error signalled by an action.
    ACTION_ERROR,
    // The parser received invalid argv input.
-   INVALID_ARGV
+   INVALID_ARGV,
+   // The argument stream include depth was exceeded.
+   INCLUDE_TOO_DEEP
 };
 
 struct ParseError
@@ -86,6 +88,9 @@ struct ParseError
          case INVALID_ARGV:
             stream << "Error: Parser input is invalid.\n";
             break;
+         case INCLUDE_TOO_DEEP:
+            stream << "Include depth exceeded: '" << option << "'\n";
+            break;
       }
    }
 };
@@ -102,17 +107,20 @@ private:
       bool required = false;
 
       RequireCheck() = default;
+
       RequireCheck( RequireCheck&& other )
       {
          required = other.required;
          other.clear();
       }
+
       RequireCheck& operator=( RequireCheck&& other )
       {
          required = other.required;
          other.clear();
          return *this;
       }
+
       RequireCheck( bool require )
          : required( require )
       {}
@@ -208,15 +216,15 @@ public:
       mResult.mustCheck.activate();
    }
 
-   void addIgnored( const std::string& arg )
+   void addIgnored( std::string_view arg )
    {
-      mResult.ignoredArguments.push_back( arg );
+      mResult.ignoredArguments.emplace_back( arg );
    }
 
    void requestExit()
    {
       mResult.exitRequested = true;
-      mResult.mustCheck.activate();
+      addError( {}, EXIT_REQUESTED );
    }
 
    void signalHelpShown()

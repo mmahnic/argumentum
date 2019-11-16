@@ -4,6 +4,7 @@
 #pragma once
 
 #include "argdescriber.h"
+#include "argumentstream.h"
 #include "commandconfig.h"
 #include "commands.h"
 #include "environment.h"
@@ -230,9 +231,43 @@ public:
    ParseResult parse_args( std::vector<std::string>::const_iterator ibegin,
          std::vector<std::string>::const_iterator iend )
    {
+      if ( ibegin == iend ) {
+         verifyDefinedOptions();
+         if ( hasRequiredArguments() ) {
+            generate_help();
+            ParseResultBuilder result;
+            result.signalHelpShown();
+            result.requestExit();
+            return std::move( result.getResult() );
+         }
+      }
+
+      auto argStream = IteratorArgumentStream( ibegin, iend );
+      return parse_args( argStream );
+   }
+
+   // Parse input arguments and return errors in a ParseResult.
+   ParseResult parse_args( ArgumentStream& args )
+   {
       verifyDefinedOptions();
+      resetOptionValues();
+
       ParseResultBuilder result;
-      parse_args( ibegin, iend, result );
+
+      if ( mustDisplayHelp( args ) ) {
+         generate_help();
+         result.signalHelpShown();
+         result.requestExit();
+         return std::move( result.getResult() );
+      }
+
+      Parser parser( mParserDef, result );
+      parser.parse( args );
+      if ( result.wasExitRequested() )
+         return std::move( result.getResult() );
+
+      assignDefaultValues();
+      validateParsedOptions( result );
 
       if ( result.hasArgumentProblems() ) {
          result.signalErrorsShown();
@@ -257,29 +292,6 @@ public:
    }
 
 private:
-   void parse_args( std::vector<std::string>::const_iterator ibegin,
-         std::vector<std::string>::const_iterator iend, ParseResultBuilder& result )
-   {
-      resetOptionValues();
-
-      if ( mustDisplayHelp( ibegin, iend ) ) {
-         generate_help();
-         result.signalHelpShown();
-         result.requestExit();
-         return;
-      }
-
-      Parser parser( mParserDef, result );
-      parser.parse( ibegin, iend );
-      if ( result.wasExitRequested() ) {
-         result.addError( {}, EXIT_REQUESTED );
-         return;
-      }
-
-      assignDefaultValues();
-      validateParsedOptions( result );
-   }
-
    void resetOptionValues()
    {
       for ( auto& pOption : mParserDef.mOptions )
@@ -289,14 +301,21 @@ private:
          pOption->resetValue();
    }
 
-   bool mustDisplayHelp( std::vector<std::string>::const_iterator ibegin,
-         std::vector<std::string>::const_iterator iend ) const
+   bool mustDisplayHelp( ArgumentStream& argStream ) const
    {
-      if ( ibegin == iend && hasRequiredArguments() )
-         return true;
+      bool mustDisplay = false;
+      auto isHelpOption = [this]( auto&& arg ) {
+         return mHelpOptionNames.count( std::string{ arg } ) > 0;
+      };
+      argStream.peek( [&]( auto&& arg ) {
+         if ( isHelpOption( arg ) ) {
+            mustDisplay = true;
+            return ArgumentStream::peekDone;
+         }
+         return ArgumentStream::peekNext;
+      } );
 
-      auto isHelpOption = [this]( auto&& arg ) { return mHelpOptionNames.count( arg ) > 0; };
-      return std::any_of( ibegin, iend, isHelpOption );
+      return mustDisplay;
    }
 
    void assignDefaultValues()

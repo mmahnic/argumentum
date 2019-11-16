@@ -11,8 +11,8 @@ namespace argparse {
 class InvalidChoiceError : public std::invalid_argument
 {
 public:
-   InvalidChoiceError( const std::string& value )
-      : std::invalid_argument( value )
+   InvalidChoiceError( std::string_view value )
+      : std::invalid_argument( std::string{ value } )
    {}
 };
 
@@ -56,6 +56,23 @@ class DuplicateCommand : public std::runtime_error
 public:
    DuplicateCommand( const std::string& commandName )
       : runtime_error( std::string( "Command '" ) + commandName + "' is already defined." )
+   {}
+};
+
+class MissingFilesystem : public std::exception
+{
+public:
+   const char* what() const noexcept override
+   {
+      return "The filesystem for opening argument streams is not defined.";
+   }
+};
+
+class IncludeDepthExceeded : public std::runtime_error
+{
+public:
+   IncludeDepthExceeded( const std::string& streamName )
+      : runtime_error( streamName )
    {}
 };
 
