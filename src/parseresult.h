@@ -216,7 +216,7 @@ public:
    void requestExit()
    {
       mResult.exitRequested = true;
-      mResult.mustCheck.activate();
+      addError( {}, EXIT_REQUESTED );
    }
 
    void signalHelpShown()

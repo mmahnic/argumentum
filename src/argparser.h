@@ -231,8 +231,24 @@ public:
          std::vector<std::string>::const_iterator iend )
    {
       verifyDefinedOptions();
+      resetOptionValues();
+
       ParseResultBuilder result;
-      parse_args( ibegin, iend, result );
+
+      if ( mustDisplayHelp( ibegin, iend ) ) {
+         generate_help();
+         result.signalHelpShown();
+         result.requestExit();
+         return std::move( result.getResult() );
+      }
+
+      Parser parser( mParserDef, result );
+      parser.parse( ibegin, iend );
+      if ( result.wasExitRequested() )
+         return std::move( result.getResult() );
+
+      assignDefaultValues();
+      validateParsedOptions( result );
 
       if ( result.hasArgumentProblems() ) {
          result.signalErrorsShown();
@@ -257,29 +273,6 @@ public:
    }
 
 private:
-   void parse_args( std::vector<std::string>::const_iterator ibegin,
-         std::vector<std::string>::const_iterator iend, ParseResultBuilder& result )
-   {
-      resetOptionValues();
-
-      if ( mustDisplayHelp( ibegin, iend ) ) {
-         generate_help();
-         result.signalHelpShown();
-         result.requestExit();
-         return;
-      }
-
-      Parser parser( mParserDef, result );
-      parser.parse( ibegin, iend );
-      if ( result.wasExitRequested() ) {
-         result.addError( {}, EXIT_REQUESTED );
-         return;
-      }
-
-      assignDefaultValues();
-      validateParsedOptions( result );
-   }
-
    void resetOptionValues()
    {
       for ( auto& pOption : mParserDef.mOptions )
