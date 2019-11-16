@@ -34,7 +34,7 @@ TEST( ArgumentStream, shouldPeekNextArgumentsInStream )
    bool foundOne = false;
    bool foundTwo = false;
    bool foundThree = false;
-   stream.peek( [&]( auto& arg ) {
+   stream.peek( [&]( auto&& arg ) {
       if ( arg == "two" ) {
          foundTwo = true;
          return ArgumentStream::peekDone;
