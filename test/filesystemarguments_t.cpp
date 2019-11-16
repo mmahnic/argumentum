@@ -12,27 +12,27 @@ using namespace argparse;
 
 class TestFilesystem : public Filesystem
 {
-   std::map<std::string, std::string> mFiles;
+   std::map<std::string, std::vector<std::string>> mFiles;
 
 public:
    std::unique_ptr<ArgumentStream> open( const std::string& filename ) override
    {
-      return nullptr;
-#if 0
-      auto pStream = std::make_unique<std::stringstream>();
-      if ( mFiles.find( filename ) != mFiles.end() )
-         pStream->str( mFiles[filename] );
+      auto iv = mFiles.find( filename );
+      if ( iv != mFiles.end() ) {
+         using iter_t = std::vector<std::string>::iterator;
+         return std::make_unique<IteratorArgumentStream<iter_t>>(
+               std::begin( iv->second ), std::end( iv->second ) );
+      }
 
-      return pStream;
-#endif
+      return nullptr;
    }
 
-   void addFile( const std::string& name, const std::string& content )
+   void addFile( const std::string& name, const std::vector<std::string>& content )
    {
       mFiles[name] = content;
    }
 
-   void addFile( const std::string& name, std::string&& content )
+   void addFile( const std::string& name, std::vector<std::string>&& content )
    {
       mFiles[name] = std::move( content );
    }
@@ -41,8 +41,8 @@ public:
 TEST( FilesystemArguments, shouldReadArgumentsFromFilesystem )
 {
    auto pfs = std::make_shared<TestFilesystem>();
-   pfs->addFile( "a.opt", "--alpha --beta" );
-   pfs->addFile( "b.opt", "--three --four" );
+   pfs->addFile( "a.opt", { "--alpha", "--beta" } );
+   pfs->addFile( "b.opt", { "--three", "--four" } );
 
    auto parser = argument_parser{};
    parser.config().filesystem( pfs );
