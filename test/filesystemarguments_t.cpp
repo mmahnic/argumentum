@@ -62,3 +62,28 @@ TEST( FilesystemArguments, shouldReadArgumentsFromFilesystem )
    for ( auto flag : v )
       EXPECT_TRUE( flag );
 }
+
+TEST( FilesystemArguments, shouldReadArgumentsFromFilesystemRecursively )
+{
+   auto pfs = std::make_shared<TestFilesystem>();
+   pfs->addFile( "a.opt", { "--alpha", "--beta", "@b.opt" } );
+   pfs->addFile( "b.opt", { "--three", "--four" } );
+
+   auto parser = argument_parser{};
+   parser.config().filesystem( pfs );
+
+   std::array<bool, 6> v{ false, false, false, false, false, false };
+   parser.add_argument( v[0], "--alpha" ).nargs( 0 );
+   parser.add_argument( v[1], "--beta" ).nargs( 0 );
+   parser.add_argument( v[2], "--three" ).nargs( 0 );
+   parser.add_argument( v[3], "--four" ).nargs( 0 );
+   parser.add_argument( v[4], "--alice" ).nargs( 0 );
+   parser.add_argument( v[5], "--bob" ).nargs( 0 );
+
+   auto res = parser.parse_args( { "--alice", "@a.opt", "--bob" } );
+
+   EXPECT_TRUE( !!res );
+
+   for ( auto flag : v )
+      EXPECT_TRUE( flag );
+}
