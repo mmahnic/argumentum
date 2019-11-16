@@ -214,8 +214,7 @@ public:
       for ( int i = std::max( 0, skip_args ); i < argc; ++i )
          args.emplace_back( argv[i] );
 
-      auto argStream = IteratorArgumentStream( std::begin( args ), std::end( args ) );
-      return parse_args( argStream );
+      return parse_args( std::begin( args ), std::end( args ) );
    }
 
    // Parse input arguments and return errors in a ParseResult.
@@ -225,14 +224,24 @@ public:
       if ( skip_args > 0 )
          ibegin += std::min<size_t>( skip_args, args.size() );
 
-      auto argStream = IteratorArgumentStream( ibegin, std::end( args ) );
-      return parse_args( argStream );
+      return parse_args( ibegin, std::end( args ) );
    }
 
    // Parse input arguments and return errors in a ParseResult.
    ParseResult parse_args( std::vector<std::string>::const_iterator ibegin,
          std::vector<std::string>::const_iterator iend )
    {
+      if ( ibegin == iend ) {
+         verifyDefinedOptions();
+         if ( hasRequiredArguments() ) {
+            generate_help();
+            ParseResultBuilder result;
+            result.signalHelpShown();
+            result.requestExit();
+            return std::move( result.getResult() );
+         }
+      }
+
       auto argStream = IteratorArgumentStream( ibegin, iend );
       return parse_args( argStream );
    }
@@ -294,11 +303,6 @@ private:
 
    bool mustDisplayHelp( ArgumentStream& argStream ) const
    {
-#if 0
-      if ( ibegin == iend && hasRequiredArguments() )
-         return true;
-#endif
-
       bool mustDisplay = false;
       auto isHelpOption = [this]( auto&& arg ) {
          return mHelpOptionNames.count( std::string{ arg } ) > 0;
