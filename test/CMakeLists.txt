@@ -15,6 +15,7 @@ add_executable( runUnitTests
    helpwriter_t.cpp
    filesystemarguments_t.cpp
    argumentstream_t.cpp
+   helputil.cpp
    ${PARSER_SOURCES}
    )
 
@@ -22,9 +23,27 @@ target_link_libraries( runUnitTests
    gtest_main
    )
 
+add_executable( utilityTests
+   runtest.cpp
+   helputil.cpp
+   helputil_t.cpp
+   )
+
+target_link_libraries( utilityTests 
+   gtest_main
+   )
+
+add_test(
+  NAME
+    utility
+  COMMAND
+    ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/test/utilityTests
+)
+
 add_test(
   NAME
     parser
   COMMAND
     ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/test/runUnitTests
 )
+
