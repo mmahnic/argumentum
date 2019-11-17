@@ -7,6 +7,7 @@
 #include "options.h"
 #include "parserconfig.h"
 
+#include <set>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -65,6 +66,8 @@ class Parser
 public:
    Parser( ParserDefinition& argParser, ParseResultBuilder& result );
    void parse( ArgumentStream& argStream );
+   std::vector<ParserDefinition> parse_for_help(
+         ArgumentStream& argStream, const std::set<std::string>& helpOptionNames );
 
 private:
    void startOption( std::string_view name );

@@ -89,6 +89,43 @@ inline void Parser::parse( ArgumentStream& argStream, unsigned depth )
    }
 }
 
+// Parse the argument stream to determine the help context.
+inline std::vector<ParserDefinition> Parser::parse_for_help(
+      ArgumentStream& argStream, const std::set<std::string>& helpOptionNames )
+{
+   std::vector<ParserDefinition> res;
+   for ( auto optArg = argStream.next(); !!optArg; optArg = argStream.next() ) {
+      if ( optArg->substr( 0, 1 ) == "@" )
+         continue;
+
+      if ( helpOptionNames.count( std::string{ *optArg } ) > 0 )
+         // TODO: check if the next argument is a command and add its definition
+         break;
+
+      if ( optArg->substr( 0, 1 ) == "-" )
+         continue;
+
+      auto pCommand = mParserDef.findCommand( *optArg );
+      if ( pCommand ) {
+         auto parser = argument_parser{};
+         auto pCmdOptions = pCommand->getOptions();
+         if ( pCmdOptions )
+            parser.add_arguments( pCmdOptions );
+         res.push_back( parser.mParserDef );
+
+         ParseResultBuilder result;
+         auto subparser = Parser( parser.mParserDef, result );
+         auto childs = subparser.parse_for_help( argStream, helpOptionNames );
+
+         for ( auto&& child : childs )
+            res.emplace_back( std::move( child ) );
+
+         break;
+      }
+   }
+   return res;
+}
+
 inline void Parser::startOption( std::string_view name )
 {
    if ( haveActiveOption() )

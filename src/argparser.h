@@ -36,6 +36,8 @@ namespace argparse {
 
 class argument_parser
 {
+   friend class Parser;
+
 private:
    ParserDefinition mParserDef;
    std::set<std::string> mHelpOptionNames;
@@ -211,7 +213,7 @@ public:
       mpActiveGroup = nullptr;
    }
 
-   // Parse input arguments and return errors in a ParseResult.
+   // Parse input arguments and return commands and errors in a ParseResult.
    ParseResult parse_args( int argc, char** argv, int skip_args = 1 )
    {
       if ( !argv ) {
@@ -227,7 +229,7 @@ public:
       return parse_args( std::begin( args ), std::end( args ) );
    }
 
-   // Parse input arguments and return errors in a ParseResult.
+   // Parse input arguments and return commands and errors in a ParseResult.
    ParseResult parse_args( const std::vector<std::string>& args, int skip_args = 0 )
    {
       auto ibegin = std::begin( args );
@@ -237,7 +239,7 @@ public:
       return parse_args( ibegin, std::end( args ) );
    }
 
-   // Parse input arguments and return errors in a ParseResult.
+   // Parse input arguments and return commands and errors in a ParseResult.
    ParseResult parse_args( std::vector<std::string>::const_iterator ibegin,
          std::vector<std::string>::const_iterator iend )
    {
@@ -265,7 +267,7 @@ public:
       ParseResultBuilder result;
 
       if ( mustDisplayHelp( args ) ) {
-         generate_help();
+         generate_help( args );
          result.signalHelpShown();
          result.requestExit();
          return std::move( result.getResult() );
@@ -575,6 +577,21 @@ private:
          pStream = &std::cout;
 
       formatter.format( mParserDef, *pStream );
+   }
+
+   void generate_help( ArgumentStream& args )
+   {
+      // TODO: The formatter should be configurable
+      auto formatter = HelpFormatter();
+      auto pStream = mParserDef.getConfig().pOutStream;
+      if ( !pStream )
+         pStream = &std::cout;
+
+      ParseResultBuilder result;
+      Parser parser( mParserDef, result );
+      auto subparsers = parser.parse_for_help( args, mHelpOptionNames );
+
+      formatter.format( mParserDef, subparsers, *pStream );
    }
 
    void describe_errors( ParseResult& result )

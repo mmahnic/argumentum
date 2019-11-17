@@ -57,7 +57,9 @@ class HelpFormatter
    size_t mMaxDescriptionIndent = 30;
 
 public:
-   void format( const ParserDefinition& parser, std::ostream& out );
+   void format( const ParserDefinition& parserDef, std::ostream& out );
+   void format( const ParserDefinition& parserDef, const std::vector<ParserDefinition>& subparsers,
+         std::ostream& out );
 
    void setTextWidth( size_t widthBytes )
    {
@@ -74,6 +76,7 @@ private:
          const ParserDefinition& parser, std::vector<ArgumentHelpResult>& args, Writer& writer );
    std::string formatArgument( const ArgumentHelpResult& arg ) const;
    size_t deriveMaxArgumentWidth( const std::vector<ArgumentHelpResult>& args ) const;
+   void format( const ParserDefinition& parserDef, std::ostream& out, bool isFinalSubparser );
 };
 
 }   // namespace argparse

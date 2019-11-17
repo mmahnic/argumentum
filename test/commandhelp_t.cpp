@@ -181,7 +181,7 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpIfCommandGivenAfter
    parser.add_command<CmdTwoOptions>( "two" );
 
    // -- WHEN
-   auto res = parser.parse_args( { "--help", "one" } );
+   auto res = parser.parse_args( { "one", "--help" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
 
    // -- THEN
@@ -193,7 +193,7 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpIfCommandGivenAfter
 
    // -- WHEN
    strout.str( "" );
-   res = parser.parse_args( { "--help", "two" } );
+   res = parser.parse_args( { "two", "--help" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
 
    // -- THEN

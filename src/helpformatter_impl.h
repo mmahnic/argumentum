@@ -95,6 +95,20 @@ inline void HelpFormatter::formatUsage(
 
 inline void HelpFormatter::format( const ParserDefinition& parserDef, std::ostream& out )
 {
+   format( parserDef, out, true );
+}
+
+inline void HelpFormatter::format( const ParserDefinition& parserDef,
+      const std::vector<ParserDefinition>& subparsers, std::ostream& out )
+{
+   format( parserDef, out, subparsers.empty() );
+   for ( unsigned i = 0; i < subparsers.size(); ++i )
+      format( subparsers[i], out, i == subparsers.size() - 1 );
+}
+
+inline void HelpFormatter::format(
+      const ParserDefinition& parserDef, std::ostream& out, bool isFinalSubparser )
+{
    const auto& config = parserDef.getConfig();
    ArgumentDescriber describer;
    auto args = describer.describe_arguments( parserDef );
@@ -170,7 +184,7 @@ inline void HelpFormatter::format( const ParserDefinition& parserDef, std::ostre
          writeArguments( writer, group.iendreq, group.iend );
       }
 
-      if ( hasPositional && isCommand ) {
+      if ( hasPositional && isCommand && isFinalSubparser ) {
          // Commands are not options (their names do not start with '-') so they
          // are all in the positional part of the group.
          if ( isDefaultGroup )
