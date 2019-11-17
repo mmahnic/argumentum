@@ -69,18 +69,20 @@ public:
       return mParserDef;
    }
 
-   // Add a factory that will create an Options structure for subcommand
-   // arguments for the command @p name.
-   CommandConfig add_command( const std::string& name, Command::options_factory_t factory )
-   {
-      auto command = Command( name, factory );
-      return tryAddCommand( command );
-   }
-
+   // Define a command.  The CommandOptions (@p TOptions) will be instantiated
+   // when the command is activated with an input argument.
    template<typename TOptions>
    CommandConfig add_command( const std::string& name )
    {
       auto factory = []( std::string_view name ) { return std::make_shared<TOptions>( name ); };
+      auto command = Command( name, factory );
+      return tryAddCommand( command );
+   }
+
+   // Define a command. The @p factory will create an instance of CommandOptions
+   // when the command is activated with an input argument.
+   CommandConfig add_command( const std::string& name, Command::options_factory_t factory )
+   {
       auto command = Command( name, factory );
       return tryAddCommand( command );
    }
@@ -187,7 +189,7 @@ public:
    }
 
    // Begin an exclusive group of options named @p name.  At most one of the
-   // options from an exclusive can be used in input arguments.  The group
+   // options from an exclusive group can be used in input arguments.  The group
    // definition ends at end_group().
    GroupConfig add_exclusive_group( const std::string& name )
    {
