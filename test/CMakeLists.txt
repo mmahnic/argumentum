@@ -11,8 +11,9 @@ add_executable( runUnitTests
    group_t.cpp
    command_t.cpp
    action_t.cpp
-   help_t.cpp
    helpwriter_t.cpp
+   help_t.cpp
+   commandhelp_t.cpp
    filesystemarguments_t.cpp
    argumentstream_t.cpp
    helputil.cpp
