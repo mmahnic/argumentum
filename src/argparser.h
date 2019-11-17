@@ -77,6 +77,14 @@ public:
       return tryAddCommand( command );
    }
 
+   template<typename TOptions>
+   CommandConfig add_command( const std::string& name )
+   {
+      auto factory = []( std::string_view name ) { return std::make_shared<TOptions>( name ); };
+      auto command = Command( name, factory );
+      return tryAddCommand( command );
+   }
+
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value>>
    OptionConfigA<TValue> add_argument(
          TValue value, const std::string& name = "", const std::string& altName = "" )

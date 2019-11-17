@@ -605,10 +605,12 @@ TEST( ArgumentParserHelpTest, shouldOutputGroupDescription )
 }
 
 namespace {
-struct CmdOneOptions : public argparse::Options
+struct CmdOneOptions : public argparse::CommandOptions
 {
    std::optional<std::string> str;
    std::optional<long> count;
+
+   using CommandOptions::CommandOptions;
 
    void add_arguments( argument_parser& parser ) override
    {
@@ -617,10 +619,12 @@ struct CmdOneOptions : public argparse::Options
    }
 };
 
-struct CmdTwoOptions : public argparse::Options
+struct CmdTwoOptions : public argparse::CommandOptions
 {
    std::optional<std::string> str;
    std::optional<long> count;
+
+   using CommandOptions::CommandOptions;
 
    void add_arguments( argument_parser& parser ) override
    {
@@ -650,15 +654,15 @@ struct TestCommandOptions : public argparse::Options
       parser.add_arguments( pGlobal );
 
       parser.add_command( "cmdone",
-                  [&]() {
-                     pCmdOne = std::make_shared<CmdOneOptions>();
+                  [&]( std::string_view name ) {
+                     pCmdOne = std::make_shared<CmdOneOptions>( name );
                      return pCmdOne;
                   } )
             .help( "Command One description." );
 
       parser.add_command( "cmdtwo",
-                  [&]() {
-                     pCmdTwo = std::make_shared<CmdTwoOptions>();
+                  [&]( std::string_view name ) {
+                     pCmdTwo = std::make_shared<CmdTwoOptions>( name );
                      return pCmdTwo;
                   } )
             .help( "Command Two description." );
@@ -775,8 +779,8 @@ TEST( ArgumentParserCommandHelpTest, shouldShowCommandPlaceholderInUsage )
    parser.config().program( "testing" );
 
    std::shared_ptr<CmdOneOptions> pCmdOne;
-   parser.add_command( "one", [&]() {
-      pCmdOne = std::make_shared<CmdOneOptions>();
+   parser.add_command( "one", [&]( std::string_view name ) {
+      pCmdOne = std::make_shared<CmdOneOptions>( name );
       return pCmdOne;
    } );
 

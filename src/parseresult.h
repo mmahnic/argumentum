@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "commands.h"
 #include "exceptions.h"
 #include "notifier.h"
 #include <string>
@@ -155,6 +156,7 @@ private:
 public:
    std::vector<std::string> ignoredArguments;
    std::vector<ParseError> errors;
+   std::vector<std::shared_ptr<CommandOptions>> commands;
 
 public:
    ParseResult() = default;
@@ -183,6 +185,28 @@ public:
    {
       mustCheck.clear();
       return errors.empty() && ignoredArguments.empty() && !exitRequested;
+   }
+
+   template<typename TCommand>
+   std::shared_ptr<TCommand> findCommand()
+   {
+      for ( auto& pCmd : commands ) {
+         auto pDesired = std::dynamic_pointer_cast<TCommand>( pCmd );
+         if ( pDesired )
+            return pDesired;
+      }
+      return nullptr;
+   }
+
+   template<typename TCommand>
+   std::shared_ptr<TCommand> findCommand( std::string_view name )
+   {
+      for ( auto& pCmd : commands ) {
+         auto pDesired = std::dynamic_pointer_cast<TCommand>( pCmd );
+         if ( pDesired && pDesired->getName() == name )
+            return pDesired;
+      }
+      return nullptr;
    }
 
 private:
@@ -219,6 +243,11 @@ public:
    void addIgnored( std::string_view arg )
    {
       mResult.ignoredArguments.emplace_back( arg );
+   }
+
+   void addCommand( const std::shared_ptr<CommandOptions>& pCommand )
+   {
+      mResult.commands.push_back( pCommand );
    }
 
    void requestExit()

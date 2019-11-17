@@ -190,7 +190,11 @@ inline void Parser::parseCommandArguments(
       Command& command, ArgumentStream& argStream, ParseResultBuilder& result )
 {
    auto parser = argument_parser{};
-   parser.add_arguments( command.createOptions() );
+   auto pCmdOptions = command.getOptions();
+   if ( pCmdOptions ) {
+      parser.add_arguments( pCmdOptions );
+      result.addCommand( pCmdOptions );
+   }
    result.addResult( parser.parse_args( argStream ) );
 }
 

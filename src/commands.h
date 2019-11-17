@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "exceptions.h"
+
 #include <cassert>
 #include <functional>
 #include <memory>
@@ -13,6 +15,7 @@
 namespace argparse {
 
 class argument_parser;
+class ParseResult;
 
 class Options
 {
@@ -20,13 +23,34 @@ public:
    virtual void add_arguments( argument_parser& parser ) = 0;
 };
 
+class CommandOptions : public Options
+{
+   std::string mName;
+
+public:
+   CommandOptions( std::string_view name )
+      : mName( name )
+   {}
+
+   const std::string& getName() const
+   {
+      return mName;
+   }
+
+   virtual void execute( const ParseResult& result )
+   {}
+};
+
+// An internal definition of a command.
 class Command
 {
 public:
-   using options_factory_t = std::function<std::shared_ptr<Options>()>;
+   using options_factory_t =
+         std::function<std::shared_ptr<CommandOptions>( std::string_view name )>;
 
 private:
    std::string mName;
+   std::shared_ptr<CommandOptions> mpOptions;
    options_factory_t mFactory;
    std::string mHelp;
 
@@ -61,10 +85,17 @@ public:
       return mHelp;
    }
 
-   std::shared_ptr<Options> createOptions()
+   std::shared_ptr<CommandOptions> getOptions()
    {
-      assert( mFactory != nullptr );
-      return mFactory();
+      if ( !mpOptions ) {
+         if ( !mFactory )
+            throw MissingCommandOptions( mName );
+
+         mpOptions = mFactory( mName );
+         if ( !mpOptions )
+            throw MissingCommandOptions( mName );
+      }
+      return mpOptions;
    }
 };
 

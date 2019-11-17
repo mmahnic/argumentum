@@ -59,6 +59,14 @@ public:
    {}
 };
 
+class MissingCommandOptions : public std::runtime_error
+{
+public:
+   MissingCommandOptions( const std::string& commandName )
+      : runtime_error( std::string( "Command '" ) + commandName + "' has no options." )
+   {}
+};
+
 class MissingFilesystem : public std::exception
 {
 public:

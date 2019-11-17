@@ -9,10 +9,12 @@
 using namespace argparse;
 
 namespace {
-struct CmdOneOptions : public argparse::Options
+struct CmdOneOptions : public argparse::CommandOptions
 {
    std::optional<std::string> str;
    std::optional<long> count;
+
+   using CommandOptions::CommandOptions;
 
    void add_arguments( argument_parser& parser ) override
    {
@@ -21,10 +23,12 @@ struct CmdOneOptions : public argparse::Options
    }
 };
 
-struct CmdTwoOptions : public argparse::Options
+struct CmdTwoOptions : public argparse::CommandOptions
 {
    std::optional<std::string> str;
    std::optional<long> count;
+
+   using CommandOptions::CommandOptions;
 
    void add_arguments( argument_parser& parser ) override
    {
@@ -42,12 +46,12 @@ TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
 
    std::shared_ptr<CmdOneOptions> pCmdOne;
    std::shared_ptr<CmdTwoOptions> pCmdTwo;
-   parser.add_command( "one", [&]() {
-      pCmdOne = std::make_shared<CmdOneOptions>();
+   parser.add_command( "one", [&]( std::string_view name ) {
+      pCmdOne = std::make_shared<CmdOneOptions>( name );
       return pCmdOne;
    } );
-   parser.add_command( "two", [&]() {
-      pCmdTwo = std::make_shared<CmdTwoOptions>();
+   parser.add_command( "two", [&]( std::string_view name ) {
+      pCmdTwo = std::make_shared<CmdTwoOptions>( name );
       return pCmdTwo;
    } );
 
@@ -100,8 +104,8 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent )
    parser.add_argument( global, "-s" ).nargs( 1 );
 
    std::shared_ptr<CmdOneOptions> pCmdOne;
-   parser.add_command( "one", [&]() {
-      pCmdOne = std::make_shared<CmdOneOptions>();
+   parser.add_command( "one", [&]( std::string_view name ) {
+      pCmdOne = std::make_shared<CmdOneOptions>( name );
       return pCmdOne;
    } );
 
@@ -136,8 +140,8 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent2 )
    parser.add_arguments( pGlobal );
 
    std::shared_ptr<CmdOneOptions> pCmdOne;
-   parser.add_command( "one", [&]() {
-      pCmdOne = std::make_shared<CmdOneOptions>();
+   parser.add_command( "one", [&]( std::string_view name ) {
+      pCmdOne = std::make_shared<CmdOneOptions>( name );
       return pCmdOne;
    } );
 
@@ -171,8 +175,8 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredOptionsWhenCommandP
    parser.add_arguments( pGlobal );
 
    std::shared_ptr<CmdOneOptions> pCmdOne;
-   parser.add_command( "one", [&]() {
-      pCmdOne = std::make_shared<CmdOneOptions>();
+   parser.add_command( "one", [&]( std::string_view name ) {
+      pCmdOne = std::make_shared<CmdOneOptions>( name );
       return pCmdOne;
    } );
 
@@ -208,8 +212,8 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredPositionalWhenComma
    parser.add_arguments( pGlobal );
 
    std::shared_ptr<CmdOneOptions> pCmdOne;
-   parser.add_command( "one", [&]() {
-      pCmdOne = std::make_shared<CmdOneOptions>();
+   parser.add_command( "one", [&]( std::string_view name ) {
+      pCmdOne = std::make_shared<CmdOneOptions>( name );
       return pCmdOne;
    } );
 
