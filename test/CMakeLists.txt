@@ -7,11 +7,11 @@ set(PARSER_SOURCES
 add_executable( runUnitTests
    runtest.cpp
    argparser_t.cpp
-   argparserconvert_t.cpp
-   argparsergroup_t.cpp
-   argparsercommand_t.cpp
+   convert_t.cpp
+   group_t.cpp
+   command_t.cpp
    action_t.cpp
-   argparserhelp_t.cpp
+   help_t.cpp
    helpwriter_t.cpp
    filesystemarguments_t.cpp
    argumentstream_t.cpp
