@@ -221,3 +221,39 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredPositionalWhenComma
    ASSERT_NE( nullptr, pCmdOne );
    EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
 }
+
+TEST( ArgumentParserCommandTest, shouldStoreInstantiatedCommandsInParseResults )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout );
+
+   parser.add_command<CmdOneOptions>( "one" );
+   parser.add_command<CmdTwoOptions>( "two" );
+
+   // -- WHEN
+   auto res = parser.parse_args( { "one", "-s", "works" } );
+
+   // -- THEN
+   EXPECT_TRUE( res.errors.empty() );
+   auto pCmdOne = res.findCommand<CmdOneOptions>( "one" );
+   auto pCmdTwo = res.findCommand<CmdTwoOptions>( "two" );
+   EXPECT_EQ( nullptr, pCmdTwo );
+   ASSERT_NE( nullptr, pCmdOne );
+   EXPECT_TRUE( pCmdOne->str.has_value() );
+   EXPECT_EQ( "works", pCmdOne->str.value_or( "" ) );
+   EXPECT_FALSE( pCmdOne->count.has_value() );
+
+   // -- WHEN
+   res = parser.parse_args( { "two", "--string", "works" } );
+
+   // -- THEN
+   EXPECT_TRUE( res.errors.empty() );
+   pCmdOne = res.findCommand<CmdOneOptions>( "one" );
+   pCmdTwo = res.findCommand<CmdTwoOptions>( "two" );
+   EXPECT_EQ( nullptr, pCmdOne );
+   ASSERT_NE( nullptr, pCmdTwo );
+   EXPECT_TRUE( pCmdTwo->str.has_value() );
+   EXPECT_EQ( "works", pCmdTwo->str.value_or( "" ) );
+   EXPECT_FALSE( pCmdTwo->count.has_value() );
+}
