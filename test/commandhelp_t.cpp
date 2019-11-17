@@ -153,3 +153,53 @@ TEST( ArgumentParserCommandHelpTest, shouldShowCommandPlaceholderInUsage )
    EXPECT_EQ( -1, posOne );
    EXPECT_EQ( -1, posS );
 }
+
+TEST( ArgumentParserCommandHelpTest, shouldNotDisplayCommandHelpIfCommandNotGiven )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" ).cout( strout );
+   parser.add_command<CmdOneOptions>( "one" );
+   parser.add_command<CmdTwoOptions>( "two" );
+
+   auto res = parser.parse_args( { "--help" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+
+   auto help = strout.str();
+   EXPECT_FALSE( strHasText( help, "-s " ) );
+   EXPECT_FALSE( strHasText( help, "-n " ) );
+   EXPECT_FALSE( strHasText( help, "--string " ) );
+   EXPECT_FALSE( strHasText( help, "--count " ) );
+}
+
+TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpIfCommandGivenAfterFlag )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" ).cout( strout );
+   parser.add_command<CmdOneOptions>( "one" );
+   parser.add_command<CmdTwoOptions>( "two" );
+
+   // -- WHEN
+   auto res = parser.parse_args( { "--help", "one" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+
+   // -- THEN
+   auto help = strout.str();
+   EXPECT_TRUE( strHasText( help, "-s " ) );
+   EXPECT_TRUE( strHasText( help, "-n " ) );
+   EXPECT_FALSE( strHasText( help, "--string " ) );
+   EXPECT_FALSE( strHasText( help, "--count " ) );
+
+   // -- WHEN
+   strout.str( "" );
+   res = parser.parse_args( { "--help", "two" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+
+   // -- THEN
+   help = strout.str();
+   EXPECT_FALSE( strHasText( help, "-s " ) );
+   EXPECT_FALSE( strHasText( help, "-n " ) );
+   EXPECT_TRUE( strHasText( help, "--string " ) );
+   EXPECT_TRUE( strHasText( help, "--count " ) );
+}
