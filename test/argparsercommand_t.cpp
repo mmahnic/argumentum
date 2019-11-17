@@ -44,21 +44,15 @@ TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
    auto parser = argument_parser{};
    parser.config().cout( strout );
 
-   std::shared_ptr<CmdOneOptions> pCmdOne;
-   std::shared_ptr<CmdTwoOptions> pCmdTwo;
-   parser.add_command( "one", [&]( std::string_view name ) {
-      pCmdOne = std::make_shared<CmdOneOptions>( name );
-      return pCmdOne;
-   } );
-   parser.add_command( "two", [&]( std::string_view name ) {
-      pCmdTwo = std::make_shared<CmdTwoOptions>( name );
-      return pCmdTwo;
-   } );
+   parser.add_command<CmdOneOptions>( "one" );
+   parser.add_command<CmdTwoOptions>( "two" );
 
    // -- WHEN
    auto res = parser.parse_args( { "one", "-s", "works" } );
 
    // -- THEN
+   auto pCmdOne = res.findCommand<CmdOneOptions>( "one" );
+   auto pCmdTwo = res.findCommand<CmdTwoOptions>( "two" );
    EXPECT_TRUE( res.errors.empty() );
    EXPECT_EQ( nullptr, pCmdTwo );
    ASSERT_NE( nullptr, pCmdOne );
@@ -66,14 +60,12 @@ TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
    EXPECT_EQ( "works", pCmdOne->str.value_or( "" ) );
    EXPECT_FALSE( pCmdOne->count.has_value() );
 
-   // Parsers with commands are not restartable.
-   pCmdOne = nullptr;
-   pCmdTwo = nullptr;
-
    // -- WHEN
    res = parser.parse_args( { "two", "--string", "works" } );
 
    // -- THEN
+   pCmdOne = res.findCommand<CmdOneOptions>( "one" );
+   pCmdTwo = res.findCommand<CmdTwoOptions>( "two" );
    EXPECT_TRUE( res.errors.empty() );
    EXPECT_EQ( nullptr, pCmdOne );
    ASSERT_NE( nullptr, pCmdTwo );
@@ -81,16 +73,17 @@ TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
    EXPECT_EQ( "works", pCmdTwo->str.value_or( "" ) );
    EXPECT_FALSE( pCmdTwo->count.has_value() );
 
-   pCmdOne = nullptr;
-   pCmdTwo = nullptr;
-
    // -- WHEN
    res = parser.parse_args( { "-s", "works" } );
 
    // -- THEN
+   pCmdOne = res.findCommand<CmdOneOptions>( "one" );
+   pCmdTwo = res.findCommand<CmdTwoOptions>( "two" );
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_FALSE( res.errors.empty() );
    EXPECT_EQ( UNKNOWN_OPTION, res.errors.front().errorCode );
+   EXPECT_EQ( nullptr, pCmdOne );
+   EXPECT_EQ( nullptr, pCmdTwo );
 }
 
 // Form: program --global-options command --command-options
@@ -102,12 +95,7 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent )
 
    std::optional<std::string> global;
    parser.add_argument( global, "-s" ).nargs( 1 );
-
-   std::shared_ptr<CmdOneOptions> pCmdOne;
-   parser.add_command( "one", [&]( std::string_view name ) {
-      pCmdOne = std::make_shared<CmdOneOptions>( name );
-      return pCmdOne;
-   } );
+   parser.add_command<CmdOneOptions>( "one" );
 
    auto res = parser.parse_args( { "-s", "global-works", "one", "-s", "command-works" } );
    EXPECT_TRUE( res.errors.empty() );
@@ -115,6 +103,7 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent )
    EXPECT_TRUE( global.has_value() );
    EXPECT_EQ( "global-works", global.value_or( "" ) );
 
+   auto pCmdOne = res.findCommand<CmdOneOptions>( "one" );
    ASSERT_NE( nullptr, pCmdOne );
    EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
 }
@@ -138,12 +127,7 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent2 )
    auto pGlobal = std::make_shared<GlobalOptions>();
    ASSERT_NE( nullptr, pGlobal );
    parser.add_arguments( pGlobal );
-
-   std::shared_ptr<CmdOneOptions> pCmdOne;
-   parser.add_command( "one", [&]( std::string_view name ) {
-      pCmdOne = std::make_shared<CmdOneOptions>( name );
-      return pCmdOne;
-   } );
+   parser.add_command<CmdOneOptions>( "one" );
 
    auto res = parser.parse_args( { "-s", "global-works", "one", "-s", "command-works" } );
    EXPECT_TRUE( res.errors.empty() );
@@ -151,6 +135,7 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent2 )
    EXPECT_TRUE( pGlobal->global.has_value() );
    EXPECT_EQ( "global-works", pGlobal->global.value_or( "" ) );
 
+   auto pCmdOne = res.findCommand<CmdOneOptions>( "one" );
    ASSERT_NE( nullptr, pCmdOne );
    EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
 }
@@ -173,18 +158,14 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredOptionsWhenCommandP
    auto pGlobal = std::make_shared<GlobalOptions>();
    ASSERT_NE( nullptr, pGlobal );
    parser.add_arguments( pGlobal );
-
-   std::shared_ptr<CmdOneOptions> pCmdOne;
-   parser.add_command( "one", [&]( std::string_view name ) {
-      pCmdOne = std::make_shared<CmdOneOptions>( name );
-      return pCmdOne;
-   } );
+   parser.add_command<CmdOneOptions>( "one" );
 
    auto res = parser.parse_args( { "one", "-s", "command-works" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_FALSE( res.errors.empty() );
    EXPECT_EQ( MISSING_OPTION, res.errors.front().errorCode );
 
+   auto pCmdOne = res.findCommand<CmdOneOptions>( "one" );
    ASSERT_NE( nullptr, pCmdOne );
    EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
 }
@@ -210,18 +191,14 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredPositionalWhenComma
    auto pGlobal = std::make_shared<GlobalOptions>();
    ASSERT_NE( nullptr, pGlobal );
    parser.add_arguments( pGlobal );
-
-   std::shared_ptr<CmdOneOptions> pCmdOne;
-   parser.add_command( "one", [&]( std::string_view name ) {
-      pCmdOne = std::make_shared<CmdOneOptions>( name );
-      return pCmdOne;
-   } );
+   parser.add_command<CmdOneOptions>( "one" );
 
    auto res = parser.parse_args( { "one", "-s", "command-works" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_FALSE( res.errors.empty() );
    EXPECT_EQ( MISSING_ARGUMENT, res.errors.front().errorCode );
 
+   auto pCmdOne = res.findCommand<CmdOneOptions>( "one" );
    ASSERT_NE( nullptr, pCmdOne );
    EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
 }
