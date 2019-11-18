@@ -98,10 +98,6 @@ inline std::vector<ParserDefinition> Parser::parse_for_help(
       if ( optArg->substr( 0, 1 ) == "@" )
          continue;
 
-      if ( helpOptionNames.count( std::string{ *optArg } ) > 0 )
-         // TODO: check if the next argument is a command and add its definition
-         break;
-
       if ( optArg->substr( 0, 1 ) == "-" )
          continue;
 
@@ -121,9 +117,9 @@ inline std::vector<ParserDefinition> Parser::parse_for_help(
 
          for ( auto&& child : childs )
             res.emplace_back( std::move( child ) );
-
-         break;
       }
+
+      break;
    }
    return res;
 }
