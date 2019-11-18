@@ -222,7 +222,7 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandNameInCommandHelp )
       if ( strHasTexts( line, { "usage:", "one" } ) )
          ++countUsageName;
    }
-   EXPECT_EQ( 1, countUsageName );
+   EXPECT_EQ( 1, countUsageName ) << "----\n" << strout.str();
 }
 
 TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandDescriptionInCommandHelp )
@@ -230,7 +230,7 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandDescriptionInCommandHel
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().program( "testing" ).cout( strout );
-   parser.add_command<CmdOneOptions>( "one" );
+   parser.add_command<CmdOneOptions>( "one" ).help( "Command One description." );
 
    // -- WHEN
    auto res = parser.parse_args( { "one", "--help" } );
@@ -243,5 +243,5 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandDescriptionInCommandHel
       if ( strHasText( line, "Command One description." ) )
          ++countDescr;
    }
-   EXPECT_EQ( 1, countDescr );
+   EXPECT_EQ( 1, countDescr ) << "----\n" << strout.str();
 }

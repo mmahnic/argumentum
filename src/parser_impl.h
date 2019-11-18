@@ -109,8 +109,10 @@ inline std::vector<ParserDefinition> Parser::parse_for_help(
       if ( pCommand ) {
          auto parser = argument_parser{};
          auto pCmdOptions = pCommand->getOptions();
-         if ( pCmdOptions )
+         if ( pCmdOptions ) {
             parser.add_arguments( pCmdOptions );
+            parser.config().program( pCommand->getName() ).description( pCommand->getHelp() );
+         }
          res.push_back( parser.mParserDef );
 
          ParseResultBuilder result;
