@@ -93,6 +93,24 @@ inline void HelpFormatter::formatUsage(
    }
 }
 
+inline void HelpFormatter::format( const ParserDefinition& parserDef,
+      const std::vector<ParserDefinition>& subparsers, std::ostream& out )
+{
+   if ( subparsers.empty() )
+      format( parserDef, out );
+   else {
+      std::stringstream sspath;
+      sspath << parserDef.getConfig().program;
+      for ( auto& subDef : subparsers )
+         sspath << " " << subDef.getConfig().program;
+
+      // Set the command path for the displayed command
+      auto lastParserDef = subparsers.back();
+      lastParserDef.mConfig.program( sspath.str() );
+      format( lastParserDef, out );
+   }
+}
+
 inline void HelpFormatter::format( const ParserDefinition& parserDef, std::ostream& out )
 {
    const auto& config = parserDef.getConfig();

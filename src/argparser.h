@@ -36,6 +36,8 @@ namespace argparse {
 
 class argument_parser
 {
+   friend class Parser;
+
 private:
    ParserDefinition mParserDef;
    std::set<std::string> mHelpOptionNames;
@@ -69,8 +71,18 @@ public:
       return mParserDef;
    }
 
-   // Add a factory that will create an Options structure for subcommand
-   // arguments for the command @p name.
+   // Define a command.  The CommandOptions (@p TOptions) will be instantiated
+   // when the command is activated with an input argument.
+   template<typename TOptions>
+   CommandConfig add_command( const std::string& name )
+   {
+      auto factory = []( std::string_view name ) { return std::make_shared<TOptions>( name ); };
+      auto command = Command( name, factory );
+      return tryAddCommand( command );
+   }
+
+   // Define a command. The @p factory will create an instance of CommandOptions
+   // when the command is activated with an input argument.
    CommandConfig add_command( const std::string& name, Command::options_factory_t factory )
    {
       auto command = Command( name, factory );
@@ -179,7 +191,7 @@ public:
    }
 
    // Begin an exclusive group of options named @p name.  At most one of the
-   // options from an exclusive can be used in input arguments.  The group
+   // options from an exclusive group can be used in input arguments.  The group
    // definition ends at end_group().
    GroupConfig add_exclusive_group( const std::string& name )
    {
@@ -201,7 +213,7 @@ public:
       mpActiveGroup = nullptr;
    }
 
-   // Parse input arguments and return errors in a ParseResult.
+   // Parse input arguments and return commands and errors in a ParseResult.
    ParseResult parse_args( int argc, char** argv, int skip_args = 1 )
    {
       if ( !argv ) {
@@ -217,7 +229,7 @@ public:
       return parse_args( std::begin( args ), std::end( args ) );
    }
 
-   // Parse input arguments and return errors in a ParseResult.
+   // Parse input arguments and return commands and errors in a ParseResult.
    ParseResult parse_args( const std::vector<std::string>& args, int skip_args = 0 )
    {
       auto ibegin = std::begin( args );
@@ -227,7 +239,7 @@ public:
       return parse_args( ibegin, std::end( args ) );
    }
 
-   // Parse input arguments and return errors in a ParseResult.
+   // Parse input arguments and return commands and errors in a ParseResult.
    ParseResult parse_args( std::vector<std::string>::const_iterator ibegin,
          std::vector<std::string>::const_iterator iend )
    {
@@ -255,7 +267,7 @@ public:
       ParseResultBuilder result;
 
       if ( mustDisplayHelp( args ) ) {
-         generate_help();
+         generate_help( args );
          result.signalHelpShown();
          result.requestExit();
          return std::move( result.getResult() );
@@ -565,6 +577,21 @@ private:
          pStream = &std::cout;
 
       formatter.format( mParserDef, *pStream );
+   }
+
+   void generate_help( ArgumentStream& args )
+   {
+      // TODO: The formatter should be configurable
+      auto formatter = HelpFormatter();
+      auto pStream = mParserDef.getConfig().pOutStream;
+      if ( !pStream )
+         pStream = &std::cout;
+
+      ParseResultBuilder result;
+      Parser parser( mParserDef, result );
+      auto subparsers = parser.parse_for_help( args );
+
+      formatter.format( mParserDef, subparsers, *pStream );
    }
 
    void describe_errors( ParseResult& result )

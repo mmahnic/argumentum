@@ -18,6 +18,10 @@ add_executable( basic_struct
    basic_struct.cpp
    )
 
+add_executable( basic_command
+   basic_command.cpp
+   )
+
 add_executable( example1
    example1.cpp
    )
