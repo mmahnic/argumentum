@@ -172,7 +172,7 @@ TEST( ArgumentParserCommandHelpTest, shouldNotDisplayCommandHelpIfCommandNotGive
    EXPECT_FALSE( strHasText( help, "--count " ) );
 }
 
-TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpIfCommandGivenAfterFlag )
+TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpIfCommandGivenBeforeFlag )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
@@ -202,4 +202,46 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpIfCommandGivenAfter
    EXPECT_FALSE( strHasText( help, "-n " ) );
    EXPECT_TRUE( strHasText( help, "--string " ) );
    EXPECT_TRUE( strHasText( help, "--count " ) );
+}
+
+TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandNameInCommandHelp )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" ).cout( strout );
+   parser.add_command<CmdOneOptions>( "one" );
+
+   // -- WHEN
+   auto res = parser.parse_args( { "one", "--help" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+
+   // -- THEN
+   auto help = splitLines( strout.str() );
+   int countUsageName = 0;
+   for ( auto& line : help ) {
+      if ( strHasTexts( line, { "usage:", "one" } ) )
+         ++countUsageName;
+   }
+   EXPECT_EQ( 1, countUsageName );
+}
+
+TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandDescriptionInCommandHelp )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" ).cout( strout );
+   parser.add_command<CmdOneOptions>( "one" );
+
+   // -- WHEN
+   auto res = parser.parse_args( { "one", "--help" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+
+   // -- THEN
+   auto help = splitLines( strout.str() );
+   int countDescr = 0;
+   for ( auto& line : help ) {
+      if ( strHasText( line, "Command One description." ) )
+         ++countDescr;
+   }
+   EXPECT_EQ( 1, countDescr );
 }
