@@ -101,9 +101,19 @@ inline void HelpFormatter::format( const ParserDefinition& parserDef, std::ostre
 inline void HelpFormatter::format( const ParserDefinition& parserDef,
       const std::vector<ParserDefinition>& subparsers, std::ostream& out )
 {
-   format( parserDef, out, subparsers.empty() );
-   for ( unsigned i = 0; i < subparsers.size(); ++i )
-      format( subparsers[i], out, i == subparsers.size() - 1 );
+   if ( subparsers.empty() )
+      format( parserDef, out, subparsers.empty() );
+   else {
+      std::stringstream ssname;
+      ssname << parserDef.getConfig().program;
+      for ( unsigned i = 0; i < subparsers.size(); ++i )
+         // format( subparsers[i], out, i == subparsers.size() - 1 );
+         ssname << " " << subparsers[i].getConfig().program;
+
+      auto lastParserDef = subparsers.back();
+      lastParserDef.mConfig.program( ssname.str() );
+      format( lastParserDef, out, true );
+   }
 }
 
 inline void HelpFormatter::format(

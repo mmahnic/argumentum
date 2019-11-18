@@ -216,13 +216,14 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandNameInCommandHelp )
    EXPECT_FALSE( static_cast<bool>( res ) );
 
    // -- THEN
-   auto help = splitLines( strout.str() );
+   auto help = strout.str();
+   auto helpLines = splitLines( help );
    int countUsageName = 0;
-   for ( auto& line : help ) {
+   for ( auto& line : helpLines ) {
       if ( strHasTexts( line, { "usage:", "one" } ) )
          ++countUsageName;
    }
-   EXPECT_EQ( 1, countUsageName ) << "----\n" << strout.str();
+   EXPECT_EQ( 1, countUsageName ) << "----\n" << help;
 }
 
 TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandDescriptionInCommandHelp )
@@ -237,13 +238,14 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandDescriptionInCommandHel
    EXPECT_FALSE( static_cast<bool>( res ) );
 
    // -- THEN
-   auto help = splitLines( strout.str() );
+   auto help = strout.str();
+   auto helpLines = splitLines( help );
    int countDescr = 0;
-   for ( auto& line : help ) {
+   for ( auto& line : helpLines ) {
       if ( strHasText( line, "Command One description." ) )
          ++countDescr;
    }
-   EXPECT_EQ( 1, countDescr ) << "----\n" << strout.str();
+   EXPECT_EQ( 1, countDescr ) << "----\n" << help;
 }
 
 TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpForDeepestCommandOnly )
@@ -258,22 +260,23 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpForDeepestCommandOn
    EXPECT_FALSE( static_cast<bool>( res ) );
 
    // -- THEN
-   auto help = splitLines( strout.str() );
+   auto help = strout.str();
+   auto helpLines = splitLines( help );
    int countTesting = 0;
    int countTester = 0;
    int countOne = 0;
    int countDescr = 0;
-   for ( auto& line : help ) {
+   for ( auto& line : helpLines ) {
       if ( strHasTexts( line, { "usage:", "testing" } ) )
-         ++countTester;
+         ++countTesting;
       if ( strHasText( line, "Tester." ) )
          ++countTester;
-      if ( strHasTexts( line, { "usage:", "one" } ) )
+      if ( strHasTexts( line, { "usage:", "testing", "one" } ) )
          ++countOne;
       if ( strHasText( line, "Command One description." ) )
          ++countDescr;
    }
-   EXPECT_EQ( 0, countTesting );
+   EXPECT_EQ( 1, countTesting );
    EXPECT_EQ( 0, countTester );
    EXPECT_EQ( 1, countOne );
    EXPECT_EQ( 1, countDescr );
