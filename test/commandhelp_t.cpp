@@ -245,3 +245,36 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandDescriptionInCommandHel
    }
    EXPECT_EQ( 1, countDescr ) << "----\n" << strout.str();
 }
+
+TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpForDeepestCommandOnly )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().program( "testing" ).cout( strout ).description( "Tester." );
+   parser.add_command<CmdOneOptions>( "one" ).help( "Command One description." );
+
+   // -- WHEN
+   auto res = parser.parse_args( { "one", "--help" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+
+   // -- THEN
+   auto help = splitLines( strout.str() );
+   int countTesting = 0;
+   int countTester = 0;
+   int countOne = 0;
+   int countDescr = 0;
+   for ( auto& line : help ) {
+      if ( strHasTexts( line, { "usage:", "testing" } ) )
+         ++countTester;
+      if ( strHasText( line, "Tester." ) )
+         ++countTester;
+      if ( strHasTexts( line, { "usage:", "one" } ) )
+         ++countOne;
+      if ( strHasText( line, "Command One description." ) )
+         ++countDescr;
+   }
+   EXPECT_EQ( 0, countTesting );
+   EXPECT_EQ( 0, countTester );
+   EXPECT_EQ( 1, countOne );
+   EXPECT_EQ( 1, countDescr );
+}
