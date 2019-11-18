@@ -66,8 +66,7 @@ class Parser
 public:
    Parser( ParserDefinition& argParser, ParseResultBuilder& result );
    void parse( ArgumentStream& argStream );
-   std::vector<ParserDefinition> parse_for_help(
-         ArgumentStream& argStream, const std::set<std::string>& helpOptionNames );
+   std::vector<ParserDefinition> parse_for_help( ArgumentStream& argStream );
 
 private:
    void startOption( std::string_view name );

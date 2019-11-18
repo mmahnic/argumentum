@@ -90,8 +90,7 @@ inline void Parser::parse( ArgumentStream& argStream, unsigned depth )
 }
 
 // Parse the argument stream to determine the help context.
-inline std::vector<ParserDefinition> Parser::parse_for_help(
-      ArgumentStream& argStream, const std::set<std::string>& helpOptionNames )
+inline std::vector<ParserDefinition> Parser::parse_for_help( ArgumentStream& argStream )
 {
    std::vector<ParserDefinition> res;
    for ( auto optArg = argStream.next(); !!optArg; optArg = argStream.next() ) {
@@ -113,7 +112,7 @@ inline std::vector<ParserDefinition> Parser::parse_for_help(
 
          ParseResultBuilder result;
          auto subparser = Parser( parser.mParserDef, result );
-         auto childs = subparser.parse_for_help( argStream, helpOptionNames );
+         auto childs = subparser.parse_for_help( argStream );
 
          for ( auto&& child : childs )
             res.emplace_back( std::move( child ) );

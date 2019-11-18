@@ -589,7 +589,7 @@ private:
 
       ParseResultBuilder result;
       Parser parser( mParserDef, result );
-      auto subparsers = parser.parse_for_help( args, mHelpOptionNames );
+      auto subparsers = parser.parse_for_help( args );
 
       formatter.format( mParserDef, subparsers, *pStream );
    }
