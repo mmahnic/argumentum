@@ -276,7 +276,7 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpForDeepestCommandOn
       if ( strHasText( line, "Command One description." ) )
          ++countDescr;
    }
-   EXPECT_EQ( 1, countTesting );
+   EXPECT_EQ( 1, countTesting );   // From the 'one' command path
    EXPECT_EQ( 0, countTester );
    EXPECT_EQ( 1, countOne );
    EXPECT_EQ( 1, countDescr );

@@ -93,31 +93,25 @@ inline void HelpFormatter::formatUsage(
    }
 }
 
-inline void HelpFormatter::format( const ParserDefinition& parserDef, std::ostream& out )
-{
-   format( parserDef, out, true );
-}
-
 inline void HelpFormatter::format( const ParserDefinition& parserDef,
       const std::vector<ParserDefinition>& subparsers, std::ostream& out )
 {
    if ( subparsers.empty() )
-      format( parserDef, out, subparsers.empty() );
+      format( parserDef, out );
    else {
-      std::stringstream ssname;
-      ssname << parserDef.getConfig().program;
-      for ( unsigned i = 0; i < subparsers.size(); ++i )
-         // format( subparsers[i], out, i == subparsers.size() - 1 );
-         ssname << " " << subparsers[i].getConfig().program;
+      std::stringstream sspath;
+      sspath << parserDef.getConfig().program;
+      for ( auto& subDef : subparsers )
+         sspath << " " << subDef.getConfig().program;
 
+      // Set the command path for the displayed command
       auto lastParserDef = subparsers.back();
-      lastParserDef.mConfig.program( ssname.str() );
-      format( lastParserDef, out, true );
+      lastParserDef.mConfig.program( sspath.str() );
+      format( lastParserDef, out );
    }
 }
 
-inline void HelpFormatter::format(
-      const ParserDefinition& parserDef, std::ostream& out, bool isFinalSubparser )
+inline void HelpFormatter::format( const ParserDefinition& parserDef, std::ostream& out )
 {
    const auto& config = parserDef.getConfig();
    ArgumentDescriber describer;
@@ -194,7 +188,7 @@ inline void HelpFormatter::format(
          writeArguments( writer, group.iendreq, group.iend );
       }
 
-      if ( hasPositional && isCommand && isFinalSubparser ) {
+      if ( hasPositional && isCommand ) {
          // Commands are not options (their names do not start with '-') so they
          // are all in the positional part of the group.
          if ( isDefaultGroup )
