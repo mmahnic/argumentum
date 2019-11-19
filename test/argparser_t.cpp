@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
+#include "helputil.h"
 #include "vectors.h"
 #include "../src/argparser.h"
 
@@ -9,6 +10,7 @@
 
 using namespace argparse;
 using namespace testing;
+using namespace helputil;
 
 TEST( ArgumentParserTest, shouldParseShortOptions )
 {
@@ -960,23 +962,26 @@ TEST( ArgumentParserTest, shouldSetParserOutputToStream )
    EXPECT_TRUE( nullptr != parser.getConfig().pOutStream );
 }
 
-TEST( ArgumentParserTest, shouldWriteHelpAndExitWhenHelpOptionIsPresent )
+TEST( ArgumentParserTest, shouldWriteHelpAndExitWhenHelpOptionIsFound )
 {
-   std::optional<int> maybeInt;
+   std::optional<int> maybeBefore;
+   std::optional<int> maybeAfter;
 
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout );
-   parser.add_argument( maybeInt, "--maybe" ).nargs( 1 );
+   parser.add_argument( maybeBefore, "--before" ).nargs( 1 );
+   parser.add_argument( maybeAfter, "--after" ).nargs( 1 );
    parser.add_default_help_option().help( "Print this test help message and exit!" );
 
-   auto res = parser.parse_args( { "--maybe", "123", "-h" } );
+   auto res = parser.parse_args( { "--before", "123", "-h", "--after", "342" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
 
    auto text = strout.str();
-   EXPECT_NE( std::string::npos, text.find( "Print this test help message and exit!" ) );
+   EXPECT_TRUE( strHasText( text, "Print this test help message and exit!" ) );
 
-   EXPECT_FALSE( bool( maybeInt ) );
+   EXPECT_TRUE( bool( maybeBefore ) );
+   EXPECT_FALSE( bool( maybeAfter ) );
 }
 
 TEST( ArgumentParserTest, shouldResetValuesWhenCalledMultipleTimes )
