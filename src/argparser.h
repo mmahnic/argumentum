@@ -560,21 +560,6 @@ private:
       formatter.format( mParserDef, *pStream );
    }
 
-   void generate_help( ArgumentStream& args )
-   {
-      // TODO: The formatter should be configurable
-      auto formatter = HelpFormatter();
-      auto pStream = mParserDef.getConfig().pOutStream;
-      if ( !pStream )
-         pStream = &std::cout;
-
-      ParseResultBuilder result;
-      Parser parser( mParserDef, result );
-      auto subparsers = parser.parse_for_help( args );
-
-      formatter.format( mParserDef, subparsers, *pStream );
-   }
-
    void describe_errors( ParseResult& result )
    {
       auto pStream = mParserDef.getConfig().pOutStream;
