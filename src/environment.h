@@ -36,6 +36,11 @@ public:
       else
          mResult.addError( get_option_name() + ": " + std::string( error ), ACTION_ERROR );
    }
+
+   void notify_help_was_shown()
+   {
+      mResult.signalHelpShown();
+   }
 };
 
 }   // namespace argparse

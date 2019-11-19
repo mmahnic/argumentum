@@ -282,6 +282,12 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpForDeepestCommandOn
    EXPECT_EQ( 1, countDescr );
 }
 
+#if 0
+// This test is disabled.  Command after help option might be processed only in the
+// top-level parser.  Subparsers should stop processing at the help
+// option. (This is the way it is done in Git.)
+// TODO: maybe we could support this feature in all levels.  The help action
+// would have to access next option-s.
 TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpIfCommandGivenAfterFlag )
 {
    std::stringstream strout;
@@ -298,30 +304,4 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpIfCommandGivenAfter
    EXPECT_TRUE( strHasText( help, "-s " ) );
    EXPECT_TRUE( strHasText( help, "-n " ) );
 }
-
-TEST( ArgumentParserCommandHelpTest, shouldStopProcessingWhenPositionalIsNotACommand )
-{
-   std::stringstream strout;
-   auto parser = argument_parser{};
-   parser.config().program( "testing" ).cout( strout );
-   parser.add_command<CmdOneOptions>( "one" );
-
-   // -- WHEN
-   auto res = parser.parse_args( { "--help", "other", "one" } );
-   EXPECT_FALSE( static_cast<bool>( res ) );
-
-   // -- THEN
-   auto help = strout.str();
-   EXPECT_FALSE( strHasText( help, "-s " ) );
-   EXPECT_FALSE( strHasText( help, "-n " ) );
-
-   // -- WHEN
-   strout.str( "" );
-   res = parser.parse_args( { "--help", "one", "other" } );
-   EXPECT_FALSE( static_cast<bool>( res ) );
-
-   // -- THEN
-   help = strout.str();
-   EXPECT_TRUE( strHasText( help, "-s " ) );
-   EXPECT_TRUE( strHasText( help, "-n " ) );
-}
+#endif
