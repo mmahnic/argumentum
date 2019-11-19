@@ -224,6 +224,12 @@ inline void Parser::parseCommandArguments(
       Command& command, ArgumentStream& argStream, ParseResultBuilder& result )
 {
    auto parser = argument_parser{};
+   parser.config().program( command.getName() ).description( command.getHelp() );
+
+   auto pcout = mParserDef.getConfig().pOutStream;
+   if ( pcout )
+      parser.config().cout( *pcout );
+
    auto pCmdOptions = command.getOptions();
    if ( pCmdOptions ) {
       parser.add_arguments( pCmdOptions );
