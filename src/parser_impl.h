@@ -190,7 +190,8 @@ inline void Parser::parseCommandArguments(
       Command& command, ArgumentStream& argStream, ParseResultBuilder& result )
 {
    auto parser = argument_parser{};
-   parser.config().program( command.getName() ).description( command.getHelp() );
+   auto commandpath = mParserDef.getConfig().program + " " + command.getName();
+   parser.config().program( commandpath ).description( command.getHelp() );
 
    auto pcout = mParserDef.getConfig().pOutStream;
    if ( pcout )
