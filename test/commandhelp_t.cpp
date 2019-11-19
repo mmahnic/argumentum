@@ -298,30 +298,3 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpIfCommandGivenAfter
    EXPECT_TRUE( strHasText( help, "-s " ) );
    EXPECT_TRUE( strHasText( help, "-n " ) );
 }
-
-TEST( ArgumentParserCommandHelpTest, shouldStopProcessingWhenPositionalIsNotACommand )
-{
-   std::stringstream strout;
-   auto parser = argument_parser{};
-   parser.config().program( "testing" ).cout( strout );
-   parser.add_command<CmdOneOptions>( "one" );
-
-   // -- WHEN
-   auto res = parser.parse_args( { "--help", "other", "one" } );
-   EXPECT_FALSE( static_cast<bool>( res ) );
-
-   // -- THEN
-   auto help = strout.str();
-   EXPECT_FALSE( strHasText( help, "-s " ) );
-   EXPECT_FALSE( strHasText( help, "-n " ) );
-
-   // -- WHEN
-   strout.str( "" );
-   res = parser.parse_args( { "--help", "one", "other" } );
-   EXPECT_FALSE( static_cast<bool>( res ) );
-
-   // -- THEN
-   help = strout.str();
-   EXPECT_TRUE( strHasText( help, "-s " ) );
-   EXPECT_TRUE( strHasText( help, "-n " ) );
-}
