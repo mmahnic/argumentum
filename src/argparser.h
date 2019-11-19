@@ -163,8 +163,14 @@ public:
 
       auto value = VoidValue{};
       auto option = Option( value );
-      auto optionConfig = VoidOptionConfig( tryAddArgument( option, { name, altName } ) )
-                                .help( "Display this help message and exit." );
+      auto optionConfig =   // (clf)
+            VoidOptionConfig( tryAddArgument( option, { name, altName } ) )
+                  .help( "Display this help message and exit." )
+                  .action( [this]( const std::string&, Environment& env ) {
+                     generate_help();
+                     env.notify_help_was_shown();
+                     env.exit_parser();
+                  } );
 
       if ( !name.empty() )
          mHelpOptionNames.insert( name );
@@ -265,14 +271,6 @@ public:
       resetOptionValues();
 
       ParseResultBuilder result;
-
-      if ( mustDisplayHelp( args ) ) {
-         generate_help( args );
-         result.signalHelpShown();
-         result.requestExit();
-         return std::move( result.getResult() );
-      }
-
       Parser parser( mParserDef, result );
       parser.parse( args );
       if ( result.wasExitRequested() )
@@ -311,23 +309,6 @@ private:
 
       for ( auto& pOption : mParserDef.mPositional )
          pOption->resetValue();
-   }
-
-   bool mustDisplayHelp( ArgumentStream& argStream ) const
-   {
-      bool mustDisplay = false;
-      auto isHelpOption = [this]( auto&& arg ) {
-         return mHelpOptionNames.count( std::string{ arg } ) > 0;
-      };
-      argStream.peek( [&]( auto&& arg ) {
-         if ( isHelpOption( arg ) ) {
-            mustDisplay = true;
-            return ArgumentStream::peekDone;
-         }
-         return ArgumentStream::peekNext;
-      } );
-
-      return mustDisplay;
    }
 
    void assignDefaultValues()
