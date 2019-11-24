@@ -20,4 +20,5 @@
 #include "../../src/parser_impl.h"
 #include "../../src/parserconfig_impl.h"
 #include "../../src/parserdefinition_impl.h"
+#include "../../src/parseresult_impl.h"
 #include "../../src/values_impl.h"
