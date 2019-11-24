@@ -39,73 +39,32 @@ class Value
    bool mHasErrors = false;
 
 public:
-   void setValue( std::string_view value, AssignAction action, Environment& env )
-   {
-      ++mAssignCount;
-      ++mOptionAssignCount;
-      if ( action == nullptr )
-         action = getDefaultAction();
-      if ( action )
-         action( *this, std::string{ value }, env );
-   }
-
-   void setDefault( AssignDefaultAction action )
-   {
-      if ( action ) {
-         ++mAssignCount;
-         action( *this );
-      }
-   }
-
-   void markBadArgument()
-   {
-      // Increase the assign count so that flagValue will not be used.
-      ++mOptionAssignCount;
-      mHasErrors = true;
-   }
+   void setValue( std::string_view value, AssignAction action, Environment& env );
+   void setDefault( AssignDefaultAction action );
+   void markBadArgument();
 
    /**
     * The count of assignments through all the options that share this value.
     */
-   int getAssignCount() const
-   {
-      return mAssignCount;
-   }
+   int getAssignCount() const;
 
    /**
     * The count of assignments through the current option.
     */
-   int getOptionAssignCount() const
-   {
-      return mOptionAssignCount;
-   }
+   int getOptionAssignCount() const;
 
-   void onOptionStarted()
-   {
-      mOptionAssignCount = 0;
-   }
-
-   void reset()
-   {
-      mAssignCount = 0;
-      mOptionAssignCount = 0;
-      mHasErrors = false;
-      doReset();
-   }
+   void onOptionStarted();
+   void reset();
 
 protected:
    virtual AssignAction getDefaultAction() = 0;
-   virtual void doReset()
-   {}
+   virtual void doReset();
 };
 
 class VoidValue : public Value
 {
 protected:
-   AssignAction getDefaultAction() override
-   {
-      return {};
-   }
+   AssignAction getDefaultAction() override;
 };
 
 template<typename T>
