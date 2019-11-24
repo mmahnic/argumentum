@@ -5,6 +5,7 @@
 
 #include "../../src/argparser.h"
 
+#include "../../src/argdescriber_impl.h"
 #include "../../src/argparser_impl.h"
 #include "../../src/commandconfig_impl.h"
 #include "../../src/commands_impl.h"
