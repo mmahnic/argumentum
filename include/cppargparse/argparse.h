@@ -7,6 +7,7 @@
 
 #include "../../src/argdescriber_impl.h"
 #include "../../src/argparser_impl.h"
+#include "../../src/argumentstream_impl.h"
 #include "../../src/commandconfig_impl.h"
 #include "../../src/commands_impl.h"
 #include "../../src/helpformatter_impl.h"
