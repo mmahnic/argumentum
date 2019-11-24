@@ -22,55 +22,19 @@ private:
    bool mIsExclusive = false;
 
 public:
-   OptionGroup( std::string_view name, bool isExclusive )
-      : mName( name )
-      , mTitle( name )
-      , mIsExclusive( isExclusive )
-   {}
-
-   void setTitle( std::string_view title )
-   {
-      mTitle = title;
-   }
-
-   void setDescription( std::string_view description )
-   {
-      mDescription = description;
-   }
+   OptionGroup( std::string_view name, bool isExclusive );
+   void setTitle( std::string_view title );
+   void setDescription( std::string_view description );
 
    // The required option can be set only when the group is not yet required.
    // Because a group can be defined in multiple places, it is required as
    // soon as it is required in one place.
-   void setRequired( bool isRequired )
-   {
-      if ( !mIsRequired )
-         mIsRequired = isRequired;
-   }
-
-   const std::string& getName() const
-   {
-      return mName;
-   }
-
-   const std::string& getTitle() const
-   {
-      return mTitle;
-   }
-
-   const std::string& getDescription() const
-   {
-      return mDescription;
-   }
-
-   bool isExclusive() const
-   {
-      return mIsExclusive;
-   }
-
-   bool isRequired() const
-   {
-      return mIsRequired;
-   }
+   void setRequired( bool isRequired );
+   const std::string& getName() const;
+   const std::string& getTitle() const;
+   const std::string& getDescription() const;
+   bool isExclusive() const;
+   bool isRequired() const;
 };
 
 }   // namespace argparse
