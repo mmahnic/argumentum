@@ -2,7 +2,7 @@
 //
 // ./example1 -s str -i 1 --float=3.5 -g param
 
-#include "../src/argparser.h"
+#include <cppargparse/argparse.h>
 
 #include <iostream>
 #include <optional>

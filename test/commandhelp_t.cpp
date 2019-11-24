@@ -3,8 +3,7 @@
 
 #include "helputil.h"
 
-#include "../src/argparser.h"
-#include "../src/helpformatter.h"
+#include <cppargparse/argparse.h>
 
 #include <algorithm>
 #include <gtest/gtest.h>
