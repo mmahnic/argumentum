@@ -23,10 +23,8 @@ class DefaultFilesystem : public Filesystem
 public:
    std::unique_ptr<ArgumentStream> open( const std::string& filename ) override
    {
-      return nullptr;
-#if 0
-      return std::make_unique<std::ifstream>( filename );
-#endif
+      return std::make_unique<StdStreamArgumentStream>(
+            std::make_unique<std::ifstream>( filename ) );
    }
 };
 
