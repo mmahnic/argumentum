@@ -22,3 +22,4 @@
 #include "../../src/parserdefinition_impl.h"
 #include "../../src/parseresult_impl.h"
 #include "../../src/values_impl.h"
+#include "../../src/writer_impl.h"
