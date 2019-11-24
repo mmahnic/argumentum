@@ -12,7 +12,6 @@
 #include "parserconfig.h"
 #include "parserdefinition.h"
 #include "parseresult.h"
-#include "values.h"
 
 #include <algorithm>
 #include <cassert>
