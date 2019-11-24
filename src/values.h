@@ -111,7 +111,6 @@ class ConvertedValue : public Value
    };
 
 protected:
-   using result_t = typename convert_result<TValue>::type;
    TValue& mValue;
 
 public:

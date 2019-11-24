@@ -9,24 +9,6 @@
 
 namespace argparse {
 
-template<typename TValue>
-struct convert_result
-{
-   using type = TValue;
-};
-
-template<typename TItem>
-struct convert_result<std::optional<TItem>>
-{
-   using type = TItem;
-};
-
-template<typename TItem>
-struct convert_result<std::vector<TItem>>
-{
-   using type = TItem;
-};
-
 template<typename T>
 struct from_string
 {
