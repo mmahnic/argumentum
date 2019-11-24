@@ -10,6 +10,7 @@
 #include "../../src/argumentstream_impl.h"
 #include "../../src/commandconfig_impl.h"
 #include "../../src/commands_impl.h"
+#include "../../src/environment_impl.h"
 #include "../../src/helpformatter_impl.h"
 #include "../../src/parser_impl.h"
 #include "../../src/parserdefinition_impl.h"

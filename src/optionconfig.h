@@ -5,6 +5,8 @@
 
 #include "options.h"
 
+#include <cassert>
+
 namespace argparse {
 
 /**
