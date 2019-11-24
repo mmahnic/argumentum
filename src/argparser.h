@@ -3,20 +3,14 @@
 
 #pragma once
 
-#include "argdescriber.h"
 #include "argumentstream.h"
 #include "commandconfig.h"
-#include "commands.h"
 #include "environment.h"
-#include "exceptions.h"
 #include "groupconfig.h"
-#include "groups.h"
 #include "helpformatter.h"
-#include "notifier.h"
 #include "optionconfig.h"
-#include "options.h"
-#include "parser.h"
 #include "parserconfig.h"
+#include "parserdefinition.h"
 #include "parseresult.h"
 #include "values.h"
 
@@ -50,52 +44,29 @@ public:
     * Get a reference to the parser configuration through which the parser can
     * be configured.
     */
-   ParserConfig& config()
-   {
-      return mParserDef.mConfig;
-   }
+   ParserConfig& config();
 
    /**
     * Get a reference to the parser configuration for inspection.
     */
-   const ParserConfig::Data& getConfig() const
-   {
-      return mParserDef.getConfig();
-   }
-
+   const ParserConfig::Data& getConfig() const;
    /**
     * Get a reference to the definition of the parser for inspection.
     */
-   const ParserDefinition& getDefinition() const
-   {
-      return mParserDef;
-   }
+   const ParserDefinition& getDefinition() const;
 
    // Define a command.  The CommandOptions (@p TOptions) will be instantiated
    // when the command is activated with an input argument.
    template<typename TOptions>
-   CommandConfig add_command( const std::string& name )
-   {
-      auto factory = []( std::string_view name ) { return std::make_shared<TOptions>( name ); };
-      auto command = Command( name, factory );
-      return tryAddCommand( command );
-   }
+   CommandConfig add_command( const std::string& name );
 
    // Define a command. The @p factory will create an instance of CommandOptions
    // when the command is activated with an input argument.
-   CommandConfig add_command( const std::string& name, Command::options_factory_t factory )
-   {
-      auto command = Command( name, factory );
-      return tryAddCommand( command );
-   }
+   CommandConfig add_command( const std::string& name, Command::options_factory_t factory );
 
    template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value>>
    OptionConfigA<TValue> add_argument(
-         TValue value, const std::string& name = "", const std::string& altName = "" )
-   {
-      auto option = Option( value );
-      return OptionConfigA<TValue>( tryAddArgument( option, { name, altName } ) );
-   }
+         TValue value, const std::string& name = "", const std::string& altName = "" );
 
    /**
     * Add an argument with names @p name and @p altName and store the reference
@@ -103,24 +74,14 @@ public:
     */
    template<typename TValue, typename = std::enable_if_t<!std::is_base_of<Value, TValue>::value>>
    OptionConfigA<TValue> add_argument(
-         TValue& value, const std::string& name = "", const std::string& altName = "" )
-   {
-      auto option = Option( value );
-      return OptionConfigA<TValue>( tryAddArgument( option, { name, altName } ) );
-   }
+         TValue& value, const std::string& name = "", const std::string& altName = "" );
 
    /**
     * Add the @p pOptions structure and call its add_arguments method to add
     * the arguments to the parser.  The pointer to @p pOptions is stored in the
     * parser so that the structure outlives the parser.
     */
-   void add_arguments( std::shared_ptr<Options> pOptions )
-   {
-      if ( pOptions ) {
-         mTargets.push_back( pOptions );
-         pOptions->add_arguments( *this );
-      }
-   }
+   void add_arguments( std::shared_ptr<Options> pOptions );
 
    /**
     * Add default help options --help and -h that will display the help and
@@ -132,22 +93,7 @@ public:
     * This method will be called from parse_args if neither it nor the method
     * add_help_option were called before parse_args.
     */
-   VoidOptionConfig add_default_help_option()
-   {
-      const auto shortName = "-h";
-      const auto longName = "--help";
-      auto pShort = mParserDef.findOption( shortName );
-      auto pLong = mParserDef.findOption( longName );
-
-      if ( !pShort && !pLong )
-         return add_help_option( shortName, longName );
-      if ( !pShort )
-         return add_help_option( shortName );
-      if ( !pLong )
-         return add_help_option( longName );
-
-      throw std::invalid_argument( "The default help options are hidden by other options." );
-   }
+   VoidOptionConfig add_default_help_option();
 
    /**
     * Add a special option that will display the help and terminate the parser.
@@ -156,430 +102,61 @@ public:
     * help options --help and -h will be used as long as they are not used for
     * other purposes.
     */
-   VoidOptionConfig add_help_option( const std::string& name, const std::string& altName = "" )
-   {
-      if ( !name.empty() && name[0] != '-' || !altName.empty() && altName[0] != '-' )
-         throw std::invalid_argument( "A help argument must be an option." );
-
-      auto value = VoidValue{};
-      auto option = Option( value );
-      auto optionConfig =   // (clf)
-            VoidOptionConfig( tryAddArgument( option, { name, altName } ) )
-                  .help( "Display this help message and exit." )
-                  .action( [this]( const std::string&, Environment& env ) {
-                     generate_help();
-                     env.notify_help_was_shown();
-                     env.exit_parser();
-                  } );
-
-      if ( !name.empty() )
-         mHelpOptionNames.insert( name );
-      if ( !altName.empty() )
-         mHelpOptionNames.insert( altName );
-
-      return optionConfig;
-   }
+   VoidOptionConfig add_help_option( const std::string& name, const std::string& altName = "" );
 
    // Begin a group of options named @p name. The group definition ends at
    // end_group().
-   GroupConfig add_group( const std::string& name )
-   {
-      auto pGroup = findGroup( name );
-      if ( pGroup ) {
-         if ( pGroup->isExclusive() )
-            throw MixingGroupTypes( name );
-         mpActiveGroup = pGroup;
-      }
-      else
-         mpActiveGroup = addGroup( name, false );
-
-      return GroupConfig( mpActiveGroup );
-   }
+   GroupConfig add_group( const std::string& name );
 
    // Begin an exclusive group of options named @p name.  At most one of the
    // options from an exclusive group can be used in input arguments.  The group
    // definition ends at end_group().
-   GroupConfig add_exclusive_group( const std::string& name )
-   {
-      auto pGroup = findGroup( name );
-      if ( pGroup ) {
-         if ( !pGroup->isExclusive() )
-            throw MixingGroupTypes( name );
-         mpActiveGroup = pGroup;
-      }
-      else
-         mpActiveGroup = addGroup( name, true );
-
-      return GroupConfig( mpActiveGroup );
-   }
+   GroupConfig add_exclusive_group( const std::string& name );
 
    // End a group.
-   void end_group()
-   {
-      mpActiveGroup = nullptr;
-   }
+   void end_group();
 
    // Parse input arguments and return commands and errors in a ParseResult.
-   ParseResult parse_args( int argc, char** argv, int skip_args = 1 )
-   {
-      if ( !argv ) {
-         auto res = ParseResultBuilder{};
-         res.addError( "argv", INVALID_ARGV );
-         return res.getResult();
-      }
-
-      std::vector<std::string> args;
-      for ( int i = std::max( 0, skip_args ); i < argc; ++i )
-         args.emplace_back( argv[i] );
-
-      return parse_args( std::begin( args ), std::end( args ) );
-   }
+   ParseResult parse_args( int argc, char** argv, int skip_args = 1 );
 
    // Parse input arguments and return commands and errors in a ParseResult.
-   ParseResult parse_args( const std::vector<std::string>& args, int skip_args = 0 )
-   {
-      auto ibegin = std::begin( args );
-      if ( skip_args > 0 )
-         ibegin += std::min<size_t>( skip_args, args.size() );
-
-      return parse_args( ibegin, std::end( args ) );
-   }
+   ParseResult parse_args( const std::vector<std::string>& args, int skip_args = 0 );
 
    // Parse input arguments and return commands and errors in a ParseResult.
    ParseResult parse_args( std::vector<std::string>::const_iterator ibegin,
-         std::vector<std::string>::const_iterator iend )
-   {
-      if ( ibegin == iend ) {
-         verifyDefinedOptions();
-         if ( hasRequiredArguments() ) {
-            generate_help();
-            ParseResultBuilder result;
-            result.signalHelpShown();
-            result.requestExit();
-            return std::move( result.getResult() );
-         }
-      }
-
-      auto argStream = IteratorArgumentStream( ibegin, iend );
-      return parse_args( argStream );
-   }
+         std::vector<std::string>::const_iterator iend );
 
    // Parse input arguments and return errors in a ParseResult.
-   ParseResult parse_args( ArgumentStream& args )
-   {
-      verifyDefinedOptions();
-      resetOptionValues();
+   ParseResult parse_args( ArgumentStream& args );
 
-      ParseResultBuilder result;
-      Parser parser( mParserDef, result );
-      parser.parse( args );
-      if ( result.wasExitRequested() )
-         return std::move( result.getResult() );
-
-      assignDefaultValues();
-      validateParsedOptions( result );
-
-      if ( result.hasArgumentProblems() ) {
-         result.signalErrorsShown();
-         auto res = std::move( result.getResult() );
-         describe_errors( res );
-         return std::move( res );
-      }
-
-      return std::move( result.getResult() );
-   }
-
-   ArgumentHelpResult describe_argument( std::string_view name ) const
-   {
-      ArgumentDescriber describer;
-      return describer.describe_argument( mParserDef, name );
-   }
-
-   std::vector<ArgumentHelpResult> describe_arguments() const
-   {
-      ArgumentDescriber describer;
-      return describer.describe_arguments( mParserDef );
-   }
+   ArgumentHelpResult describe_argument( std::string_view name ) const;
+   std::vector<ArgumentHelpResult> describe_arguments() const;
 
 private:
-   void resetOptionValues()
-   {
-      for ( auto& pOption : mParserDef.mOptions )
-         pOption->resetValue();
-
-      for ( auto& pOption : mParserDef.mPositional )
-         pOption->resetValue();
-   }
-
-   void assignDefaultValues()
-   {
-      for ( auto& pOption : mParserDef.mOptions )
-         if ( !pOption->wasAssigned() && pOption->hasDefault() )
-            pOption->assignDefault();
-
-      for ( auto& pOption : mParserDef.mPositional )
-         if ( !pOption->wasAssigned() && pOption->hasDefault() )
-            pOption->assignDefault();
-   }
-
-   void verifyDefinedOptions()
-   {
-      // Check if any help options are defined and add the default if not.
-      if ( mHelpOptionNames.empty() ) {
-         end_group();
-         try {
-            add_default_help_option();
-         }
-         catch ( const std::invalid_argument& ) {
-            Notifier::warn( "Failed to add default help options." );
-         }
-      }
-
-      // A required option can not be in an exclusive group.
-      for ( auto& pOption : mParserDef.mOptions ) {
-         if ( pOption->isRequired() ) {
-            auto pGroup = pOption->getGroup();
-            if ( pGroup && pGroup->isExclusive() )
-               throw RequiredExclusiveOption( pOption->getName(), pGroup->getName() );
-         }
-      }
-   }
-
-   void validateParsedOptions( ParseResultBuilder& result )
-   {
-      reportMissingOptions( result );
-      reportExclusiveViolations( result );
-      reportMissingGroups( result );
-   }
-
-   void reportMissingOptions( ParseResultBuilder& result )
-   {
-      for ( auto& pOption : mParserDef.mOptions )
-         if ( pOption->isRequired() && !pOption->wasAssigned() )
-            result.addError( pOption->getHelpName(), MISSING_OPTION );
-
-      for ( auto& pOption : mParserDef.mPositional )
-         if ( pOption->needsMoreArguments() )
-            result.addError( pOption->getHelpName(), MISSING_ARGUMENT );
-   }
-
-   bool hasRequiredArguments() const
-   {
-      for ( auto& pOption : mParserDef.mOptions )
-         if ( pOption->isRequired() )
-            return true;
-
-      for ( auto& pOption : mParserDef.mPositional )
-         if ( pOption->isRequired() )
-            return true;
-
-      return false;
-   }
-
-   void reportExclusiveViolations( ParseResultBuilder& result )
-   {
-      std::map<std::string, std::vector<std::string>> counts;
-      for ( auto& pOption : mParserDef.mOptions ) {
-         auto pGroup = pOption->getGroup();
-         if ( pGroup && pGroup->isExclusive() && pOption->wasAssigned() )
-            counts[pGroup->getName()].push_back( pOption->getHelpName() );
-      }
-
-      for ( auto& c : counts )
-         if ( c.second.size() > 1 )
-            result.addError( c.second.front(), EXCLUSIVE_OPTION );
-   }
-
-   void reportMissingGroups( ParseResultBuilder& result )
-   {
-      std::map<std::string, int> counts;
-      for ( auto& pOption : mParserDef.mOptions ) {
-         auto pGroup = pOption->getGroup();
-         if ( pGroup && pGroup->isRequired() )
-            counts[pGroup->getName()] += pOption->wasAssigned() ? 1 : 0;
-      }
-
-      for ( auto& c : counts )
-         if ( c.second < 1 )
-            result.addError( c.first, MISSING_OPTION_GROUP );
-   }
-
-   OptionConfig tryAddArgument( Option& newOption, std::vector<std::string_view> names )
-   {
-      // Remove empty names
-      auto is_empty = [&]( auto&& name ) { return name.empty(); };
-      names.erase( std::remove_if( names.begin(), names.end(), is_empty ), names.end() );
-
-      if ( names.empty() )
-         throw std::invalid_argument( "An argument must have a name." );
-
-      for ( auto& name : names )
-         for ( auto ch : name )
-            if ( std::isspace( ch ) )
-               throw std::invalid_argument( "Argument names must not contain spaces." );
-
-      auto has_dash = []( auto name ) { return name[0] == '-'; };
-
-      auto isOption = [&]( auto&& names ) -> bool {
-         return std::all_of( names.begin(), names.end(), has_dash );
-      };
-
-      auto isPositional = [&]( auto&& names ) -> bool {
-         return std::none_of( names.begin(), names.end(), has_dash );
-      };
-
-      if ( isPositional( names ) )
-         return addPositional( std::move( newOption ), names );
-      else if ( isOption( names ) )
-         return addOption( std::move( newOption ), names );
-
-      throw std::invalid_argument( "The argument must be either positional or an option." );
-   }
-
-   OptionConfig addPositional( Option&& newOption, const std::vector<std::string_view>& names )
-   {
-      auto pOption = std::make_shared<Option>( std::move( newOption ) );
-      auto& option = *pOption;
-
-      option.setLongName( names.empty() ? "arg" : names[0] );
-      option.setRequired( true );
-
-      if ( option.hasVectorValue() )
-         option.setMinArgs( 0 );
-      else
-         option.setNArgs( 1 );
-
-      // Positional parameters are required so they can't be in an exclusive
-      // group.  We simply ignore them.
-      if ( mpActiveGroup && !mpActiveGroup->isExclusive() )
-         option.setGroup( mpActiveGroup );
-
-      mParserDef.mPositional.push_back( pOption );
-      return { pOption };
-   }
-
-   OptionConfig addOption( Option&& newOption, const std::vector<std::string_view>& names )
-   {
-      trySetNames( newOption, names );
-      ensureIsNewOption( newOption.getLongName() );
-      ensureIsNewOption( newOption.getShortName() );
-
-      auto pOption = std::make_shared<Option>( std::move( newOption ) );
-
-      if ( mpActiveGroup )
-         pOption->setGroup( mpActiveGroup );
-
-      mParserDef.mOptions.push_back( pOption );
-      return { pOption };
-   }
-
-   void trySetNames( Option& option, const std::vector<std::string_view>& names ) const
-   {
-      for ( auto name : names ) {
-         if ( name.empty() || name == "-" || name == "--" || name[0] != '-' )
-            continue;
-
-         if ( name.substr( 0, 2 ) == "--" )
-            option.setLongName( name );
-         else if ( name.substr( 0, 1 ) == "-" ) {
-            if ( name.size() > 2 )
-               throw std::invalid_argument( "Short option name has too many characters." );
-            option.setShortName( name );
-         }
-      }
-
-      if ( option.getName().empty() )
-         throw std::invalid_argument( "An option must have a name." );
-   }
-
-   void ensureIsNewOption( const std::string& name )
-   {
-      if ( name.empty() )
-         return;
-
-      auto pOption = mParserDef.findOption( name );
-      if ( pOption ) {
-         auto groupName = pOption->getGroup() ? pOption->getGroup()->getName() : "";
-         throw DuplicateOption( groupName, name );
-      }
-   }
-
-   CommandConfig tryAddCommand( Command& command )
-   {
-      if ( command.getName().empty() )
-         throw std::invalid_argument( "A command must have a name." );
-      if ( !command.hasFactory() )
-         throw std::invalid_argument( "A command must have an options factory." );
-      if ( command.getName()[0] == '-' )
-         throw std::invalid_argument( "Command name must not start with a dash." );
-
-      ensureIsNewCommand( command.getName() );
-
-      auto pCommand = std::make_shared<Command>( std::move( command ) );
-      mParserDef.mCommands.push_back( pCommand );
-      return { pCommand };
-   }
-
-   void ensureIsNewCommand( const std::string& name )
-   {
-      auto pCommand = mParserDef.findCommand( name );
-      if ( pCommand )
-         throw DuplicateCommand( name );
-   }
-
-   std::shared_ptr<OptionGroup> addGroup( std::string name, bool isExclusive )
-   {
-      if ( name.empty() )
-         throw std::invalid_argument( "A group must have a name." );
-
-      std::transform( name.begin(), name.end(), name.begin(), tolower );
-      assert( mGroups.count( name ) == 0 );
-
-      auto pGroup = std::make_shared<OptionGroup>( name, isExclusive );
-      mGroups[name] = pGroup;
-      return pGroup;
-   }
-
-   std::shared_ptr<OptionGroup> findGroup( std::string name ) const
-   {
-      std::transform( name.begin(), name.end(), name.begin(), tolower );
-      auto igrp = mGroups.find( name );
-      if ( igrp == mGroups.end() )
-         return {};
-      return igrp->second;
-   }
-
-   void generate_help()
-   {
-      // TODO: The formatter should be configurable
-      auto formatter = HelpFormatter();
-      auto pStream = mParserDef.getConfig().pOutStream;
-      if ( !pStream )
-         pStream = &std::cout;
-
-      formatter.format( mParserDef, *pStream );
-   }
-
-   void describe_errors( ParseResult& result )
-   {
-      auto pStream = mParserDef.getConfig().pOutStream;
-      if ( !pStream )
-         pStream = &std::cout;
-
-      for ( const auto& e : result.errors )
-         e.describeError( *pStream );
-
-      if ( !result.ignoredArguments.empty() ) {
-         auto it = result.ignoredArguments.begin();
-         *pStream << "Error: Ignored arguments: " << *it;
-         for ( ++it; it != result.ignoredArguments.end(); ++it )
-            *pStream << ", " << *it;
-         *pStream << "\n";
-      }
-   }
+   void resetOptionValues();
+   void assignDefaultValues();
+   void verifyDefinedOptions();
+   void validateParsedOptions( ParseResultBuilder& result );
+   void reportMissingOptions( ParseResultBuilder& result );
+   bool hasRequiredArguments() const;
+   void reportExclusiveViolations( ParseResultBuilder& result );
+   void reportMissingGroups( ParseResultBuilder& result );
+   OptionConfig tryAddArgument( Option& newOption, std::vector<std::string_view> names );
+   OptionConfig addPositional( Option&& newOption, const std::vector<std::string_view>& names );
+   OptionConfig addOption( Option&& newOption, const std::vector<std::string_view>& names );
+   void trySetNames( Option& option, const std::vector<std::string_view>& names ) const;
+   void ensureIsNewOption( const std::string& name );
+   CommandConfig tryAddCommand( Command& command );
+   void ensureIsNewCommand( const std::string& name );
+   std::shared_ptr<OptionGroup> addGroup( std::string name, bool isExclusive );
+   std::shared_ptr<OptionGroup> findGroup( std::string name ) const;
+   void generate_help();
+   void describe_errors( ParseResult& result );
 };
 
 }   // namespace argparse
 
+#include "argparser_impl.h"
 #include "helpformatter_impl.h"
 #include "parser_impl.h"
+#include "parserdefinition_impl.h"

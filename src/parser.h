@@ -3,9 +3,8 @@
 
 #pragma once
 
-#include "commands.h"
-#include "options.h"
 #include "parserconfig.h"
+#include "parserdefinition.h"
 
 #include <set>
 #include <string>
@@ -14,44 +13,10 @@
 
 namespace argparse {
 
-class Command;
 class Option;
+class Command;
 class ParseResultBuilder;
 class ArgumentStream;
-
-struct ParserDefinition
-{
-   ParserConfig mConfig;
-   std::vector<std::shared_ptr<Command>> mCommands;
-   std::vector<std::shared_ptr<Option>> mOptions;
-   std::vector<std::shared_ptr<Option>> mPositional;
-
-   Option* findOption( std::string_view optionName )
-   {
-      for ( auto& pOption : mOptions )
-         if ( pOption->hasName( optionName ) )
-            return pOption.get();
-
-      return nullptr;
-   }
-
-   Command* findCommand( std::string_view commandName )
-   {
-      for ( auto& pCommand : mCommands )
-         if ( pCommand->hasName( commandName ) )
-            return pCommand.get();
-
-      return nullptr;
-   }
-
-   /**
-    * Get a reference to the parser configuration for inspection.
-    */
-   const ParserConfig::Data& getConfig() const
-   {
-      return mConfig.data();
-   }
-};
 
 class Parser
 {

@@ -3,7 +3,11 @@
 
 #pragma once
 
+#include <functional>
 #include <istream>
+#include <memory>
+#include <optional>
+#include <string_view>
 
 namespace argparse {
 
