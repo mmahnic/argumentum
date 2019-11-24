@@ -6,6 +6,7 @@
 #include "argdescriber.h"
 
 #include "commands.h"
+#include "groups.h"
 #include "options.h"
 #include "parser.h"
 

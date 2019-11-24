@@ -5,8 +5,6 @@
 
 #include "options.h"
 
-#include <cassert>
-
 namespace argparse {
 
 /**
@@ -18,39 +16,17 @@ class OptionConfig
    bool mCountWasSet = false;
 
 public:
-   OptionConfig( const std::shared_ptr<Option>& pOption )
-      : mpOption( pOption )
-   {
-      assert( pOption );
-      if ( !mpOption )
-         throw std::invalid_argument( "OptionConfig requires an option." );
-   }
+   OptionConfig( const std::shared_ptr<Option>& pOption );
 
    // Define an action to execute when the option is present in input arguments.
    // The action is executed instead of the default assignment action and can
    // set the value of the target variable associated with the option.
-   OptionConfig& action( AssignAction action )
-   {
-      getOption().setAction( action );
-      return *this;
-   }
+   OptionConfig& action( AssignAction action );
 
 protected:
-   Option& getOption()
-   {
-      return *mpOption;
-   }
-
-   void markCountWasSet()
-   {
-      mCountWasSet = true;
-   }
-
-   void ensureCountWasNotSet() const
-   {
-      if ( mCountWasSet )
-         throw std::invalid_argument( "Only one of nargs, minargs and maxargs can be used." );
-   }
+   Option& getOption();
+   void markCountWasSet();
+   void ensureCountWasNotSet() const;
 };
 
 template<typename TDerived>
@@ -228,32 +204,13 @@ public:
 class VoidOptionConfig : public OptionConfigBaseT<VoidOptionConfig>
 {
 public:
-   using this_t = VoidOptionConfig;
    using assign_action_env_t = std::function<void( const std::string&, Environment& )>;
 
 public:
-   using OptionConfigBaseT<this_t>::OptionConfigBaseT;
+   using OptionConfigBaseT<VoidOptionConfig>::OptionConfigBaseT;
+   VoidOptionConfig( OptionConfig&& wrapped );
 
-   VoidOptionConfig( OptionConfig&& wrapped )
-      : OptionConfigBaseT<this_t>( std::move( wrapped ) )
-   {}
-
-   this_t& action( assign_action_env_t action )
-   {
-      if ( action ) {
-         auto wrapAction = [=]( Value& target, const std::string& value,
-                                 Environment& env ) -> std::optional<std::string> {
-            auto pv = dynamic_cast<VoidValue*>( &target );
-            if ( pv )
-               action( value, env );
-            return {};
-         };
-         OptionConfig::getOption().setAction( wrapAction );
-      }
-      else
-         OptionConfig::getOption().setAction( nullptr );
-      return *this;
-   }
+   VoidOptionConfig& action( assign_action_env_t action );
 };
 
 }   // namespace argparse
