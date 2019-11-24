@@ -16,6 +16,7 @@
 #include "../../src/helpformatter_impl.h"
 #include "../../src/optionconfig_impl.h"
 #include "../../src/options_impl.h"
+#include "../../src/optionsorter_impl.h"
 #include "../../src/parser_impl.h"
 #include "../../src/parserdefinition_impl.h"
 #include "../../src/values_impl.h"
