@@ -24,6 +24,7 @@ add_executable( runUnitTests
 
 target_link_libraries( runUnitTests 
    gtest_main
+   ${CMAKE_BINARY_DIR}/src/libargparse-s.a
    )
 
 add_executable( utilityTests

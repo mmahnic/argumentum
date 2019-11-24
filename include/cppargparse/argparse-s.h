@@ -4,3 +4,4 @@
 #pragma once
 
 #include "../../src/argparser.h"
+#include "../../src/exceptions.h"
