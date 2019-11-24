@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "exceptions.h"
-
 #include <cassert>
 #include <functional>
 #include <memory>
@@ -16,6 +14,7 @@ namespace argparse {
 
 class argument_parser;
 class ParseResult;
+class CommandOptions;
 
 class Options
 {
@@ -28,17 +27,9 @@ class CommandOptions : public Options
    std::string mName;
 
 public:
-   CommandOptions( std::string_view name )
-      : mName( name )
-   {}
-
-   const std::string& getName() const
-   {
-      return mName;
-   }
-
-   virtual void execute( const ParseResult& result )
-   {}
+   CommandOptions( std::string_view name );
+   const std::string& getName() const;
+   virtual void execute( const ParseResult& result );
 };
 
 // An internal definition of a command.
@@ -55,48 +46,13 @@ private:
    std::string mHelp;
 
 public:
-   Command( std::string_view name, options_factory_t factory )
-      : mName( name )
-      , mFactory( factory )
-   {}
-
-   void setHelp( std::string_view help )
-   {
-      mHelp = help;
-   }
-
-   const std::string& getName() const
-   {
-      return mName;
-   }
-
-   bool hasName( std::string_view name ) const
-   {
-      return name == mName;
-   }
-
-   bool hasFactory() const
-   {
-      return mFactory != nullptr;
-   }
-
-   const std::string& getHelp() const
-   {
-      return mHelp;
-   }
-
-   std::shared_ptr<CommandOptions> getOptions()
-   {
-      if ( !mpOptions ) {
-         if ( !mFactory )
-            throw MissingCommandOptions( mName );
-
-         mpOptions = mFactory( mName );
-         if ( !mpOptions )
-            throw MissingCommandOptions( mName );
-      }
-      return mpOptions;
-   }
+   Command( std::string_view name, options_factory_t factory );
+   void setHelp( std::string_view help );
+   const std::string& getName() const;
+   bool hasName( std::string_view name ) const;
+   bool hasFactory() const;
+   const std::string& getHelp() const;
+   std::shared_ptr<CommandOptions> getOptions();
 };
 
 }   // namespace argparse

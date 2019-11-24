@@ -3,7 +3,11 @@
 
 #pragma once
 
+#include <functional>
 #include <istream>
+#include <memory>
+#include <optional>
+#include <string_view>
 
 namespace argparse {
 
@@ -26,8 +30,7 @@ public:
    // analyse more arguments.
    //
    // An implementation may choose to not support peeking.
-   virtual void peek( std::function<EPeekResult( std::string_view )> fnPeek )
-   {}
+   virtual void peek( std::function<EPeekResult( std::string_view )> fnPeek );
 };
 
 // An implementation of ArgumentStream that reads arguments from a string
@@ -65,26 +68,16 @@ public:
 
 // An implementation of ArgumentStream that reads characters from an istream and
 // merges them into string arguments.
+//
+// The default implementation expects one argument per line.
 class StdStreamArgumentStream : public ArgumentStream
 {
    std::shared_ptr<std::istream> mpStream;
    std::string mCurrent;
 
 public:
-   StdStreamArgumentStream( const std::shared_ptr<std::istream>& pStream )
-      : mpStream( pStream )
-   {}
-
-   std::optional<std::string_view> next() override
-   {
-      if ( !mpStream )
-         return {};
-
-      if ( !std::getline( *mpStream, mCurrent ) )
-         return {};
-
-      return mCurrent;
-   }
+   StdStreamArgumentStream( const std::shared_ptr<std::istream>& pStream );
+   std::optional<std::string_view> next() override;
 };
 
 }   // namespace argparse

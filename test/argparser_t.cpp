@@ -3,7 +3,8 @@
 
 #include "helputil.h"
 #include "vectors.h"
-#include "../src/argparser.h"
+
+#include <cppargparse/argparse.h>
 
 #include <algorithm>
 #include <gtest/gtest.h>

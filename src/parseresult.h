@@ -4,8 +4,6 @@
 #pragma once
 
 #include "commands.h"
-#include "exceptions.h"
-#include "notifier.h"
 #include <string>
 #include <string_view>
 #include <vector>
@@ -44,56 +42,13 @@ struct ParseError
 {
    const std::string option;
    const int errorCode;
-   ParseError( std::string_view optionName, int code )
-      : option( optionName )
-      , errorCode( code )
-   {}
+   ParseError( std::string_view optionName, int code );
    ParseError( const ParseError& ) = default;
    ParseError( ParseError&& ) = default;
    ParseError& operator=( const ParseError& ) = default;
    ParseError& operator=( ParseError&& ) = default;
 
-   void describeError( std::ostream& stream ) const
-   {
-      switch ( errorCode ) {
-         case UNKNOWN_OPTION:
-            stream << "Error: Unknown option: '" << option << "'\n";
-            break;
-         case EXCLUSIVE_OPTION:
-            stream << "Error: Only one option from an exclusive group can be set. '" << option
-                   << "'\n";
-            break;
-         case MISSING_OPTION:
-            stream << "Error: A required option is missing: '" << option << "'\n";
-            break;
-         case MISSING_OPTION_GROUP:
-            stream << "Error: A required option from a group is missing: '" << option << "'\n";
-            break;
-         case MISSING_ARGUMENT:
-            stream << "Error: An argument is missing: '" << option << "'\n";
-            break;
-         case CONVERSION_ERROR:
-            stream << "Error: The argument could not be converted: '" << option << "'\n";
-            break;
-         case INVALID_CHOICE:
-            stream << "Error: The value is not in the list of valid values: '" << option << "'\n";
-            break;
-         case FLAG_PARAMETER:
-            stream << "Error: Flag options do not accep parameters: '" << option << "'\n";
-            break;
-         case EXIT_REQUESTED:
-            break;
-         case ACTION_ERROR:
-            stream << "Error: " << option << "\n";
-            break;
-         case INVALID_ARGV:
-            stream << "Error: Parser input is invalid.\n";
-            break;
-         case INCLUDE_TOO_DEEP:
-            stream << "Include depth exceeded: '" << option << "'\n";
-            break;
-      }
-   }
+   void describeError( std::ostream& stream ) const;
 };
 
 class ParseResult
@@ -108,43 +63,13 @@ private:
       bool required = false;
 
       RequireCheck() = default;
+      RequireCheck( RequireCheck&& other );
+      RequireCheck( bool require );
+      ~RequireCheck() noexcept( false );
 
-      RequireCheck( RequireCheck&& other )
-      {
-         required = other.required;
-         other.clear();
-      }
-
-      RequireCheck& operator=( RequireCheck&& other )
-      {
-         required = other.required;
-         other.clear();
-         return *this;
-      }
-
-      RequireCheck( bool require )
-         : required( require )
-      {}
-
-      ~RequireCheck() noexcept( false )
-      {
-         if ( required ) {
-            if ( !std::current_exception() )
-               throw UncheckedParseResult();   // lgtm [cpp/throw-in-destructor]
-            else
-               Notifier::warn( "Unchecked Parse Result." );
-         }
-      }
-
-      void activate()
-      {
-         required = true;
-      }
-
-      void clear()
-      {
-         required = false;
-      }
+      RequireCheck& operator=( RequireCheck&& other );
+      void activate();
+      void clear();
    };
 
 private:
@@ -163,29 +88,11 @@ public:
    ParseResult( ParseResult&& ) = default;
    ParseResult& operator=( ParseResult&& ) = default;
 
-   ~ParseResult() noexcept( false )
-   {}
-
-   bool has_exited() const
-   {
-      return exitRequested;
-   }
-
-   bool help_was_shown() const
-   {
-      return helpWasShown;
-   }
-
-   bool errors_were_shown() const
-   {
-      return errorsWereShown;
-   }
-
-   operator bool() const
-   {
-      mustCheck.clear();
-      return errors.empty() && ignoredArguments.empty() && !exitRequested;
-   }
+   ~ParseResult() noexcept( false );
+   bool has_exited() const;
+   bool help_was_shown() const;
+   bool errors_were_shown() const;
+   operator bool() const;
 
    template<typename TCommand>
    std::shared_ptr<TCommand> findCommand()
@@ -210,13 +117,7 @@ public:
    }
 
 private:
-   void clear()
-   {
-      ignoredArguments.clear();
-      errors.clear();
-      mustCheck.clear();
-      exitRequested = false;
-   }
+   void clear();
 };
 
 class ParseResultBuilder
@@ -224,73 +125,17 @@ class ParseResultBuilder
    ParseResult mResult;
 
 public:
-   void clear()
-   {
-      mResult.clear();
-   }
-
-   bool wasExitRequested() const
-   {
-      return mResult.exitRequested;
-   }
-
-   void addError( std::string_view optionName, int error )
-   {
-      mResult.errors.emplace_back( optionName, error );
-      mResult.mustCheck.activate();
-   }
-
-   void addIgnored( std::string_view arg )
-   {
-      mResult.ignoredArguments.emplace_back( arg );
-   }
-
-   void addCommand( const std::shared_ptr<CommandOptions>& pCommand )
-   {
-      mResult.commands.push_back( pCommand );
-   }
-
-   void requestExit()
-   {
-      mResult.exitRequested = true;
-      addError( {}, EXIT_REQUESTED );
-   }
-
-   void signalHelpShown()
-   {
-      mResult.helpWasShown = true;
-   }
-
-   void signalErrorsShown()
-   {
-      mResult.errorsWereShown = true;
-   }
-
-   ParseResult&& getResult()
-   {
-      return std::move( mResult );
-   }
-
-   bool hasArgumentProblems() const
-   {
-      return !mResult.errors.empty() || !mResult.ignoredArguments.empty();
-   }
-
-   void addResult( ParseResult&& result )
-   {
-      mResult.exitRequested |= result.exitRequested;
-      mResult.helpWasShown |= result.helpWasShown;
-      mResult.errorsWereShown |= result.errorsWereShown;
-
-      mResult.mustCheck.required |= result.mustCheck.required;
-      result.mustCheck.required = false;
-
-      for ( auto&& error : result.errors )
-         mResult.errors.push_back( std::move( error ) );
-
-      for ( auto&& arg : result.ignoredArguments )
-         mResult.ignoredArguments.push_back( std::move( arg ) );
-   }
+   void clear();
+   bool wasExitRequested() const;
+   void addError( std::string_view optionName, int error );
+   void addIgnored( std::string_view arg );
+   void addCommand( const std::shared_ptr<CommandOptions>& pCommand );
+   void requestExit();
+   void signalHelpShown();
+   void signalErrorsShown();
+   ParseResult&& getResult();
+   bool hasArgumentProblems() const;
+   void addResult( ParseResult&& result );
 };
 
 }   // namespace argparse

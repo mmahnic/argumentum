@@ -3,10 +3,12 @@
 
 #pragma once
 
-#include "options.h"
-#include "parseresult.h"
+#include <string_view>
 
 namespace argparse {
+
+class Option;
+class ParseResultBuilder;
 
 class Environment
 {
@@ -14,33 +16,11 @@ class Environment
    ParseResultBuilder& mResult;
 
 public:
-   Environment( Option& option, ParseResultBuilder& result )
-      : mOption( option )
-      , mResult( result )
-   {}
-
-   void exit_parser()
-   {
-      mResult.requestExit();
-   }
-
-   std::string get_option_name() const
-   {
-      return mOption.getHelpName();
-   }
-
-   void add_error( std::string_view error )
-   {
-      if ( error.empty() )
-         mResult.addError( get_option_name(), ACTION_ERROR );
-      else
-         mResult.addError( get_option_name() + ": " + std::string( error ), ACTION_ERROR );
-   }
-
-   void notify_help_was_shown()
-   {
-      mResult.signalHelpShown();
-   }
+   Environment( Option& option, ParseResultBuilder& result );
+   void exit_parser();
+   std::string get_option_name() const;
+   void add_error( std::string_view error );
+   void notify_help_was_shown();
 };
 
 }   // namespace argparse

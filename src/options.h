@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "exceptions.h"
-#include "groups.h"
 #include "values.h"
 
 #include <memory>
@@ -13,6 +11,8 @@
 #include <vector>
 
 namespace argparse {
+
+class OptionGroup;
 
 class Option
 {
@@ -60,212 +60,47 @@ public:
       mIsVectorValue = true;
    }
 
-   void setShortName( std::string_view name )
-   {
-      mShortName = name;
-   }
-
-   void setLongName( std::string_view name )
-   {
-      mLongName = name;
-   }
-
-   void setMetavar( std::string_view varname )
-   {
-      mMetavar = varname;
-   }
-
-   void setHelp( std::string_view help )
-   {
-      mHelp = help;
-   }
-
-   void setNArgs( int count )
-   {
-      mMinArgs = std::max( 0, count );
-      mMaxArgs = mMinArgs;
-   }
-
-   void setMinArgs( int count )
-   {
-      mMinArgs = std::max( 0, count );
-      mMaxArgs = -1;
-   }
-
-   void setMaxArgs( int count )
-   {
-      mMinArgs = 0;
-      mMaxArgs = std::max( 0, count );
-   }
-
-   void setRequired( bool isRequired = true )
-   {
-      mIsRequired = isRequired;
-   }
-
-   void setFlagValue( std::string_view value )
-   {
-      mFlagValue = value;
-   }
-
-   void setChoices( const std::vector<std::string>& choices )
-   {
-      mChoices = choices;
-   }
-
-   void setAction( AssignAction action )
-   {
-      mAssignAction = action;
-   }
-
-   void setAssignDefaultAction( AssignDefaultAction action )
-   {
-      mAssignDefaultAction = action;
-   }
-
-   void setGroup( const std::shared_ptr<OptionGroup>& pGroup )
-   {
-      mpGroup = pGroup;
-   }
-
-   bool isRequired() const
-   {
-      return mIsRequired;
-   }
-
-   const std::string& getName() const
-   {
-      return mLongName.empty() ? mShortName : mLongName;
-   }
-
-   const std::string& getShortName() const
-   {
-      return mShortName;
-   }
-
-   const std::string& getLongName() const
-   {
-      return mLongName;
-   }
-
-   std::string getHelpName() const
-   {
-      auto is_positional = mShortName.substr( 0, 1 ) != "-" && mLongName.substr( 0, 1 ) != "-";
-      if ( is_positional ) {
-         const auto& name =
-               !mMetavar.empty() ? mMetavar : !mLongName.empty() ? mLongName : mShortName;
-         return !name.empty() ? name : "ARG";
-      }
-      return !mLongName.empty() ? mLongName : mShortName;
-   }
-
-   bool hasName( std::string_view name ) const
-   {
-      return name == mShortName || name == mLongName;
-   }
-
-   const std::string& getRawHelp() const
-   {
-      return mHelp;
-   }
-
-   std::string getMetavar() const
-   {
-      if ( !mMetavar.empty() )
-         return mMetavar;
-
-      auto& name = getName();
-      auto pos = name.find_first_not_of( "-" );
-      auto metavar = name.substr( pos );
-      auto isPositional = pos == 0;
-      std::transform(
-            metavar.begin(), metavar.end(), metavar.begin(), isPositional ? tolower : toupper );
-      return metavar;
-   }
-
-   void setValue( std::string_view value, Environment& env )
-   {
-      if ( !mChoices.empty() && std::none_of( mChoices.begin(), mChoices.end(), [&value]( auto v ) {
-              return v == value;
-           } ) ) {
-         mpValue->markBadArgument();
-         throw InvalidChoiceError( value );
-      }
-
-      // If mAssignAction is not set, mpValue->setValue will try to use a
-      // default action.
-      mpValue->setValue( value, mAssignAction, env );
-   }
-
-   void assignDefault()
-   {
-      if ( mAssignDefaultAction )
-         mpValue->setDefault( mAssignDefaultAction );
-   }
-
-   bool hasDefault() const
-   {
-      return mAssignDefaultAction != nullptr;
-   }
-
-   void resetValue()
-   {
-      mpValue->reset();
-   }
-
-   void onOptionStarted()
-   {
-      mpValue->onOptionStarted();
-   }
-
-   bool acceptsAnyArguments() const
-   {
-      return mMinArgs > 0 || mMaxArgs != 0;
-   }
-
-   bool willAcceptArgument() const
-   {
-      return mMaxArgs < 0 || mpValue->getOptionAssignCount() < mMaxArgs;
-   }
-
-   bool needsMoreArguments() const
-   {
-      return mpValue->getOptionAssignCount() < mMinArgs;
-   }
-
-   bool hasVectorValue() const
-   {
-      return mIsVectorValue;
-   }
+   void setShortName( std::string_view name );
+   void setLongName( std::string_view name );
+   void setMetavar( std::string_view varname );
+   void setHelp( std::string_view help );
+   void setNArgs( int count );
+   void setMinArgs( int count );
+   void setMaxArgs( int count );
+   void setRequired( bool isRequired = true );
+   void setFlagValue( std::string_view value );
+   void setChoices( const std::vector<std::string>& choices );
+   void setAction( AssignAction action );
+   void setAssignDefaultAction( AssignDefaultAction action );
+   void setGroup( const std::shared_ptr<OptionGroup>& pGroup );
+   bool isRequired() const;
+   const std::string& getName() const;
+   const std::string& getShortName() const;
+   const std::string& getLongName() const;
+   std::string getHelpName() const;
+   bool hasName( std::string_view name ) const;
+   const std::string& getRawHelp() const;
+   std::string getMetavar() const;
+   void setValue( std::string_view value, Environment& env );
+   void assignDefault();
+   bool hasDefault() const;
+   void resetValue();
+   void onOptionStarted();
+   bool acceptsAnyArguments() const;
+   bool willAcceptArgument() const;
+   bool needsMoreArguments() const;
+   bool hasVectorValue() const;
 
    /**
-       * @returns true if the value was assigned through any option that shares
-       * this option's value.
-       */
-   bool wasAssigned() const
-   {
-      return mpValue->getAssignCount() > 0;
-   }
+    * @returns true if the value was assigned through any option that shares
+    * this option's value.
+    */
+   bool wasAssigned() const;
 
-   bool wasAssignedThroughThisOption() const
-   {
-      return mpValue->getOptionAssignCount() > 0;
-   }
-
-   const std::string& getFlagValue() const
-   {
-      return mFlagValue;
-   }
-
-   std::tuple<int, int> getArgumentCounts() const
-   {
-      return std::make_tuple( mMinArgs, mMaxArgs );
-   }
-
-   std::shared_ptr<OptionGroup> getGroup() const
-   {
-      return mpGroup;
-   }
+   bool wasAssignedThroughThisOption() const;
+   const std::string& getFlagValue() const;
+   std::tuple<int, int> getArgumentCounts() const;
+   std::shared_ptr<OptionGroup> getGroup() const;
 };
 
 }   // namespace argparse

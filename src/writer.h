@@ -21,131 +21,21 @@ class Writer
    std::string indent;
 
 public:
-   Writer( std::ostream& outStream, size_t widthBytes = 80 )
-      : stream( outStream )
-      , width( widthBytes )
-   {}
+   Writer( std::ostream& outStream, size_t widthBytes = 80 );
 
-   void setIndent( size_t indentBytes )
-   {
-      if ( indentBytes > width )
-         indentBytes = width;
-      indent = indentBytes == 0 ? "" : std::string( indentBytes, ' ' );
-   }
-
-   void write( std::string_view text )
-   {
-      auto blocks = splitIntoParagraphs( text );
-      for ( auto block : blocks ) {
-         if ( block.empty() )
-            startParagraph();
-         else {
-            write_paragraph( block );
-            startOfParagraph = false;
-         }
-      }
-   }
-
-   void startLine()
-   {
-      if ( position > 0 )
-         stream << "\n";
-      position = 0;
-      lastWritePosition = 0;
-      startOfParagraph = false;
-   }
-
-   void skipToColumnOrNewLine( size_t column )
-   {
-      if ( column >= width || column < position )
-         startLine();
-      else if ( column > position ) {
-         stream << std::string( column - position, ' ' );
-         position = column;
-      }
-      startOfParagraph = false;
-   }
-
-   void startParagraph()
-   {
-      if ( !startOfParagraph ) {
-         startLine();
-         stream << "\n";
-         startOfParagraph = true;
-      }
-   }
-
-   static std::vector<std::string_view> splitIntoWords( std::string_view text )
-   {
-      std::vector<std::string_view> words;
-
-      size_t pos = 0;
-      while ( pos < text.size() ) {
-         while ( pos < text.size() && iswspace( text[pos] ) )
-            ++pos;
-
-         size_t end = pos;
-         while ( end < text.size() && !iswspace( text[end] ) )
-            ++end;
-
-         if ( end > pos )
-            words.push_back( text.substr( pos, end - pos ) );
-
-         pos = end;
-      }
-
-      return words;
-   }
+   void setIndent( size_t indentBytes );
+   void write( std::string_view text );
+   void startLine();
+   void skipToColumnOrNewLine( size_t column );
+   void startParagraph();
+   static std::vector<std::string_view> splitIntoWords( std::string_view text );
 
    // Paragraphs are delimited by two or more consecutive newlines intermixed
    // with other whitespace. The paragraph delimiters are returned as empty blocks.
-   static std::vector<std::string_view> splitIntoParagraphs( std::string_view text )
-   {
-      auto rxParagraph = std::regex( "[ \t]*\n[ \t]*\n\\s*" );
-      std::vector<std::string_view> res;
-
-      auto it = std::cregex_iterator( text.data(), text.data() + text.size(), rxParagraph );
-      auto iend = std::cregex_iterator();
-      auto lastPosition = 0;
-      for ( ; it != iend; ++it ) {
-         auto match = std::cmatch( *it );
-         if ( match.position() == 0 )
-            res.emplace_back();
-         else {
-            res.push_back( text.substr( lastPosition, match.position() - lastPosition ) );
-            res.emplace_back();
-         }
-         lastPosition = match.position() + match.length();
-      }
-
-      if ( lastPosition < text.size() )
-         res.push_back( text.substr( lastPosition ) );
-      return res;
-   }
+   static std::vector<std::string_view> splitIntoParagraphs( std::string_view text );
 
 private:
-   void write_paragraph( std::string_view text )
-   {
-      auto words = splitIntoWords( text );
-      for ( auto word : words ) {
-         auto newpos = position + ( position == 0 ? indent.size() : 1 ) + word.size();
-         if ( newpos > width )
-            startLine();
-         else if ( position > 0 && position == lastWritePosition ) {
-            stream << " ";
-            ++position;
-         }
-
-         if ( position == 0 && indent.size() > 0 ) {
-            stream << indent;
-            position = indent.size();
-         }
-
-         stream.write( word.data(), word.size() );
-         position += word.size();
-         lastWritePosition = position;
-      }
-   }
+   void write_paragraph( std::string_view text );
 };
 
 }   // namespace argparse

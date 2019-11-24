@@ -3,36 +3,23 @@
 
 #pragma once
 
-#include "commands.h"
-
 namespace argparse {
+
+class Command;
 
 class CommandConfig
 {
    std::shared_ptr<Command> mpCommand;
 
 public:
-   CommandConfig( const std::shared_ptr<Command>& pCommand )
-      : mpCommand( pCommand )
-   {
-      assert( pCommand );
-      if ( !mpCommand )
-         throw std::invalid_argument( "CommandConfig requires a command." );
-   }
+   CommandConfig( const std::shared_ptr<Command>& pCommand );
 
    // Define the description of the command that will be displayed in the
    // generated help.
-   CommandConfig& help( std::string_view help )
-   {
-      getCommand().setHelp( help );
-      return *this;
-   }
+   CommandConfig& help( std::string_view help );
 
 private:
-   Command& getCommand()
-   {
-      return *mpCommand;
-   }
+   Command& getCommand();
 };
 
 }   // namespace argparse
