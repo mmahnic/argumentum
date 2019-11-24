@@ -5,19 +5,19 @@
 
 namespace argparse {
 
-inline Writer::Writer( std::ostream& outStream, size_t widthBytes )
+CPPARGPARSE_INLINE Writer::Writer( std::ostream& outStream, size_t widthBytes )
    : stream( outStream )
    , width( widthBytes )
 {}
 
-inline void Writer::setIndent( size_t indentBytes )
+CPPARGPARSE_INLINE void Writer::setIndent( size_t indentBytes )
 {
    if ( indentBytes > width )
       indentBytes = width;
    indent = indentBytes == 0 ? "" : std::string( indentBytes, ' ' );
 }
 
-inline void Writer::write( std::string_view text )
+CPPARGPARSE_INLINE void Writer::write( std::string_view text )
 {
    auto blocks = splitIntoParagraphs( text );
    for ( auto block : blocks ) {
@@ -30,7 +30,7 @@ inline void Writer::write( std::string_view text )
    }
 }
 
-inline void Writer::startLine()
+CPPARGPARSE_INLINE void Writer::startLine()
 {
    if ( position > 0 )
       stream << "\n";
@@ -39,7 +39,7 @@ inline void Writer::startLine()
    startOfParagraph = false;
 }
 
-inline void Writer::skipToColumnOrNewLine( size_t column )
+CPPARGPARSE_INLINE void Writer::skipToColumnOrNewLine( size_t column )
 {
    if ( column >= width || column < position )
       startLine();
@@ -50,7 +50,7 @@ inline void Writer::skipToColumnOrNewLine( size_t column )
    startOfParagraph = false;
 }
 
-inline void Writer::startParagraph()
+CPPARGPARSE_INLINE void Writer::startParagraph()
 {
    if ( !startOfParagraph ) {
       startLine();
@@ -59,7 +59,7 @@ inline void Writer::startParagraph()
    }
 }
 
-inline std::vector<std::string_view> Writer::splitIntoWords( std::string_view text )
+CPPARGPARSE_INLINE std::vector<std::string_view> Writer::splitIntoWords( std::string_view text )
 {
    std::vector<std::string_view> words;
 
@@ -81,7 +81,7 @@ inline std::vector<std::string_view> Writer::splitIntoWords( std::string_view te
    return words;
 }
 
-inline std::vector<std::string_view> Writer::splitIntoParagraphs( std::string_view text )
+CPPARGPARSE_INLINE std::vector<std::string_view> Writer::splitIntoParagraphs( std::string_view text )
 {
    auto rxParagraph = std::regex( "[ \t]*\n[ \t]*\n\\s*" );
    std::vector<std::string_view> res;
@@ -105,7 +105,7 @@ inline std::vector<std::string_view> Writer::splitIntoParagraphs( std::string_vi
    return res;
 }
 
-inline void Writer::write_paragraph( std::string_view text )
+CPPARGPARSE_INLINE void Writer::write_paragraph( std::string_view text )
 {
    auto words = splitIntoWords( text );
    for ( auto word : words ) {

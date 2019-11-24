@@ -12,12 +12,12 @@
 
 namespace argparse {
 
-inline Parser::Parser( ParserDefinition& parserDef, ParseResultBuilder& result )
+CPPARGPARSE_INLINE Parser::Parser( ParserDefinition& parserDef, ParseResultBuilder& result )
    : mParserDef( parserDef )
    , mResult( result )
 {}
 
-inline void Parser::parse( ArgumentStream& argStream )
+CPPARGPARSE_INLINE void Parser::parse( ArgumentStream& argStream )
 {
    mResult.clear();
 
@@ -32,7 +32,7 @@ inline void Parser::parse( ArgumentStream& argStream )
       closeOption();
 }
 
-inline void Parser::parse( ArgumentStream& argStream, unsigned depth )
+CPPARGPARSE_INLINE void Parser::parse( ArgumentStream& argStream, unsigned depth )
 {
    for ( auto optArg = argStream.next(); !!optArg; optArg = argStream.next() ) {
       if ( optArg->substr( 0, 1 ) == "@" ) {
@@ -89,7 +89,7 @@ inline void Parser::parse( ArgumentStream& argStream, unsigned depth )
    }
 }
 
-inline void Parser::startOption( std::string_view name )
+CPPARGPARSE_INLINE void Parser::startOption( std::string_view name )
 {
    if ( haveActiveOption() )
       closeOption();
@@ -121,12 +121,12 @@ inline void Parser::startOption( std::string_view name )
       addError( name, UNKNOWN_OPTION );
 }
 
-inline bool Parser::haveActiveOption() const
+CPPARGPARSE_INLINE bool Parser::haveActiveOption() const
 {
    return mpActiveOption != nullptr;
 }
 
-inline void Parser::closeOption()
+CPPARGPARSE_INLINE void Parser::closeOption()
 {
    if ( haveActiveOption() ) {
       auto& option = *mpActiveOption;
@@ -138,7 +138,7 @@ inline void Parser::closeOption()
    mpActiveOption = nullptr;
 }
 
-inline void Parser::addFreeArgument( std::string_view arg )
+CPPARGPARSE_INLINE void Parser::addFreeArgument( std::string_view arg )
 {
    if ( mPosition < mParserDef.mPositional.size() ) {
       auto& option = *mParserDef.mPositional[mPosition];
@@ -162,12 +162,12 @@ inline void Parser::addFreeArgument( std::string_view arg )
    mResult.addIgnored( arg );
 }
 
-inline void Parser::addError( std::string_view optionName, int errorCode )
+CPPARGPARSE_INLINE void Parser::addError( std::string_view optionName, int errorCode )
 {
    mResult.addError( optionName, errorCode );
 }
 
-inline void Parser::setValue( Option& option, std::string_view value )
+CPPARGPARSE_INLINE void Parser::setValue( Option& option, std::string_view value )
 {
    try {
       auto env = Environment{ option, mResult };
@@ -186,7 +186,7 @@ inline void Parser::setValue( Option& option, std::string_view value )
 
 // A parser for command's (sub)options is instantiated only when a command is
 // selected by an input argument.
-inline void Parser::parseCommandArguments(
+CPPARGPARSE_INLINE void Parser::parseCommandArguments(
       Command& command, ArgumentStream& argStream, ParseResultBuilder& result )
 {
    auto parser = argument_parser{};
@@ -205,7 +205,7 @@ inline void Parser::parseCommandArguments(
    result.addResult( parser.parse_args( argStream ) );
 }
 
-inline void Parser::parseSubstream( std::string_view streamName, unsigned depth )
+CPPARGPARSE_INLINE void Parser::parseSubstream( std::string_view streamName, unsigned depth )
 {
    if ( !mParserDef.getConfig().pFilesystem )
       throw MissingFilesystem();

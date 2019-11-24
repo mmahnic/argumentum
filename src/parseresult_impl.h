@@ -8,12 +8,12 @@
 
 namespace argparse {
 
-inline ParseError::ParseError( std::string_view optionName, int code )
+CPPARGPARSE_INLINE ParseError::ParseError( std::string_view optionName, int code )
    : option( optionName )
    , errorCode( code )
 {}
 
-inline void ParseError::describeError( std::ostream& stream ) const
+CPPARGPARSE_INLINE void ParseError::describeError( std::ostream& stream ) const
 {
    switch ( errorCode ) {
       case UNKNOWN_OPTION:
@@ -55,24 +55,24 @@ inline void ParseError::describeError( std::ostream& stream ) const
    }
 }
 
-inline ParseResult::RequireCheck::RequireCheck( RequireCheck&& other )
+CPPARGPARSE_INLINE ParseResult::RequireCheck::RequireCheck( RequireCheck&& other )
 {
    required = other.required;
    other.clear();
 }
 
-inline auto ParseResult::RequireCheck::operator=( RequireCheck&& other ) -> RequireCheck&
+CPPARGPARSE_INLINE auto ParseResult::RequireCheck::operator=( RequireCheck&& other ) -> RequireCheck&
 {
    required = other.required;
    other.clear();
    return *this;
 }
 
-inline ParseResult::RequireCheck::RequireCheck( bool require )
+CPPARGPARSE_INLINE ParseResult::RequireCheck::RequireCheck( bool require )
    : required( require )
 {}
 
-inline ParseResult::RequireCheck::~RequireCheck() noexcept( false )
+CPPARGPARSE_INLINE ParseResult::RequireCheck::~RequireCheck() noexcept( false )
 {
    if ( required ) {
       if ( !std::current_exception() )
@@ -82,41 +82,41 @@ inline ParseResult::RequireCheck::~RequireCheck() noexcept( false )
    }
 }
 
-inline void ParseResult::RequireCheck::activate()
+CPPARGPARSE_INLINE void ParseResult::RequireCheck::activate()
 {
    required = true;
 }
 
-inline void ParseResult::RequireCheck::clear()
+CPPARGPARSE_INLINE void ParseResult::RequireCheck::clear()
 {
    required = false;
 }
 
-inline ParseResult::~ParseResult() noexcept( false )
+CPPARGPARSE_INLINE ParseResult::~ParseResult() noexcept( false )
 {}
 
-inline bool ParseResult::has_exited() const
+CPPARGPARSE_INLINE bool ParseResult::has_exited() const
 {
    return exitRequested;
 }
 
-inline bool ParseResult::help_was_shown() const
+CPPARGPARSE_INLINE bool ParseResult::help_was_shown() const
 {
    return helpWasShown;
 }
 
-inline bool ParseResult::errors_were_shown() const
+CPPARGPARSE_INLINE bool ParseResult::errors_were_shown() const
 {
    return errorsWereShown;
 }
 
-inline ParseResult::operator bool() const
+CPPARGPARSE_INLINE ParseResult::operator bool() const
 {
    mustCheck.clear();
    return errors.empty() && ignoredArguments.empty() && !exitRequested;
 }
 
-inline void ParseResult::clear()
+CPPARGPARSE_INLINE void ParseResult::clear()
 {
    ignoredArguments.clear();
    errors.clear();
@@ -124,59 +124,59 @@ inline void ParseResult::clear()
    exitRequested = false;
 }
 
-inline void ParseResultBuilder::clear()
+CPPARGPARSE_INLINE void ParseResultBuilder::clear()
 {
    mResult.clear();
 }
 
-inline bool ParseResultBuilder::wasExitRequested() const
+CPPARGPARSE_INLINE bool ParseResultBuilder::wasExitRequested() const
 {
    return mResult.exitRequested;
 }
 
-inline void ParseResultBuilder::addError( std::string_view optionName, int error )
+CPPARGPARSE_INLINE void ParseResultBuilder::addError( std::string_view optionName, int error )
 {
    mResult.errors.emplace_back( optionName, error );
    mResult.mustCheck.activate();
 }
 
-inline void ParseResultBuilder::addIgnored( std::string_view arg )
+CPPARGPARSE_INLINE void ParseResultBuilder::addIgnored( std::string_view arg )
 {
    mResult.ignoredArguments.emplace_back( arg );
 }
 
-inline void ParseResultBuilder::addCommand( const std::shared_ptr<CommandOptions>& pCommand )
+CPPARGPARSE_INLINE void ParseResultBuilder::addCommand( const std::shared_ptr<CommandOptions>& pCommand )
 {
    mResult.commands.push_back( pCommand );
 }
 
-inline void ParseResultBuilder::requestExit()
+CPPARGPARSE_INLINE void ParseResultBuilder::requestExit()
 {
    mResult.exitRequested = true;
    addError( {}, EXIT_REQUESTED );
 }
 
-inline void ParseResultBuilder::signalHelpShown()
+CPPARGPARSE_INLINE void ParseResultBuilder::signalHelpShown()
 {
    mResult.helpWasShown = true;
 }
 
-inline void ParseResultBuilder::signalErrorsShown()
+CPPARGPARSE_INLINE void ParseResultBuilder::signalErrorsShown()
 {
    mResult.errorsWereShown = true;
 }
 
-inline ParseResult&& ParseResultBuilder::getResult()
+CPPARGPARSE_INLINE ParseResult&& ParseResultBuilder::getResult()
 {
    return std::move( mResult );
 }
 
-inline bool ParseResultBuilder::hasArgumentProblems() const
+CPPARGPARSE_INLINE bool ParseResultBuilder::hasArgumentProblems() const
 {
    return !mResult.errors.empty() || !mResult.ignoredArguments.empty();
 }
 
-inline void ParseResultBuilder::addResult( ParseResult&& result )
+CPPARGPARSE_INLINE void ParseResultBuilder::addResult( ParseResult&& result )
 {
    mResult.exitRequested |= result.exitRequested;
    mResult.helpWasShown |= result.helpWasShown;

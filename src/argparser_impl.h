@@ -15,53 +15,29 @@
 
 namespace argparse {
 
-inline ParserConfig& argument_parser::config()
+CPPARGPARSE_INLINE ParserConfig& argument_parser::config()
 {
    return mParserDef.mConfig;
 }
 
-inline const ParserConfig::Data& argument_parser::getConfig() const
+CPPARGPARSE_INLINE const ParserConfig::Data& argument_parser::getConfig() const
 {
    return mParserDef.getConfig();
 }
 
-inline const ParserDefinition& argument_parser::getDefinition() const
+CPPARGPARSE_INLINE const ParserDefinition& argument_parser::getDefinition() const
 {
    return mParserDef;
 }
 
-template<typename TOptions>
-CommandConfig argument_parser::add_command( const std::string& name )
-{
-   auto factory = []( std::string_view name ) { return std::make_shared<TOptions>( name ); };
-   auto command = Command( name, factory );
-   return tryAddCommand( command );
-}
-
-inline CommandConfig argument_parser::add_command(
+CPPARGPARSE_INLINE CommandConfig argument_parser::add_command(
       const std::string& name, Command::options_factory_t factory )
 {
    auto command = Command( name, factory );
    return tryAddCommand( command );
 }
 
-template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value>>
-OptionConfigA<TValue> argument_parser::add_argument(
-      TValue value, const std::string& name, const std::string& altName )
-{
-   auto option = Option( value );
-   return OptionConfigA<TValue>( tryAddArgument( option, { name, altName } ) );
-}
-
-template<typename TValue, typename = std::enable_if_t<!std::is_base_of<Value, TValue>::value>>
-OptionConfigA<TValue> argument_parser::add_argument(
-      TValue& value, const std::string& name, const std::string& altName )
-{
-   auto option = Option( value );
-   return OptionConfigA<TValue>( tryAddArgument( option, { name, altName } ) );
-}
-
-inline void argument_parser::add_arguments( std::shared_ptr<Options> pOptions )
+CPPARGPARSE_INLINE void argument_parser::add_arguments( std::shared_ptr<Options> pOptions )
 {
    if ( pOptions ) {
       mTargets.push_back( pOptions );
@@ -69,7 +45,7 @@ inline void argument_parser::add_arguments( std::shared_ptr<Options> pOptions )
    }
 }
 
-inline VoidOptionConfig argument_parser::add_default_help_option()
+CPPARGPARSE_INLINE VoidOptionConfig argument_parser::add_default_help_option()
 {
    const auto shortName = "-h";
    const auto longName = "--help";
@@ -86,7 +62,7 @@ inline VoidOptionConfig argument_parser::add_default_help_option()
    throw std::invalid_argument( "The default help options are hidden by other options." );
 }
 
-inline VoidOptionConfig argument_parser::add_help_option(
+CPPARGPARSE_INLINE VoidOptionConfig argument_parser::add_help_option(
       const std::string& name, const std::string& altName )
 {
    if ( !name.empty() && name[0] != '-' || !altName.empty() && altName[0] != '-' )
@@ -111,7 +87,7 @@ inline VoidOptionConfig argument_parser::add_help_option(
    return optionConfig;
 }
 
-inline GroupConfig argument_parser::add_group( const std::string& name )
+CPPARGPARSE_INLINE GroupConfig argument_parser::add_group( const std::string& name )
 {
    auto pGroup = findGroup( name );
    if ( pGroup ) {
@@ -125,7 +101,7 @@ inline GroupConfig argument_parser::add_group( const std::string& name )
    return GroupConfig( mpActiveGroup );
 }
 
-inline GroupConfig argument_parser::add_exclusive_group( const std::string& name )
+CPPARGPARSE_INLINE GroupConfig argument_parser::add_exclusive_group( const std::string& name )
 {
    auto pGroup = findGroup( name );
    if ( pGroup ) {
@@ -139,12 +115,12 @@ inline GroupConfig argument_parser::add_exclusive_group( const std::string& name
    return GroupConfig( mpActiveGroup );
 }
 
-inline void argument_parser::end_group()
+CPPARGPARSE_INLINE void argument_parser::end_group()
 {
    mpActiveGroup = nullptr;
 }
 
-inline ParseResult argument_parser::parse_args( int argc, char** argv, int skip_args )
+CPPARGPARSE_INLINE ParseResult argument_parser::parse_args( int argc, char** argv, int skip_args )
 {
    if ( !argv ) {
       auto res = ParseResultBuilder{};
@@ -159,7 +135,7 @@ inline ParseResult argument_parser::parse_args( int argc, char** argv, int skip_
    return parse_args( std::begin( args ), std::end( args ) );
 }
 
-inline ParseResult argument_parser::parse_args(
+CPPARGPARSE_INLINE ParseResult argument_parser::parse_args(
       const std::vector<std::string>& args, int skip_args )
 {
    auto ibegin = std::begin( args );
@@ -169,7 +145,8 @@ inline ParseResult argument_parser::parse_args(
    return parse_args( ibegin, std::end( args ) );
 }
 
-inline ParseResult argument_parser::parse_args( std::vector<std::string>::const_iterator ibegin,
+CPPARGPARSE_INLINE ParseResult argument_parser::parse_args(
+      std::vector<std::string>::const_iterator ibegin,
       std::vector<std::string>::const_iterator iend )
 {
    if ( ibegin == iend ) {
@@ -187,7 +164,7 @@ inline ParseResult argument_parser::parse_args( std::vector<std::string>::const_
    return parse_args( argStream );
 }
 
-inline ParseResult argument_parser::parse_args( ArgumentStream& args )
+CPPARGPARSE_INLINE ParseResult argument_parser::parse_args( ArgumentStream& args )
 {
    verifyDefinedOptions();
    resetOptionValues();
@@ -211,19 +188,20 @@ inline ParseResult argument_parser::parse_args( ArgumentStream& args )
    return std::move( result.getResult() );
 }
 
-inline ArgumentHelpResult argument_parser::describe_argument( std::string_view name ) const
+CPPARGPARSE_INLINE ArgumentHelpResult argument_parser::describe_argument(
+      std::string_view name ) const
 {
    ArgumentDescriber describer;
    return describer.describe_argument( mParserDef, name );
 }
 
-inline std::vector<ArgumentHelpResult> argument_parser::describe_arguments() const
+CPPARGPARSE_INLINE std::vector<ArgumentHelpResult> argument_parser::describe_arguments() const
 {
    ArgumentDescriber describer;
    return describer.describe_arguments( mParserDef );
 }
 
-inline void argument_parser::resetOptionValues()
+CPPARGPARSE_INLINE void argument_parser::resetOptionValues()
 {
    for ( auto& pOption : mParserDef.mOptions )
       pOption->resetValue();
@@ -232,7 +210,7 @@ inline void argument_parser::resetOptionValues()
       pOption->resetValue();
 }
 
-inline void argument_parser::assignDefaultValues()
+CPPARGPARSE_INLINE void argument_parser::assignDefaultValues()
 {
    for ( auto& pOption : mParserDef.mOptions )
       if ( !pOption->wasAssigned() && pOption->hasDefault() )
@@ -243,7 +221,7 @@ inline void argument_parser::assignDefaultValues()
          pOption->assignDefault();
 }
 
-inline void argument_parser::verifyDefinedOptions()
+CPPARGPARSE_INLINE void argument_parser::verifyDefinedOptions()
 {
    // Check if any help options are defined and add the default if not.
    if ( mHelpOptionNames.empty() ) {
@@ -266,14 +244,14 @@ inline void argument_parser::verifyDefinedOptions()
    }
 }
 
-inline void argument_parser::validateParsedOptions( ParseResultBuilder& result )
+CPPARGPARSE_INLINE void argument_parser::validateParsedOptions( ParseResultBuilder& result )
 {
    reportMissingOptions( result );
    reportExclusiveViolations( result );
    reportMissingGroups( result );
 }
 
-inline void argument_parser::reportMissingOptions( ParseResultBuilder& result )
+CPPARGPARSE_INLINE void argument_parser::reportMissingOptions( ParseResultBuilder& result )
 {
    for ( auto& pOption : mParserDef.mOptions )
       if ( pOption->isRequired() && !pOption->wasAssigned() )
@@ -284,7 +262,7 @@ inline void argument_parser::reportMissingOptions( ParseResultBuilder& result )
          result.addError( pOption->getHelpName(), MISSING_ARGUMENT );
 }
 
-inline bool argument_parser::hasRequiredArguments() const
+CPPARGPARSE_INLINE bool argument_parser::hasRequiredArguments() const
 {
    for ( auto& pOption : mParserDef.mOptions )
       if ( pOption->isRequired() )
@@ -297,7 +275,7 @@ inline bool argument_parser::hasRequiredArguments() const
    return false;
 }
 
-inline void argument_parser::reportExclusiveViolations( ParseResultBuilder& result )
+CPPARGPARSE_INLINE void argument_parser::reportExclusiveViolations( ParseResultBuilder& result )
 {
    std::map<std::string, std::vector<std::string>> counts;
    for ( auto& pOption : mParserDef.mOptions ) {
@@ -311,7 +289,7 @@ inline void argument_parser::reportExclusiveViolations( ParseResultBuilder& resu
          result.addError( c.second.front(), EXCLUSIVE_OPTION );
 }
 
-inline void argument_parser::reportMissingGroups( ParseResultBuilder& result )
+CPPARGPARSE_INLINE void argument_parser::reportMissingGroups( ParseResultBuilder& result )
 {
    std::map<std::string, int> counts;
    for ( auto& pOption : mParserDef.mOptions ) {
@@ -325,7 +303,7 @@ inline void argument_parser::reportMissingGroups( ParseResultBuilder& result )
          result.addError( c.first, MISSING_OPTION_GROUP );
 }
 
-inline OptionConfig argument_parser::tryAddArgument(
+CPPARGPARSE_INLINE OptionConfig argument_parser::tryAddArgument(
       Option& newOption, std::vector<std::string_view> names )
 {
    // Remove empty names
@@ -358,7 +336,7 @@ inline OptionConfig argument_parser::tryAddArgument(
    throw std::invalid_argument( "The argument must be either positional or an option." );
 }
 
-inline OptionConfig argument_parser::addPositional(
+CPPARGPARSE_INLINE OptionConfig argument_parser::addPositional(
       Option&& newOption, const std::vector<std::string_view>& names )
 {
    auto pOption = std::make_shared<Option>( std::move( newOption ) );
@@ -381,7 +359,7 @@ inline OptionConfig argument_parser::addPositional(
    return { pOption };
 }
 
-inline OptionConfig argument_parser::addOption(
+CPPARGPARSE_INLINE OptionConfig argument_parser::addOption(
       Option&& newOption, const std::vector<std::string_view>& names )
 {
    trySetNames( newOption, names );
@@ -397,7 +375,7 @@ inline OptionConfig argument_parser::addOption(
    return { pOption };
 }
 
-inline void argument_parser::trySetNames(
+CPPARGPARSE_INLINE void argument_parser::trySetNames(
       Option& option, const std::vector<std::string_view>& names ) const
 {
    for ( auto name : names ) {
@@ -417,7 +395,7 @@ inline void argument_parser::trySetNames(
       throw std::invalid_argument( "An option must have a name." );
 }
 
-inline void argument_parser::ensureIsNewOption( const std::string& name )
+CPPARGPARSE_INLINE void argument_parser::ensureIsNewOption( const std::string& name )
 {
    if ( name.empty() )
       return;
@@ -429,7 +407,7 @@ inline void argument_parser::ensureIsNewOption( const std::string& name )
    }
 }
 
-inline CommandConfig argument_parser::tryAddCommand( Command& command )
+CPPARGPARSE_INLINE CommandConfig argument_parser::tryAddCommand( Command& command )
 {
    if ( command.getName().empty() )
       throw std::invalid_argument( "A command must have a name." );
@@ -445,14 +423,15 @@ inline CommandConfig argument_parser::tryAddCommand( Command& command )
    return { pCommand };
 }
 
-inline void argument_parser::ensureIsNewCommand( const std::string& name )
+CPPARGPARSE_INLINE void argument_parser::ensureIsNewCommand( const std::string& name )
 {
    auto pCommand = mParserDef.findCommand( name );
    if ( pCommand )
       throw DuplicateCommand( name );
 }
 
-inline std::shared_ptr<OptionGroup> argument_parser::addGroup( std::string name, bool isExclusive )
+CPPARGPARSE_INLINE std::shared_ptr<OptionGroup> argument_parser::addGroup(
+      std::string name, bool isExclusive )
 {
    if ( name.empty() )
       throw std::invalid_argument( "A group must have a name." );
@@ -465,7 +444,7 @@ inline std::shared_ptr<OptionGroup> argument_parser::addGroup( std::string name,
    return pGroup;
 }
 
-inline std::shared_ptr<OptionGroup> argument_parser::findGroup( std::string name ) const
+CPPARGPARSE_INLINE std::shared_ptr<OptionGroup> argument_parser::findGroup( std::string name ) const
 {
    std::transform( name.begin(), name.end(), name.begin(), tolower );
    auto igrp = mGroups.find( name );
@@ -474,7 +453,7 @@ inline std::shared_ptr<OptionGroup> argument_parser::findGroup( std::string name
    return igrp->second;
 }
 
-inline void argument_parser::generate_help()
+CPPARGPARSE_INLINE void argument_parser::generate_help()
 {
    // TODO: The formatter should be configurable
    auto formatter = HelpFormatter();
@@ -485,7 +464,7 @@ inline void argument_parser::generate_help()
    formatter.format( mParserDef, *pStream );
 }
 
-inline void argument_parser::describe_errors( ParseResult& result )
+CPPARGPARSE_INLINE void argument_parser::describe_errors( ParseResult& result )
 {
    auto pStream = mParserDef.getConfig().pOutStream;
    if ( !pStream )

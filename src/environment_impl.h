@@ -10,22 +10,22 @@
 
 namespace argparse {
 
-inline Environment::Environment( Option& option, ParseResultBuilder& result )
+CPPARGPARSE_INLINE Environment::Environment( Option& option, ParseResultBuilder& result )
    : mOption( option )
    , mResult( result )
 {}
 
-inline void Environment::exit_parser()
+CPPARGPARSE_INLINE void Environment::exit_parser()
 {
    mResult.requestExit();
 }
 
-inline std::string Environment::get_option_name() const
+CPPARGPARSE_INLINE std::string Environment::get_option_name() const
 {
    return mOption.getHelpName();
 }
 
-inline void Environment::add_error( std::string_view error )
+CPPARGPARSE_INLINE void Environment::add_error( std::string_view error )
 {
    if ( error.empty() )
       mResult.addError( get_option_name(), ACTION_ERROR );
@@ -33,7 +33,7 @@ inline void Environment::add_error( std::string_view error )
       mResult.addError( get_option_name() + ": " + std::string( error ), ACTION_ERROR );
 }
 
-inline void Environment::notify_help_was_shown()
+CPPARGPARSE_INLINE void Environment::notify_help_was_shown()
 {
    mResult.signalHelpShown();
 }

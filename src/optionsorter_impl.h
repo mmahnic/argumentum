@@ -9,7 +9,7 @@
 
 namespace argparse {
 
-inline std::vector<OptionSorter::GroupLimit> OptionSorter::reorderGroups(
+CPPARGPARSE_INLINE std::vector<OptionSorter::GroupLimit> OptionSorter::reorderGroups(
       std::vector<ArgumentHelpResult>& args )
 {
    // 1. required free group
@@ -46,7 +46,7 @@ inline std::vector<OptionSorter::GroupLimit> OptionSorter::reorderGroups(
    return limits;
 }
 
-inline void OptionSorter::reorderOptions( GroupLimit& limit )
+CPPARGPARSE_INLINE void OptionSorter::reorderOptions( GroupLimit& limit )
 {
    limit.iendpos = std::stable_partition(
          limit.ibegin, limit.iend, []( auto&& opt ) { return opt.is_positional(); } );
