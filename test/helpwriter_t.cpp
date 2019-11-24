@@ -1,7 +1,9 @@
 // Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
-#include <cppargparse/argparse.h>
+#include <cppargparse/argparse-s.h>
+
+#include <cppargparse/../../src/writer.h>
 
 #include <algorithm>
 #include <gtest/gtest.h>

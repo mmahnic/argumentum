@@ -5,6 +5,8 @@
 
 #include "../../src/argparser.h"
 
+#define CPPARGPARSE_INLINE inline
+
 #include "../../src/argdescriber_impl.h"
 #include "../../src/argparser_impl.h"
 #include "../../src/argumentstream_impl.h"
@@ -23,3 +25,5 @@
 #include "../../src/parseresult_impl.h"
 #include "../../src/values_impl.h"
 #include "../../src/writer_impl.h"
+
+#undef CPPARGPARSE_INLINE

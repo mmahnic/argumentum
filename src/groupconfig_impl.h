@@ -9,23 +9,23 @@
 
 namespace argparse {
 
-inline GroupConfig::GroupConfig( std::shared_ptr<OptionGroup> pGroup )
+CPPARGPARSE_INLINE GroupConfig::GroupConfig( std::shared_ptr<OptionGroup> pGroup )
    : mpGroup( pGroup )
 {}
 
-inline GroupConfig& GroupConfig::title( std::string_view title )
+CPPARGPARSE_INLINE GroupConfig& GroupConfig::title( std::string_view title )
 {
    mpGroup->setTitle( title );
    return *this;
 }
 
-inline GroupConfig& GroupConfig::description( std::string_view description )
+CPPARGPARSE_INLINE GroupConfig& GroupConfig::description( std::string_view description )
 {
    mpGroup->setDescription( description );
    return *this;
 }
 
-inline GroupConfig& GroupConfig::required( bool isRequired )
+CPPARGPARSE_INLINE GroupConfig& GroupConfig::required( bool isRequired )
 {
    mpGroup->setRequired( isRequired );
    return *this;

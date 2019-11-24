@@ -16,3 +16,5 @@ fetch_googletest(
 
 enable_testing()
 add_subdirectory(test)
+add_subdirectory(test/staticlib)
+add_subdirectory(test/headerlib)

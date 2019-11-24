@@ -11,7 +11,7 @@
 
 namespace argparse {
 
-inline void Value::setValue( std::string_view value, AssignAction action, Environment& env )
+CPPARGPARSE_INLINE void Value::setValue( std::string_view value, AssignAction action, Environment& env )
 {
    ++mAssignCount;
    ++mOptionAssignCount;
@@ -21,7 +21,7 @@ inline void Value::setValue( std::string_view value, AssignAction action, Enviro
       action( *this, std::string{ value }, env );
 }
 
-inline void Value::setDefault( AssignDefaultAction action )
+CPPARGPARSE_INLINE void Value::setDefault( AssignDefaultAction action )
 {
    if ( action ) {
       ++mAssignCount;
@@ -29,29 +29,29 @@ inline void Value::setDefault( AssignDefaultAction action )
    }
 }
 
-inline void Value::markBadArgument()
+CPPARGPARSE_INLINE void Value::markBadArgument()
 {
    // Increase the assign count so that flagValue will not be used.
    ++mOptionAssignCount;
    mHasErrors = true;
 }
 
-inline int Value::getAssignCount() const
+CPPARGPARSE_INLINE int Value::getAssignCount() const
 {
    return mAssignCount;
 }
 
-inline int Value::getOptionAssignCount() const
+CPPARGPARSE_INLINE int Value::getOptionAssignCount() const
 {
    return mOptionAssignCount;
 }
 
-inline void Value::onOptionStarted()
+CPPARGPARSE_INLINE void Value::onOptionStarted()
 {
    mOptionAssignCount = 0;
 }
 
-inline void Value::reset()
+CPPARGPARSE_INLINE void Value::reset()
 {
    mAssignCount = 0;
    mOptionAssignCount = 0;
@@ -59,10 +59,10 @@ inline void Value::reset()
    doReset();
 }
 
-inline void Value::doReset()
+CPPARGPARSE_INLINE void Value::doReset()
 {}
 
-inline AssignAction VoidValue::getDefaultAction()
+CPPARGPARSE_INLINE AssignAction VoidValue::getDefaultAction()
 {
    return {};
 }

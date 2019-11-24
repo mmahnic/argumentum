@@ -10,7 +10,7 @@
 
 namespace argparse {
 
-inline Option* ParserDefinition::findOption( std::string_view optionName )
+CPPARGPARSE_INLINE Option* ParserDefinition::findOption( std::string_view optionName )
 {
    for ( auto& pOption : mOptions )
       if ( pOption->hasName( optionName ) )
@@ -19,7 +19,7 @@ inline Option* ParserDefinition::findOption( std::string_view optionName )
    return nullptr;
 }
 
-inline Command* ParserDefinition::findCommand( std::string_view commandName )
+CPPARGPARSE_INLINE Command* ParserDefinition::findCommand( std::string_view commandName )
 {
    for ( auto& pCommand : mCommands )
       if ( pCommand->hasName( commandName ) )
@@ -28,7 +28,7 @@ inline Command* ParserDefinition::findCommand( std::string_view commandName )
    return nullptr;
 }
 
-inline const ParserConfig::Data& ParserDefinition::getConfig() const
+CPPARGPARSE_INLINE const ParserConfig::Data& ParserDefinition::getConfig() const
 {
    return mConfig.data();
 }
