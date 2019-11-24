@@ -1,9 +1,5 @@
 
 include_directories( ../../include )
-link_directories( 
-   ${CMAKE_BINARY_DIR}/src 
-   )
-message( "***" ${CMAKE_BINARY_DIR} )
 
 add_executable( staticLibraryTest
    runtest.cpp
