@@ -154,7 +154,7 @@ we use to execute the selected command.
 Note that the interface for defining and executing commands is not stable and will change in the
 future.  
 
-```
+```C++
 #include <climits>
 #include <cppargparse/argparse.h>
 #include <numeric>
