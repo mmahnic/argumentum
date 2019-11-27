@@ -151,7 +151,7 @@ independent programs.  We can rewrite the above example with commands.  The main
 class `AccumulatorOptions` is now derived from `CommandOptions` which has the method `execute` that
 we use to execute the selected command.  
 
-Note that the interface for defining and executing commands is not yet stable and will change in the
+Note that the interface for defining and executing commands is not stable and will change in the
 future.  
 
 ```
@@ -183,12 +183,33 @@ protected:
    }
 };
 
+class CmdEchoOptions : public argparse::CommandOptions
+{
+public:
+   vector<int> numbers;
+
+public:
+   void execute( const ParseResult& res ) override
+   {
+      for ( auto n : numbers )
+         cout << n << " ";
+      cout << "\n";
+   }
+
+protected:
+   void add_arguments( argument_parser& parser ) override
+   {
+      parser.add_argument( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
+   };
+};
+
 
 int main( int argc, char** argv )
 {
    auto parser = argument_parser{};
    parser.config().program( argv[0] ).description( "Accumulator" );
    parser.add_command<CmdAccumulatorOptions>( "fold" ).help( "Accumulate integer values." );
+   parser.add_command<CmdEchoOptions>( "echo" ).help( "Echo integers from the command line." );
 
    auto res = parser.parse_args( argc, argv, 1 );
    if ( !res )
@@ -203,7 +224,7 @@ int main( int argc, char** argv )
 }
 ```
 
-The command options are instantiated only when the command is selected with an argument.  The chain
-of instantiated subcommands is stored in `ParseResults::commands`.  Typically we execute only the
-last instantiated (the "deepest") subcommand.
+Command options are instantiated only when the appropriate command is selected with an argument.
+The chain of instantiated subcommands is stored in `ParseResults::commands`.  Typically we execute
+only the last instantiated (the "deepest") subcommand.
 
