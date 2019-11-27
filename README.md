@@ -4,7 +4,7 @@
 # Argparse
 
 cpp-argparse is a C++ library for writing command-line program interfaces. The arguments that a
-program supports are registererd in an istance of `arument_parser`, the main library class.
+program supports are registered in an instance of `arument_parser`, the main library class.
 `argument_parser` processes the input arguments, checks that they are valid and converts them to C++
 variables. It also generates help and usage messages when requested.
 
@@ -145,3 +145,65 @@ int main( int argc, char** argv )
    return 0;
 }
 ```
+
+When a program becomes even more complex it can be subdivided into commands that often act as
+independent programs.  We can rewrite the above example with commands.  The main change is that the
+class `AccumulatorOptions` is now derived from `CommandOptions` which has the method `execute` that
+we use to execute the selected command.  
+
+Note that the interface for defining and executing commands is not yet stable and will change in the
+future.  
+
+```
+#include <climits>
+#include <cppargparse/argparse.h>
+#include <numeric>
+#include <vector>
+
+using namespace std;
+using namespace argparse;
+
+class AccumulatorOptions : public argparse::CommandOptions
+{
+public:
+   vector<int> numbers;
+   std::pair<std::function<int( int, int )>, int> operation;
+
+   void execute( const ParseResults& res )
+   {
+      auto acc = accumulate( 
+         numbers.begin(), numbers.end(), operation.second, operation.first );
+      cout << acc << "\n";
+   }
+
+protected:
+   void add_arguments( argument_parser& parser ) override
+   {
+     // ... same as above
+   }
+};
+
+
+int main( int argc, char** argv )
+{
+   auto parser = argument_parser{};
+   parser.config().program( argv[0] ).description( "Accumulator" );
+   parser.add_command<CmdAccumulatorOptions>( "fold" ).help( "Accumulate integer values." );
+
+   auto res = parser.parse_args( argc, argv, 1 );
+   if ( !res )
+      return 1;
+
+   auto pcmd = res.commands.back();
+   if ( !pcmd )
+      return 1;
+
+   pcmd->execute( res );
+   return 0;
+}
+```
+
+The command options are instantiated only when the command is selected with an argument.  The chain
+of instantiated subcommands is stored in `ParseResults::commands`.  Typically we execute only the
+last instantiated (the "deepest") subcommand.
+
