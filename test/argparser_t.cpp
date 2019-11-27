@@ -1094,3 +1094,20 @@ TEST( ArgumentParserTest, shouldAssignDefaultValueWithAction )
    EXPECT_TRUE( static_cast<bool>( res ) );
    EXPECT_EQ( 3, num );
 }
+
+// If two options have the same target, they should be referenced by the same
+// Value.  We can detect that by setting the default vaule on one of the options
+// while setting the other one through arguments.
+TEST( ArgumentParserTest, shouldDetectOptionsWithSameTarget )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout );
+
+   int shared = 0;
+   parser.add_argument( shared, "--num" ).nargs( 1 );
+   parser.add_argument( shared, "--relax" ).absent( -1 );
+
+   parser.parse_args( { "--num", "5" } );
+   EXPECT_EQ( 5, shared );
+}
