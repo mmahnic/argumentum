@@ -30,6 +30,14 @@ CPPARGPARSE_INLINE const ParserDefinition& argument_parser::getDefinition() cons
    return mParserDef;
 }
 
+CPPARGPARSE_INLINE OptionFactory& argument_parser::getOptionFactory()
+{
+   if ( !mpOptionFactory )
+      mpOptionFactory = std::make_unique<OptionFactory>();
+
+   return *mpOptionFactory;
+}
+
 CPPARGPARSE_INLINE CommandConfig argument_parser::add_command(
       const std::string& name, Command::options_factory_t factory )
 {
@@ -69,7 +77,7 @@ CPPARGPARSE_INLINE VoidOptionConfig argument_parser::add_help_option(
       throw std::invalid_argument( "A help argument must be an option." );
 
    auto value = VoidValue{};
-   auto option = OptionFactory().createOption( value );
+   auto option = getOptionFactory().createOption( value );
    auto optionConfig =   // (clf)
          VoidOptionConfig( tryAddArgument( option, { name, altName } ) )
                .help( "Display this help message and exit." )

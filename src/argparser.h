@@ -38,6 +38,7 @@ private:
    std::vector<std::shared_ptr<Options>> mTargets;
    std::map<std::string, std::shared_ptr<OptionGroup>> mGroups;
    std::shared_ptr<OptionGroup> mpActiveGroup;
+   std::unique_ptr<OptionFactory> mpOptionFactory;
 
 public:
    /**
@@ -73,7 +74,7 @@ public:
    OptionConfigA<TTarget> add_argument(
          TTarget target, const std::string& name = "", const std::string& altName = "" )
    {
-      auto option = OptionFactory().createOption( target );
+      auto option = getOptionFactory().createOption( target );
       return OptionConfigA<TTarget>( tryAddArgument( option, { name, altName } ) );
    }
 
@@ -85,7 +86,7 @@ public:
    OptionConfigA<TTarget> add_argument(
          TTarget& target, const std::string& name = "", const std::string& altName = "" )
    {
-      auto option = OptionFactory().createOption( target );
+      auto option = getOptionFactory().createOption( target );
       return OptionConfigA<TTarget>( tryAddArgument( option, { name, altName } ) );
    }
 
@@ -165,6 +166,7 @@ private:
    std::shared_ptr<OptionGroup> findGroup( std::string name ) const;
    void generate_help();
    void describe_errors( ParseResult& result );
+   OptionFactory& getOptionFactory();
 };
 
 }   // namespace argparse
