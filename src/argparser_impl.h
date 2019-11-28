@@ -69,7 +69,7 @@ CPPARGPARSE_INLINE VoidOptionConfig argument_parser::add_help_option(
       throw std::invalid_argument( "A help argument must be an option." );
 
    auto value = VoidValue{};
-   auto option = Option( value );
+   auto option = OptionFactory().createOption( value );
    auto optionConfig =   // (clf)
          VoidOptionConfig( tryAddArgument( option, { name, altName } ) )
                .help( "Display this help message and exit." )

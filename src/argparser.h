@@ -9,6 +9,7 @@
 #include "groupconfig.h"
 #include "helpformatter.h"
 #include "optionconfig.h"
+#include "optionfactory.h"
 #include "parserconfig.h"
 #include "parserdefinition.h"
 #include "parseresult.h"
@@ -72,7 +73,7 @@ public:
    OptionConfigA<TTarget> add_argument(
          TTarget target, const std::string& name = "", const std::string& altName = "" )
    {
-      auto option = Option( target );
+      auto option = OptionFactory().createOption( target );
       return OptionConfigA<TTarget>( tryAddArgument( option, { name, altName } ) );
    }
 
@@ -84,7 +85,7 @@ public:
    OptionConfigA<TTarget> add_argument(
          TTarget& target, const std::string& name = "", const std::string& altName = "" )
    {
-      auto option = Option( target );
+      auto option = OptionFactory().createOption( target );
       return OptionConfigA<TTarget>( tryAddArgument( option, { name, altName } ) );
    }
 
