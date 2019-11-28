@@ -43,3 +43,17 @@ TEST( OptionFactoryTest, shouldFailToCreateAVectorOfValues )
    OptionFactory factory;
    EXPECT_THROW( factory.createOption( v ), UnsupportedTargetType );
 }
+
+TEST( OptionFactoryTest, shouldUseTheSameValueForTheSameTarget )
+{
+   int shared;
+   int other;
+   OptionFactory factory;
+   auto o1 = factory.createOption( shared );
+   auto o2 = factory.createOption( other );
+   auto o3 = factory.createOption( shared );
+
+   EXPECT_TRUE( o1.getValueId() != o2.getValueId() );
+   EXPECT_TRUE( o1.getValueId() == o3.getValueId() );
+   EXPECT_TRUE( o2.getValueId() != o3.getValueId() );
+}
