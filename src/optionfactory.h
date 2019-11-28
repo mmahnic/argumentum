@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "exceptions.h"
 #include "options.h"
 #include "values.h"
 
@@ -35,7 +36,7 @@ public:
       std::unique_ptr<Value> pValue;
       using val_vector = std::vector<TTarget>;
       if constexpr ( std::is_base_of<Value, TTarget>::value ) {
-         pValue = std::make_unique<val_vector>( value );
+         throw UnsupportedTargetType( "Unsupported target type: vector<Value>." );
       }
       else {
          using wrap_type = ConvertedValue<val_vector>;

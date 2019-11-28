@@ -8,6 +8,7 @@ set(PARSER_SOURCES
 
 add_executable( runUnitTests
    runtest.cpp
+   helputil.cpp
    argparser_t.cpp
    convert_t.cpp
    group_t.cpp
@@ -18,7 +19,7 @@ add_executable( runUnitTests
    commandhelp_t.cpp
    filesystemarguments_t.cpp
    argumentstream_t.cpp
-   helputil.cpp
+   optionfactory_t.cpp
    ${PARSER_SOURCES}
    )
 
