@@ -151,7 +151,7 @@ independent programs.  We can rewrite the above example with commands.  The main
 class `AccumulatorOptions` is now derived from `CommandOptions` which has the method `execute` that
 we use to execute the selected command.  
 
-Note that the interface for defining and executing commands is not stable and will change in the
+Note: the interface for defining and executing commands is not stable and will change in the
 future.  
 
 ```C++
