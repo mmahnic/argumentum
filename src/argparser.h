@@ -68,24 +68,24 @@ public:
    // when the command is activated with an input argument.
    CommandConfig add_command( const std::string& name, Command::options_factory_t factory );
 
-   template<typename TValue, typename = std::enable_if_t<std::is_base_of<Value, TValue>::value>>
-   OptionConfigA<TValue> add_argument(
-         TValue value, const std::string& name = "", const std::string& altName = "" )
+   template<typename TTarget, typename = std::enable_if_t<std::is_base_of<Value, TTarget>::value>>
+   OptionConfigA<TTarget> add_argument(
+         TTarget target, const std::string& name = "", const std::string& altName = "" )
    {
-      auto option = Option( value );
-      return OptionConfigA<TValue>( tryAddArgument( option, { name, altName } ) );
+      auto option = Option( target );
+      return OptionConfigA<TTarget>( tryAddArgument( option, { name, altName } ) );
    }
 
    /**
     * Add an argument with names @p name and @p altName and store the reference
     * to @p target value that will receive the parsed parameter(s).
     */
-   template<typename TValue, typename = std::enable_if_t<!std::is_base_of<Value, TValue>::value>>
-   OptionConfigA<TValue> add_argument(
-         TValue& value, const std::string& name = "", const std::string& altName = "" )
+   template<typename TTarget, typename = std::enable_if_t<!std::is_base_of<Value, TTarget>::value>>
+   OptionConfigA<TTarget> add_argument(
+         TTarget& target, const std::string& name = "", const std::string& altName = "" )
    {
-      auto option = Option( value );
-      return OptionConfigA<TValue>( tryAddArgument( option, { name, altName } ) );
+      auto option = Option( target );
+      return OptionConfigA<TTarget>( tryAddArgument( option, { name, altName } ) );
    }
 
    /**

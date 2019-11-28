@@ -1098,7 +1098,7 @@ TEST( ArgumentParserTest, shouldAssignDefaultValueWithAction )
 // If two options have the same target, they should be referenced by the same
 // Value.  We can detect that by setting the default vaule on one of the options
 // while setting the other one through arguments.
-TEST( ArgumentParserTest, shouldDetectOptionsWithSameTarget )
+TEST( ValueTest, shouldDetectOptionsWithSameTarget )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
