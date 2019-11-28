@@ -80,6 +80,9 @@ public:
    std::tuple<int, int> getArgumentCounts() const;
    std::shared_ptr<OptionGroup> getGroup() const;
 
+   ValueId getValueId() const;
+   TargetId getTargetId() const;
+
 private:
    Option( std::unique_ptr<Value>&& pValue, Kind kind )
       : mpValue( std::move( pValue ) )

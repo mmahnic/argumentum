@@ -11,7 +11,18 @@
 
 namespace argparse {
 
-CPPARGPARSE_INLINE void Value::setValue( std::string_view value, AssignAction action, Environment& env )
+CPPARGPARSE_INLINE ValueId Value::getValueId() const
+{
+   return reinterpret_cast<ValueId>( this );
+}
+
+CPPARGPARSE_INLINE TargetId Value::getTargetId() const
+{
+   return 0;
+}
+
+CPPARGPARSE_INLINE void Value::setValue(
+      std::string_view value, AssignAction action, Environment& env )
 {
    ++mAssignCount;
    ++mOptionAssignCount;

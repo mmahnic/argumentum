@@ -54,6 +54,11 @@ TEST( OptionFactoryTest, shouldUseTheSameValueForTheSameTarget )
    auto o3 = factory.createOption( shared );
 
    EXPECT_TRUE( o1.getValueId() != o2.getValueId() );
+   EXPECT_TRUE( o1.getTargetId() != o2.getTargetId() );
+
    EXPECT_TRUE( o1.getValueId() == o3.getValueId() );
+   EXPECT_TRUE( o1.getTargetId() == o3.getTargetId() );
+
    EXPECT_TRUE( o2.getValueId() != o3.getValueId() );
+   EXPECT_TRUE( o2.getTargetId() != o3.getTargetId() );
 }

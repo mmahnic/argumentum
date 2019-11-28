@@ -212,4 +212,20 @@ CPPARGPARSE_INLINE std::shared_ptr<OptionGroup> Option::getGroup() const
    return mpGroup;
 }
 
+CPPARGPARSE_INLINE ValueId Option::getValueId() const
+{
+   if ( mpValue )
+      return mpValue->getValueId();
+
+   return {};
+}
+
+CPPARGPARSE_INLINE TargetId Option::getTargetId() const
+{
+   if ( mpValue )
+      return mpValue->getTargetId();
+
+   return {};
+}
+
 }   // namespace argparse

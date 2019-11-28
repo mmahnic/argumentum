@@ -13,6 +13,9 @@ namespace argparse {
 class Environment;
 class Value;
 
+using ValueId = uintptr_t;
+using TargetId = uintptr_t;
+
 /**
  * The assign-action is executed to set the value of a parameter.
  *
@@ -55,6 +58,9 @@ public:
 
    void onOptionStarted();
    void reset();
+
+   virtual ValueId getValueId() const;
+   virtual ValueId getTargetId() const;
 
 protected:
    virtual AssignAction getDefaultAction() = 0;
@@ -117,6 +123,11 @@ public:
    ConvertedValue( TValue& value )
       : mValue( value )
    {}
+
+   TargetId getTargetId() const override
+   {
+      return reinterpret_cast<TargetId>( &mValue );
+   }
 
 protected:
    AssignAction getDefaultAction() override
