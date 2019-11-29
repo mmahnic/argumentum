@@ -37,6 +37,13 @@ private:
    bool mIsRequired = false;
    bool mIsVectorValue = false;
 
+   // The number of asignments through the option that is currently active in
+   // the parser.
+   int mCurrentAssignCount = 0;
+
+   // The total number of assignments through this option.
+   int mTotalAssignCount = 0;
+
 public:
    void setShortName( std::string_view name );
    void setLongName( std::string_view name );

@@ -38,7 +38,6 @@ using AssignDefaultAction = std::function<void( Value& target )>;
 class Value
 {
    int mAssignCount = 0;
-   int mOptionAssignCount = 0;
    bool mHasErrors = false;
 
 public:
@@ -50,11 +49,6 @@ public:
     * The count of assignments through all the options that share this value.
     */
    int getAssignCount() const;
-
-   /**
-    * The count of assignments through the current option.
-    */
-   int getOptionAssignCount() const;
 
    void onOptionStarted();
    void reset();

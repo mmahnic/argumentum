@@ -288,7 +288,7 @@ CPPARGPARSE_INLINE void argument_parser::reportExclusiveViolations( ParseResultB
    std::map<std::string, std::vector<std::string>> counts;
    for ( auto& pOption : mParserDef.mOptions ) {
       auto pGroup = pOption->getGroup();
-      if ( pGroup && pGroup->isExclusive() && pOption->wasAssigned() )
+      if ( pGroup && pGroup->isExclusive() && pOption->wasAssignedThroughThisOption() )
          counts[pGroup->getName()].push_back( pOption->getHelpName() );
    }
 

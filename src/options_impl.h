@@ -141,8 +141,10 @@ CPPARGPARSE_INLINE void Option::setValue( std::string_view value, Environment& e
       throw InvalidChoiceError( value );
    }
 
-   // If mAssignAction is not set, mpValue->setValue will try to use a
-   // default action.
+   // If mAssignAction is not set, mpValue->setValue will try to use a default
+   // action.
+   ++mCurrentAssignCount;
+   ++mTotalAssignCount;
    mpValue->setValue( value, mAssignAction, env );
 }
 
@@ -159,11 +161,14 @@ CPPARGPARSE_INLINE bool Option::hasDefault() const
 
 CPPARGPARSE_INLINE void Option::resetValue()
 {
+   mCurrentAssignCount = 0;
+   mTotalAssignCount = 0;
    mpValue->reset();
 }
 
 CPPARGPARSE_INLINE void Option::onOptionStarted()
 {
+   mCurrentAssignCount = 0;
    mpValue->onOptionStarted();
 }
 
@@ -174,12 +179,12 @@ CPPARGPARSE_INLINE bool Option::acceptsAnyArguments() const
 
 CPPARGPARSE_INLINE bool Option::willAcceptArgument() const
 {
-   return mMaxArgs < 0 || mpValue->getOptionAssignCount() < mMaxArgs;
+   return mMaxArgs < 0 || mCurrentAssignCount < mMaxArgs;
 }
 
 CPPARGPARSE_INLINE bool Option::needsMoreArguments() const
 {
-   return mpValue->getOptionAssignCount() < mMinArgs;
+   return mCurrentAssignCount < mMinArgs;
 }
 
 CPPARGPARSE_INLINE bool Option::hasVectorValue() const
@@ -194,7 +199,7 @@ CPPARGPARSE_INLINE bool Option::wasAssigned() const
 
 CPPARGPARSE_INLINE bool Option::wasAssignedThroughThisOption() const
 {
-   return mpValue->getOptionAssignCount() > 0;
+   return mTotalAssignCount > 0;
 }
 
 CPPARGPARSE_INLINE const std::string& Option::getFlagValue() const
