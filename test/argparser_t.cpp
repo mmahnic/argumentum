@@ -163,7 +163,7 @@ TEST( ArgumentParserTest, shouldReportMissingRequiredOptionError )
 
    auto parser = argument_parser{};
    parser.add_argument( flagA, "-a" ).nargs( 1 );
-   parser.add_argument( flagA, "-b" ).required();
+   parser.add_argument( flagB, "-b" ).required();
 
    auto res = parser.parse_args( { "-a", "2135" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
