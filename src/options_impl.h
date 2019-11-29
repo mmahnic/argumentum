@@ -134,6 +134,9 @@ CPPARGPARSE_INLINE std::string Option::getMetavar() const
 
 CPPARGPARSE_INLINE void Option::setValue( std::string_view value, Environment& env )
 {
+   ++mCurrentAssignCount;
+   ++mTotalAssignCount;
+
    if ( !mChoices.empty() && std::none_of( mChoices.begin(), mChoices.end(), [&value]( auto v ) {
            return v == value;
         } ) ) {
@@ -143,8 +146,6 @@ CPPARGPARSE_INLINE void Option::setValue( std::string_view value, Environment& e
 
    // If mAssignAction is not set, mpValue->setValue will try to use a default
    // action.
-   ++mCurrentAssignCount;
-   ++mTotalAssignCount;
    mpValue->setValue( value, mAssignAction, env );
 }
 
