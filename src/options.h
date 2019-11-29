@@ -22,7 +22,7 @@ public:
    enum Kind { singleValue, vectorValue };
 
 private:
-   std::unique_ptr<Value> mpValue;
+   std::shared_ptr<Value> mpValue;
    AssignAction mAssignAction;
    AssignDefaultAction mAssignDefaultAction;
    std::string mShortName;
@@ -84,7 +84,7 @@ public:
    TargetId getTargetId() const;
 
 private:
-   Option( std::unique_ptr<Value>&& pValue, Kind kind )
+   Option( std::shared_ptr<Value>&& pValue, Kind kind )
       : mpValue( std::move( pValue ) )
       , mIsVectorValue( kind == Option::vectorValue )
    {}
