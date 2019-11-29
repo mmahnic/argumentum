@@ -62,3 +62,28 @@ TEST( OptionFactoryTest, shouldUseTheSameValueForTheSameTarget )
    EXPECT_TRUE( o2.getValueId() != o3.getValueId() );
    EXPECT_TRUE( o2.getTargetId() != o3.getTargetId() );
 }
+
+// The structure and the first member have the same address (which is used as a
+// target id), but they must not be set through the same Value.
+TEST( ValueTest, shouldDistinguishStrutctureTargetFromMemberTarget )
+{
+   struct Test
+   {
+      int shared = 0;
+      Test() = default;
+      Test( const Test& ) = default;
+      Test( const std::string& v )
+      {}
+      Test& operator=( const Test& ) = default;
+      Test& operator=( const std::string& v )
+      {
+         return *this;
+      }
+   } test;
+
+   OptionFactory factory;
+   auto o1 = factory.createOption( test );
+   auto o2 = factory.createOption( test.shared );
+
+   EXPECT_TRUE( o1.getValueId() != o2.getValueId() );
+}
