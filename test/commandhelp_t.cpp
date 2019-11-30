@@ -1,7 +1,7 @@
 // Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
-#include "helputil.h"
+#include "testutil.h"
 
 #include <cppargparse/argparse-s.h>
 
@@ -10,7 +10,7 @@
 #include <sstream>
 
 using namespace argparse;
-using namespace helputil;
+using namespace testutil;
 
 namespace {
 struct CmdOneOptions : public argparse::CommandOptions

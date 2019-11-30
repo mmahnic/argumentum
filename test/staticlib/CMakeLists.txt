@@ -3,7 +3,7 @@ include_directories( ../../include )
 
 add_executable( staticLibraryTest
    runtest.cpp
-   ../helputil.cpp
+   ../testutil.cpp
    basic_command_t.cpp
    )
 

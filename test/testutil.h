@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-namespace helputil {
+namespace testutil {
 
 enum EFlag { KEEPEMPTY = true };
 
@@ -24,4 +24,4 @@ std::string getTestHelp( P&& parser, F&& formatter )
    return strout.str();
 }
 
-}   // namespace helputil
+}   // namespace testutil

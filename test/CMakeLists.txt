@@ -8,7 +8,7 @@ set(PARSER_SOURCES
 
 add_executable( runUnitTests
    runtest.cpp
-   helputil.cpp
+   testutil.cpp
    argparser_t.cpp
    convert_t.cpp
    group_t.cpp
@@ -30,8 +30,8 @@ target_link_libraries( runUnitTests
 
 add_executable( utilityTests
    runtest.cpp
-   helputil.cpp
-   helputil_t.cpp
+   testutil.cpp
+   testutil_t.cpp
    )
 
 target_link_libraries( utilityTests 

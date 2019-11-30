@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
-#include "helputil.h"
+#include "testutil.h"
 #include "vectors.h"
 
 #include <cppargparse/argparse-s.h>
@@ -11,7 +11,7 @@
 
 using namespace argparse;
 using namespace testing;
-using namespace helputil;
+using namespace testutil;
 
 TEST( ArgumentParserTest, shouldParseShortOptions )
 {
