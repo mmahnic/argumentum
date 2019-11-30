@@ -1,12 +1,15 @@
 // Copyright (c) 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
+#include "testutil.h"
+
 #include <cppargparse/argparse-s.h>
 
 #include <algorithm>
 #include <gtest/gtest.h>
 
 using namespace argparse;
+using namespace testutil;
 
 namespace {
 struct CmdOneOptions : public argparse::CommandOptions
@@ -51,8 +54,8 @@ TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
    auto res = parser.parse_args( { "one", "-s", "works" } );
 
    // -- THEN
-   auto pCmdOne = res.findCommand<CmdOneOptions>( "one" );
-   auto pCmdTwo = res.findCommand<CmdTwoOptions>( "two" );
+   auto pCmdOne = findCommand<CmdOneOptions>( res, "one" );
+   auto pCmdTwo = findCommand<CmdTwoOptions>( res, "two" );
    EXPECT_TRUE( res.errors.empty() );
    EXPECT_EQ( nullptr, pCmdTwo );
    ASSERT_NE( nullptr, pCmdOne );
@@ -64,8 +67,8 @@ TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
    res = parser.parse_args( { "two", "--string", "works" } );
 
    // -- THEN
-   pCmdOne = res.findCommand<CmdOneOptions>( "one" );
-   pCmdTwo = res.findCommand<CmdTwoOptions>( "two" );
+   pCmdOne = findCommand<CmdOneOptions>( res, "one" );
+   pCmdTwo = findCommand<CmdTwoOptions>( res, "two" );
    EXPECT_TRUE( res.errors.empty() );
    EXPECT_EQ( nullptr, pCmdOne );
    ASSERT_NE( nullptr, pCmdTwo );
@@ -77,8 +80,8 @@ TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
    res = parser.parse_args( { "-s", "works" } );
 
    // -- THEN
-   pCmdOne = res.findCommand<CmdOneOptions>( "one" );
-   pCmdTwo = res.findCommand<CmdTwoOptions>( "two" );
+   pCmdOne = findCommand<CmdOneOptions>( res, "one" );
+   pCmdTwo = findCommand<CmdTwoOptions>( res, "two" );
    EXPECT_FALSE( static_cast<bool>( res ) );
    ASSERT_FALSE( res.errors.empty() );
    EXPECT_EQ( UNKNOWN_OPTION, res.errors.front().errorCode );
@@ -103,7 +106,7 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent )
    EXPECT_TRUE( global.has_value() );
    EXPECT_EQ( "global-works", global.value_or( "" ) );
 
-   auto pCmdOne = res.findCommand<CmdOneOptions>( "one" );
+   auto pCmdOne = findCommand<CmdOneOptions>( res, "one" );
    ASSERT_NE( nullptr, pCmdOne );
    EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
 }
@@ -135,7 +138,7 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent2 )
    EXPECT_TRUE( pGlobal->global.has_value() );
    EXPECT_EQ( "global-works", pGlobal->global.value_or( "" ) );
 
-   auto pCmdOne = res.findCommand<CmdOneOptions>( "one" );
+   auto pCmdOne = findCommand<CmdOneOptions>( res, "one" );
    ASSERT_NE( nullptr, pCmdOne );
    EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
 }
@@ -165,7 +168,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredOptionsWhenCommandP
    ASSERT_FALSE( res.errors.empty() );
    EXPECT_EQ( MISSING_OPTION, res.errors.front().errorCode );
 
-   auto pCmdOne = res.findCommand<CmdOneOptions>( "one" );
+   auto pCmdOne = findCommand<CmdOneOptions>( res, "one" );
    ASSERT_NE( nullptr, pCmdOne );
    EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
 }
@@ -198,7 +201,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredPositionalWhenComma
    ASSERT_FALSE( res.errors.empty() );
    EXPECT_EQ( MISSING_ARGUMENT, res.errors.front().errorCode );
 
-   auto pCmdOne = res.findCommand<CmdOneOptions>( "one" );
+   auto pCmdOne = findCommand<CmdOneOptions>( res, "one" );
    ASSERT_NE( nullptr, pCmdOne );
    EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
 }
@@ -217,8 +220,8 @@ TEST( ArgumentParserCommandTest, shouldStoreInstantiatedCommandsInParseResults )
 
    // -- THEN
    EXPECT_TRUE( res.errors.empty() );
-   auto pCmdOne = res.findCommand<CmdOneOptions>( "one" );
-   auto pCmdTwo = res.findCommand<CmdTwoOptions>( "two" );
+   auto pCmdOne = findCommand<CmdOneOptions>( res, "one" );
+   auto pCmdTwo = findCommand<CmdTwoOptions>( res, "two" );
    EXPECT_EQ( nullptr, pCmdTwo );
    ASSERT_NE( nullptr, pCmdOne );
    EXPECT_TRUE( pCmdOne->str.has_value() );
@@ -230,8 +233,8 @@ TEST( ArgumentParserCommandTest, shouldStoreInstantiatedCommandsInParseResults )
 
    // -- THEN
    EXPECT_TRUE( res.errors.empty() );
-   pCmdOne = res.findCommand<CmdOneOptions>( "one" );
-   pCmdTwo = res.findCommand<CmdTwoOptions>( "two" );
+   pCmdOne = findCommand<CmdOneOptions>( res, "one" );
+   pCmdTwo = findCommand<CmdTwoOptions>( res, "two" );
    EXPECT_EQ( nullptr, pCmdOne );
    ASSERT_NE( nullptr, pCmdTwo );
    EXPECT_TRUE( pCmdTwo->str.has_value() );

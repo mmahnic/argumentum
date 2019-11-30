@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include <cppargparse/argparse-s.h>
+
+#include <memory>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -22,6 +25,28 @@ std::string getTestHelp( P&& parser, F&& formatter )
    std::stringstream strout;
    formatter.format( parser.getDefinition(), strout );
    return strout.str();
+}
+
+template<typename TCommand>
+std::shared_ptr<TCommand> findCommand( const argparse::ParseResult& res )
+{
+   for ( auto& pCmd : res.commands ) {
+      auto pDesired = std::dynamic_pointer_cast<TCommand>( pCmd );
+      if ( pDesired )
+         return pDesired;
+   }
+   return nullptr;
+}
+
+template<typename TCommand>
+std::shared_ptr<TCommand> findCommand( const argparse::ParseResult& res, std::string_view name )
+{
+   for ( auto& pCmd : res.commands ) {
+      auto pDesired = std::dynamic_pointer_cast<TCommand>( pCmd );
+      if ( pDesired && pDesired->getName() == name )
+         return pDesired;
+   }
+   return nullptr;
 }
 
 }   // namespace testutil
