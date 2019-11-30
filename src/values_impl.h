@@ -18,7 +18,7 @@ CPPARGPARSE_INLINE ValueId Value::getValueId() const
 
 CPPARGPARSE_INLINE TargetId Value::getTargetId() const
 {
-   return std::make_pair( typeid( this ).hash_code(), 0 );
+   return std::make_pair( getTypeId(), 0 );
 }
 
 CPPARGPARSE_INLINE void Value::setValue(
@@ -62,6 +62,11 @@ CPPARGPARSE_INLINE void Value::reset()
 
 CPPARGPARSE_INLINE void Value::doReset()
 {}
+
+CPPARGPARSE_INLINE uintptr_t VoidValue::getTypeId() const
+{
+   return 0;
+}
 
 CPPARGPARSE_INLINE AssignAction VoidValue::getDefaultAction()
 {

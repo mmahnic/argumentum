@@ -14,7 +14,7 @@ class Environment;
 class Value;
 
 using ValueId = uintptr_t;
-using TargetId = std::pair<size_t, uintptr_t>;
+using TargetId = std::pair<uintptr_t, uintptr_t>;
 
 /**
  * The assign-action is executed to set the value of a parameter.
@@ -57,6 +57,7 @@ public:
    virtual TargetId getTargetId() const;
 
 protected:
+   virtual uintptr_t getTypeId() const = 0;
    virtual AssignAction getDefaultAction() = 0;
    virtual void doReset();
 };
@@ -64,6 +65,7 @@ protected:
 class VoidValue : public Value
 {
 protected:
+   uintptr_t getTypeId() const override;
    AssignAction getDefaultAction() override;
 };
 
@@ -120,10 +122,16 @@ public:
 
    TargetId getTargetId() const override
    {
-      return std::make_pair( typeid( this ).hash_code(), reinterpret_cast<uintptr_t>( &mValue ) );
+      return std::make_pair( getTypeId(), reinterpret_cast<uintptr_t>( &mValue ) );
    }
 
 protected:
+   uintptr_t getTypeId() const override
+   {
+      static char tid = 0;
+      return reinterpret_cast<uintptr_t>( &tid );
+   }
+
    AssignAction getDefaultAction() override
    {
       return []( Value& target, const std::string& value, Environment& ) {
