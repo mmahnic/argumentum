@@ -46,11 +46,11 @@ CPPARGPARSE_INLINE VoidOptionConfig::VoidOptionConfig( OptionConfig&& wrapped )
 CPPARGPARSE_INLINE VoidOptionConfig& VoidOptionConfig::action( assign_action_env_t action )
 {
    if ( action ) {
-      auto wrapAction = [=]( Value& target, const std::string& value,
+      auto wrapAction = [=]( Value& value, const std::string& argument,
                               Environment& env ) -> std::optional<std::string> {
-         auto pv = dynamic_cast<VoidValue*>( &target );
-         if ( pv )
-            action( value, env );
+         auto pVoid = VoidValue::value_cast( value );
+         if ( pVoid )
+            action( argument, env );
          return {};
       };
       OptionConfig::getOption().setAction( wrapAction );

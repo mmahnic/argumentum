@@ -14,7 +14,8 @@ class Environment;
 class Value;
 
 using ValueId = uintptr_t;
-using TargetId = std::pair<uintptr_t, uintptr_t>;
+using ValueTypeId = uintptr_t;
+using TargetId = std::pair<ValueTypeId, uintptr_t>;
 
 /**
  * The assign-action is executed to set the value of a parameter.
@@ -54,18 +55,21 @@ public:
    void reset();
 
    virtual ValueId getValueId() const;
+   virtual ValueTypeId getValueTypeId() const = 0;
    virtual TargetId getTargetId() const;
 
 protected:
-   virtual uintptr_t getTypeId() const = 0;
    virtual AssignAction getDefaultAction() = 0;
    virtual void doReset();
 };
 
 class VoidValue : public Value
 {
+public:
+   ValueTypeId getValueTypeId() const override;
+   static VoidValue* value_cast( Value& value );
+
 protected:
-   uintptr_t getTypeId() const override;
    AssignAction getDefaultAction() override;
 };
 
@@ -120,22 +124,35 @@ public:
       : mTarget( value )
    {}
 
-   TargetId getTargetId() const override
+   ValueTypeId getValueTypeId() const override
    {
-      return std::make_pair( getTypeId(), reinterpret_cast<uintptr_t>( &mTarget ) );
+      return valueTypeId();
    }
 
-protected:
-   uintptr_t getTypeId() const override
+   TargetId getTargetId() const override
+   {
+      return std::make_pair( getValueTypeId(), reinterpret_cast<uintptr_t>( &mTarget ) );
+   }
+
+   static ValueTypeId valueTypeId()
    {
       static char tid = 0;
       return reinterpret_cast<uintptr_t>( &tid );
    }
 
+   static ConvertedValue<TTarget>* value_cast( Value& value )
+   {
+      if ( value.getValueTypeId() != valueTypeId() )
+         return nullptr;
+
+      return static_cast<ConvertedValue<TTarget>*>( &value );
+   }
+
+protected:
    AssignAction getDefaultAction() override
    {
       return []( Value& value, const std::string& argument, Environment& ) {
-         auto pConverted = dynamic_cast<ConvertedValue<TTarget>*>( &value );
+         auto pConverted = ConvertedValue<TTarget>::value_cast( value );
          if ( pConverted )
             pConverted->assign( pConverted->mTarget, argument );
       };

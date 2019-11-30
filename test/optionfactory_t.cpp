@@ -63,27 +63,53 @@ TEST( OptionFactoryTest, shouldUseTheSameValueForTheSameTarget )
    EXPECT_TRUE( o2.getTargetId() != o3.getTargetId() );
 }
 
+namespace {
+struct TestStructure
+{
+   int shared = 0;
+   TestStructure() = default;
+   TestStructure( const TestStructure& ) = default;
+   TestStructure( const std::string& v )
+   {}
+   TestStructure& operator=( const TestStructure& ) = default;
+   TestStructure& operator=( const std::string& v )
+   {
+      return *this;
+   }
+};
+}   // namespace
+
 // The structure and the first member have the same address (which is used as a
 // target id), but they must not be set through the same Value.
 TEST( ValueTest, shouldDistinguishStrutctureTargetFromMemberTarget )
 {
-   struct Test
-   {
-      int shared = 0;
-      Test() = default;
-      Test( const Test& ) = default;
-      Test( const std::string& v )
-      {}
-      Test& operator=( const Test& ) = default;
-      Test& operator=( const std::string& v )
-      {
-         return *this;
-      }
-   } test;
-
+   TestStructure test;
    OptionFactory factory;
    auto o1 = factory.createOption( test );
    auto o2 = factory.createOption( test.shared );
 
    EXPECT_TRUE( o1.getValueId() != o2.getValueId() );
+}
+
+TEST( ValueTest, shouldAssignUniqueValueTypeId )
+{
+   int i;
+   unsigned u;
+   double d;
+   bool b;
+   char c;
+   TestStructure t;
+   auto v0 = VoidValue();
+   auto vi = ConvertedValue( i );
+   auto vu = ConvertedValue( u );
+   auto vd = ConvertedValue( d );
+   auto vb = ConvertedValue( b );
+   auto vc = ConvertedValue( c );
+   auto vt = ConvertedValue( t );
+   std::vector<Value*> all{ &v0, &vi, &vu, &vd, &vb, &vc, &vt };
+
+   for ( auto pv1 : all )
+      for ( auto pv2 : all )
+         if ( pv1 != pv2 )
+            EXPECT_TRUE( pv1->getValueTypeId() != pv2->getValueTypeId() );
 }

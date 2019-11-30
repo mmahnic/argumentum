@@ -142,7 +142,7 @@ public:
    {
       if ( action ) {
          auto wrapAction = [=]( Value& value, const std::string& argument, Environment& ) {
-            auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &value );
+            auto pConverted = ConvertedValue<TValue>::value_cast( value );
             if ( pConverted )
                action( pConverted->mTarget, argument );
          };
@@ -161,7 +161,7 @@ public:
    {
       if ( action ) {
          auto wrapAction = [=]( Value& value, const std::string& argument, Environment& env ) {
-            auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &value );
+            auto pConverted = ConvertedValue<TValue>::value_cast( value );
             if ( pConverted )
                action( pConverted->mTarget, argument, env );
          };
@@ -178,7 +178,7 @@ public:
    this_t& absent( const TValue& defaultValue )
    {
       auto wrapDefault = [=]( Value& value ) {
-         auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &value );
+         auto pConverted = ConvertedValue<TValue>::value_cast( value );
          if ( pConverted )
             pConverted->mTarget = defaultValue;
       };
@@ -192,7 +192,7 @@ public:
    this_t& absent( assign_default_action_t action )
    {
       auto wrapDefault = [=]( Value& value ) {
-         auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &value );
+         auto pConverted = ConvertedValue<TValue>::value_cast( value );
          if ( pConverted )
             action( pConverted->mTarget );
       };
