@@ -72,7 +72,7 @@ protected:
 template<typename T>
 class OptionConfigA;
 
-template<typename TValue>
+template<typename TTarget>
 class ConvertedValue : public Value
 {
    template<typename T>
@@ -113,16 +113,16 @@ class ConvertedValue : public Value
    };
 
 protected:
-   TValue& mValue;
+   TTarget& mTarget;
 
 public:
-   ConvertedValue( TValue& value )
-      : mValue( value )
+   ConvertedValue( TTarget& value )
+      : mTarget( value )
    {}
 
    TargetId getTargetId() const override
    {
-      return std::make_pair( getTypeId(), reinterpret_cast<uintptr_t>( &mValue ) );
+      return std::make_pair( getTypeId(), reinterpret_cast<uintptr_t>( &mTarget ) );
    }
 
 protected:
@@ -134,16 +134,16 @@ protected:
 
    AssignAction getDefaultAction() override
    {
-      return []( Value& target, const std::string& value, Environment& ) {
-         auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
+      return []( Value& value, const std::string& argument, Environment& ) {
+         auto pConverted = dynamic_cast<ConvertedValue<TTarget>*>( &value );
          if ( pConverted )
-            pConverted->assign( pConverted->mValue, value );
+            pConverted->assign( pConverted->mTarget, argument );
       };
    }
 
    void doReset() override
    {
-      mValue = TValue{};
+      mTarget = TTarget{};
    }
 
    template<typename TVar>
