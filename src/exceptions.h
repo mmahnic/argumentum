@@ -16,6 +16,14 @@ public:
    {}
 };
 
+class UnsupportedTargetType : public std::invalid_argument
+{
+public:
+   UnsupportedTargetType( std::string_view value )
+      : std::invalid_argument( std::string{ value } )
+   {}
+};
+
 class UncheckedParseResult : public std::exception
 {
 public:

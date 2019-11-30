@@ -1,4 +1,4 @@
-#include "../helputil.h"
+#include "../testutil.h"
 
 #include <climits>
 #include <cppargparse/argparse-s.h>
@@ -8,7 +8,7 @@
 
 using namespace std;
 using namespace argparse;
-using namespace helputil;
+using namespace testutil;
 
 // NOTE: Both command classes use the same definitions, but each uses a separate
 // instance of these common options.

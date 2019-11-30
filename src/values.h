@@ -13,6 +13,10 @@ namespace argparse {
 class Environment;
 class Value;
 
+using ValueId = uintptr_t;
+using ValueTypeId = uintptr_t;
+using TargetId = std::pair<ValueTypeId, uintptr_t>;
+
 /**
  * The assign-action is executed to set the value of a parameter.
  *
@@ -35,7 +39,6 @@ using AssignDefaultAction = std::function<void( Value& target )>;
 class Value
 {
    int mAssignCount = 0;
-   int mOptionAssignCount = 0;
    bool mHasErrors = false;
 
 public:
@@ -48,13 +51,12 @@ public:
     */
    int getAssignCount() const;
 
-   /**
-    * The count of assignments through the current option.
-    */
-   int getOptionAssignCount() const;
-
    void onOptionStarted();
    void reset();
+
+   virtual ValueId getValueId() const;
+   virtual ValueTypeId getValueTypeId() const = 0;
+   virtual TargetId getTargetId() const;
 
 protected:
    virtual AssignAction getDefaultAction() = 0;
@@ -63,6 +65,10 @@ protected:
 
 class VoidValue : public Value
 {
+public:
+   ValueTypeId getValueTypeId() const override;
+   static VoidValue* value_cast( Value& value );
+
 protected:
    AssignAction getDefaultAction() override;
 };
@@ -70,7 +76,7 @@ protected:
 template<typename T>
 class OptionConfigA;
 
-template<typename TValue>
+template<typename TTarget>
 class ConvertedValue : public Value
 {
    template<typename T>
@@ -111,26 +117,50 @@ class ConvertedValue : public Value
    };
 
 protected:
-   TValue& mValue;
+   TTarget& mTarget;
 
 public:
-   ConvertedValue( TValue& value )
-      : mValue( value )
+   ConvertedValue( TTarget& value )
+      : mTarget( value )
    {}
+
+   ValueTypeId getValueTypeId() const override
+   {
+      return valueTypeId();
+   }
+
+   TargetId getTargetId() const override
+   {
+      return std::make_pair( getValueTypeId(), reinterpret_cast<uintptr_t>( &mTarget ) );
+   }
+
+   static ValueTypeId valueTypeId()
+   {
+      static char tid = 0;
+      return reinterpret_cast<uintptr_t>( &tid );
+   }
+
+   static ConvertedValue<TTarget>* value_cast( Value& value )
+   {
+      if ( value.getValueTypeId() != valueTypeId() )
+         return nullptr;
+
+      return static_cast<ConvertedValue<TTarget>*>( &value );
+   }
 
 protected:
    AssignAction getDefaultAction() override
    {
-      return []( Value& target, const std::string& value, Environment& ) {
-         auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
+      return []( Value& value, const std::string& argument, Environment& ) {
+         auto pConverted = ConvertedValue<TTarget>::value_cast( value );
          if ( pConverted )
-            pConverted->assign( pConverted->mValue, value );
+            pConverted->assign( pConverted->mTarget, argument );
       };
    }
 
    void doReset() override
    {
-      mValue = TValue{};
+      mTarget = TTarget{};
    }
 
    template<typename TVar>

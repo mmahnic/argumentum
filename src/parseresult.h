@@ -94,24 +94,11 @@ public:
    bool errors_were_shown() const;
    operator bool() const;
 
-   template<typename TCommand>
-   std::shared_ptr<TCommand> findCommand()
+   std::shared_ptr<CommandOptions> findCommand( std::string_view name )
    {
       for ( auto& pCmd : commands ) {
-         auto pDesired = std::dynamic_pointer_cast<TCommand>( pCmd );
-         if ( pDesired )
-            return pDesired;
-      }
-      return nullptr;
-   }
-
-   template<typename TCommand>
-   std::shared_ptr<TCommand> findCommand( std::string_view name )
-   {
-      for ( auto& pCmd : commands ) {
-         auto pDesired = std::dynamic_pointer_cast<TCommand>( pCmd );
-         if ( pDesired && pDesired->getName() == name )
-            return pDesired;
+         if ( pCmd && pCmd->getName() == name )
+            return pCmd;
       }
       return nullptr;
    }

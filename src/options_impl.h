@@ -134,6 +134,9 @@ CPPARGPARSE_INLINE std::string Option::getMetavar() const
 
 CPPARGPARSE_INLINE void Option::setValue( std::string_view value, Environment& env )
 {
+   ++mCurrentAssignCount;
+   ++mTotalAssignCount;
+
    if ( !mChoices.empty() && std::none_of( mChoices.begin(), mChoices.end(), [&value]( auto v ) {
            return v == value;
         } ) ) {
@@ -141,8 +144,8 @@ CPPARGPARSE_INLINE void Option::setValue( std::string_view value, Environment& e
       throw InvalidChoiceError( value );
    }
 
-   // If mAssignAction is not set, mpValue->setValue will try to use a
-   // default action.
+   // If mAssignAction is not set, mpValue->setValue will try to use a default
+   // action.
    mpValue->setValue( value, mAssignAction, env );
 }
 
@@ -159,11 +162,14 @@ CPPARGPARSE_INLINE bool Option::hasDefault() const
 
 CPPARGPARSE_INLINE void Option::resetValue()
 {
+   mCurrentAssignCount = 0;
+   mTotalAssignCount = 0;
    mpValue->reset();
 }
 
 CPPARGPARSE_INLINE void Option::onOptionStarted()
 {
+   mCurrentAssignCount = 0;
    mpValue->onOptionStarted();
 }
 
@@ -174,12 +180,12 @@ CPPARGPARSE_INLINE bool Option::acceptsAnyArguments() const
 
 CPPARGPARSE_INLINE bool Option::willAcceptArgument() const
 {
-   return mMaxArgs < 0 || mpValue->getOptionAssignCount() < mMaxArgs;
+   return mMaxArgs < 0 || mCurrentAssignCount < mMaxArgs;
 }
 
 CPPARGPARSE_INLINE bool Option::needsMoreArguments() const
 {
-   return mpValue->getOptionAssignCount() < mMinArgs;
+   return mCurrentAssignCount < mMinArgs;
 }
 
 CPPARGPARSE_INLINE bool Option::hasVectorValue() const
@@ -194,7 +200,7 @@ CPPARGPARSE_INLINE bool Option::wasAssigned() const
 
 CPPARGPARSE_INLINE bool Option::wasAssignedThroughThisOption() const
 {
-   return mpValue->getOptionAssignCount() > 0;
+   return mTotalAssignCount > 0;
 }
 
 CPPARGPARSE_INLINE const std::string& Option::getFlagValue() const
@@ -210,6 +216,22 @@ CPPARGPARSE_INLINE std::tuple<int, int> Option::getArgumentCounts() const
 CPPARGPARSE_INLINE std::shared_ptr<OptionGroup> Option::getGroup() const
 {
    return mpGroup;
+}
+
+CPPARGPARSE_INLINE ValueId Option::getValueId() const
+{
+   if ( mpValue )
+      return mpValue->getValueId();
+
+   return {};
+}
+
+CPPARGPARSE_INLINE TargetId Option::getTargetId() const
+{
+   if ( mpValue )
+      return mpValue->getTargetId();
+
+   return {};
 }
 
 }   // namespace argparse

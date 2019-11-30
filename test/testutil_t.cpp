@@ -1,11 +1,11 @@
 // Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
-#include "helputil.h"
+#include "testutil.h"
 
 #include <gtest/gtest.h>
 
-using namespace helputil;
+using namespace testutil;
 
 TEST( Utility_strHasText, shouldFindTextInString )
 {

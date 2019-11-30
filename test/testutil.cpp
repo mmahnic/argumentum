@@ -1,9 +1,9 @@
 // Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
-#include "helputil.h"
+#include "testutil.h"
 
-namespace helputil {
+namespace testutil {
 
 std::vector<std::string_view> splitLines( std::string_view text, bool keepEmpty )
 {
@@ -46,4 +46,4 @@ bool strHasTexts( std::string_view line, std::vector<std::string_view> texts )
    return pos != std::string::npos;
 }
 
-}   // namespace helputil
+}   // namespace testutil

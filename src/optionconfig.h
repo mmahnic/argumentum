@@ -141,10 +141,10 @@ public:
    this_t& action( assign_action_t action )
    {
       if ( action ) {
-         auto wrapAction = [=]( Value& target, const std::string& value, Environment& ) {
-            auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
+         auto wrapAction = [=]( Value& value, const std::string& argument, Environment& ) {
+            auto pConverted = ConvertedValue<TValue>::value_cast( value );
             if ( pConverted )
-               action( pConverted->mValue, value );
+               action( pConverted->mTarget, argument );
          };
          OptionConfig::getOption().setAction( wrapAction );
       }
@@ -160,10 +160,10 @@ public:
    this_t& action( assign_action_env_t action )
    {
       if ( action ) {
-         auto wrapAction = [=]( Value& target, const std::string& value, Environment& env ) {
-            auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
+         auto wrapAction = [=]( Value& value, const std::string& argument, Environment& env ) {
+            auto pConverted = ConvertedValue<TValue>::value_cast( value );
             if ( pConverted )
-               action( pConverted->mValue, value, env );
+               action( pConverted->mTarget, argument, env );
          };
          OptionConfig::getOption().setAction( wrapAction );
       }
@@ -177,10 +177,10 @@ public:
    // absent() have the same target, the result is undefined.
    this_t& absent( const TValue& defaultValue )
    {
-      auto wrapDefault = [=]( Value& target ) {
-         auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
+      auto wrapDefault = [=]( Value& value ) {
+         auto pConverted = ConvertedValue<TValue>::value_cast( value );
          if ( pConverted )
-            pConverted->mValue = defaultValue;
+            pConverted->mTarget = defaultValue;
       };
       OptionConfig::getOption().setAssignDefaultAction( wrapDefault );
       return *this;
@@ -191,10 +191,10 @@ public:
    // configured with absent() have the same target, the result is undefined.
    this_t& absent( assign_default_action_t action )
    {
-      auto wrapDefault = [=]( Value& target ) {
-         auto pConverted = dynamic_cast<ConvertedValue<TValue>*>( &target );
+      auto wrapDefault = [=]( Value& value ) {
+         auto pConverted = ConvertedValue<TValue>::value_cast( value );
          if ( pConverted )
-            action( pConverted->mValue );
+            action( pConverted->mTarget );
       };
       OptionConfig::getOption().setAssignDefaultAction( wrapDefault );
       return *this;

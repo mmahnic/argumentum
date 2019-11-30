@@ -16,8 +16,13 @@ class OptionGroup;
 
 class Option
 {
+   friend class OptionFactory;
+
+public:
+   enum Kind { singleValue, vectorValue };
+
 private:
-   std::unique_ptr<Value> mpValue;
+   std::shared_ptr<Value> mpValue;
    AssignAction mAssignAction;
    AssignDefaultAction mAssignDefaultAction;
    std::string mShortName;
@@ -32,34 +37,14 @@ private:
    bool mIsRequired = false;
    bool mIsVectorValue = false;
 
+   // The number of asignments through the option that is currently active in
+   // the parser.
+   int mCurrentAssignCount = 0;
+
+   // The total number of assignments through this option.
+   int mTotalAssignCount = 0;
+
 public:
-   template<typename TValue>
-   Option( TValue& value )
-   {
-      if constexpr ( std::is_base_of<Value, TValue>::value ) {
-         mpValue = std::make_unique<TValue>( value );
-      }
-      else {
-         using wrap_type = ConvertedValue<TValue>;
-         mpValue = std::make_unique<wrap_type>( value );
-      }
-   }
-
-   template<typename TValue>
-   Option( std::vector<TValue>& value )
-   {
-      using val_vector = std::vector<TValue>;
-      if constexpr ( std::is_base_of<Value, TValue>::value ) {
-         mpValue = std::make_unique<val_vector>( value );
-      }
-      else {
-         using wrap_type = ConvertedValue<val_vector>;
-         mpValue = std::make_unique<wrap_type>( value );
-      }
-
-      mIsVectorValue = true;
-   }
-
    void setShortName( std::string_view name );
    void setLongName( std::string_view name );
    void setMetavar( std::string_view varname );
@@ -101,6 +86,15 @@ public:
    const std::string& getFlagValue() const;
    std::tuple<int, int> getArgumentCounts() const;
    std::shared_ptr<OptionGroup> getGroup() const;
+
+   ValueId getValueId() const;
+   TargetId getTargetId() const;
+
+private:
+   Option( std::shared_ptr<Value>&& pValue, Kind kind )
+      : mpValue( std::move( pValue ) )
+      , mIsVectorValue( kind == Option::vectorValue )
+   {}
 };
 
 }   // namespace argparse

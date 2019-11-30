@@ -8,6 +8,7 @@ set(PARSER_SOURCES
 
 add_executable( runUnitTests
    runtest.cpp
+   testutil.cpp
    argparser_t.cpp
    convert_t.cpp
    group_t.cpp
@@ -18,7 +19,7 @@ add_executable( runUnitTests
    commandhelp_t.cpp
    filesystemarguments_t.cpp
    argumentstream_t.cpp
-   helputil.cpp
+   optionfactory_t.cpp
    ${PARSER_SOURCES}
    )
 
@@ -29,8 +30,8 @@ target_link_libraries( runUnitTests
 
 add_executable( utilityTests
    runtest.cpp
-   helputil.cpp
-   helputil_t.cpp
+   testutil.cpp
+   testutil_t.cpp
    )
 
 target_link_libraries( utilityTests 
