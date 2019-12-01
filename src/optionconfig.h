@@ -120,13 +120,13 @@ public:
    }
 };
 
-template<typename TValue>
-class OptionConfigA : public OptionConfigBaseT<OptionConfigA<TValue>>
+template<typename TTarget>
+class OptionConfigA : public OptionConfigBaseT<OptionConfigA<TTarget>>
 {
-   using this_t = OptionConfigA<TValue>;
-   using assign_action_t = std::function<void( TValue&, const std::string& )>;
-   using assign_action_env_t = std::function<void( TValue&, const std::string&, Environment& )>;
-   using assign_default_action_t = std::function<void( TValue& )>;
+   using this_t = OptionConfigA<TTarget>;
+   using assign_action_t = std::function<void( TTarget&, const std::string& )>;
+   using assign_action_env_t = std::function<void( TTarget&, const std::string&, Environment& )>;
+   using assign_default_action_t = std::function<void( TTarget& )>;
 
 public:
    using OptionConfigBaseT<this_t>::OptionConfigBaseT;
@@ -142,7 +142,7 @@ public:
    {
       if ( action ) {
          auto wrapAction = [=]( Value& value, const std::string& argument, Environment& ) {
-            auto pConverted = ConvertedValue<TValue>::value_cast( value );
+            auto pConverted = ConvertedValue<TTarget>::value_cast( value );
             if ( pConverted )
                action( pConverted->mTarget, argument );
          };
@@ -161,7 +161,7 @@ public:
    {
       if ( action ) {
          auto wrapAction = [=]( Value& value, const std::string& argument, Environment& env ) {
-            auto pConverted = ConvertedValue<TValue>::value_cast( value );
+            auto pConverted = ConvertedValue<TTarget>::value_cast( value );
             if ( pConverted )
                action( pConverted->mTarget, argument, env );
          };
@@ -175,10 +175,10 @@ public:
    // Define the value that will be assigned to the target if the option is
    // not present in arguments.  If multiple options that are configured with
    // absent() have the same target, the result is undefined.
-   this_t& absent( const TValue& defaultValue )
+   this_t& absent( const TTarget& defaultValue )
    {
       auto wrapDefault = [=]( Value& value ) {
-         auto pConverted = ConvertedValue<TValue>::value_cast( value );
+         auto pConverted = ConvertedValue<TTarget>::value_cast( value );
          if ( pConverted )
             pConverted->mTarget = defaultValue;
       };
@@ -192,7 +192,7 @@ public:
    this_t& absent( assign_default_action_t action )
    {
       auto wrapDefault = [=]( Value& value ) {
-         auto pConverted = ConvertedValue<TValue>::value_cast( value );
+         auto pConverted = ConvertedValue<TTarget>::value_cast( value );
          if ( pConverted )
             action( pConverted->mTarget );
       };
