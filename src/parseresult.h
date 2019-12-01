@@ -95,14 +95,7 @@ public:
    bool errors_were_shown() const;
    operator bool() const;
 
-   std::shared_ptr<CommandOptions> findCommand( std::string_view name )
-   {
-      for ( auto& pCmd : commands ) {
-         if ( pCmd && pCmd->getName() == name )
-            return pCmd;
-      }
-      return nullptr;
-   }
+   std::shared_ptr<CommandOptions> findCommand( std::string_view name );
 
 private:
    void clear();

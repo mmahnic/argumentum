@@ -12,25 +12,7 @@
 
 namespace argparse {
 
-class argument_parser;
-class ParseResult;
 class CommandOptions;
-
-class Options
-{
-public:
-   virtual void add_arguments( argument_parser& parser ) = 0;
-};
-
-class CommandOptions : public Options
-{
-   std::string mName;
-
-public:
-   CommandOptions( std::string_view name );
-   const std::string& getName() const;
-   virtual void execute( const ParseResult& result );
-};
 
 // An internal definition of a command.
 class Command
