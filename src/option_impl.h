@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "options.h"
+#include "option.h"
 
 #include "exceptions.h"
-#include "groups.h"
+#include "group.h"
 
 namespace argparse {
 

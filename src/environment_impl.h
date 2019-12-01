@@ -5,7 +5,7 @@
 
 #include "environment.h"
 
-#include "options.h"
+#include "option.h"
 #include "parseresult.h"
 
 namespace argparse {

@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include "commands.h"
+#include "command.h"
+
 #include <string>
 #include <string_view>
 #include <vector>
