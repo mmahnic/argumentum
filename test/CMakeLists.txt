@@ -20,6 +20,7 @@ add_executable( runUnitTests
    filesystemarguments_t.cpp
    argumentstream_t.cpp
    optionfactory_t.cpp
+   value_t.cpp
    ${PARSER_SOURCES}
    )
 
