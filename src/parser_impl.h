@@ -5,8 +5,8 @@
 
 #include "argparser.h"
 #include "argumentstream.h"
-#include "commands.h"
-#include "options.h"
+#include "command.h"
+#include "option.h"
 #include "parser.h"
 #include "parseresult.h"
 

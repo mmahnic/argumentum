@@ -5,6 +5,7 @@
 
 #include "exceptions.h"
 #include "notifier.h"
+#include "optionpack.h"
 
 namespace argparse {
 
@@ -61,7 +62,8 @@ CPPARGPARSE_INLINE ParseResult::RequireCheck::RequireCheck( RequireCheck&& other
    other.clear();
 }
 
-CPPARGPARSE_INLINE auto ParseResult::RequireCheck::operator=( RequireCheck&& other ) -> RequireCheck&
+CPPARGPARSE_INLINE auto ParseResult::RequireCheck::operator=( RequireCheck&& other )
+      -> RequireCheck&
 {
    required = other.required;
    other.clear();
@@ -124,6 +126,15 @@ CPPARGPARSE_INLINE void ParseResult::clear()
    exitRequested = false;
 }
 
+CPPARGPARSE_INLINE std::shared_ptr<CommandOptions> ParseResult::findCommand( std::string_view name )
+{
+   for ( auto& pCmd : commands ) {
+      if ( pCmd && pCmd->getName() == name )
+         return pCmd;
+   }
+   return nullptr;
+}
+
 CPPARGPARSE_INLINE void ParseResultBuilder::clear()
 {
    mResult.clear();
@@ -145,7 +156,8 @@ CPPARGPARSE_INLINE void ParseResultBuilder::addIgnored( std::string_view arg )
    mResult.ignoredArguments.emplace_back( arg );
 }
 
-CPPARGPARSE_INLINE void ParseResultBuilder::addCommand( const std::shared_ptr<CommandOptions>& pCommand )
+CPPARGPARSE_INLINE void ParseResultBuilder::addCommand(
+      const std::shared_ptr<CommandOptions>& pCommand )
 {
    mResult.commands.push_back( pCommand );
 }

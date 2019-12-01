@@ -6,11 +6,11 @@
 #include "argparser.h"
 
 #include "argdescriber.h"
-#include "commands.h"
+#include "command.h"
 #include "exceptions.h"
-#include "groups.h"
+#include "group.h"
 #include "notifier.h"
-#include "options.h"
+#include "option.h"
 #include "parser.h"
 
 namespace argparse {

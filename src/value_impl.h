@@ -3,9 +3,8 @@
 
 #pragma once
 
-#include "convert.h"
-#include "notifier.h"
-#include "values.h"
+#include "value.h"
+
 #include <functional>
 #include <string>
 

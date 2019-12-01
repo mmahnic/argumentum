@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "commands.h"
-#include "options.h"
+#include "command.h"
+#include "option.h"
 
 #include <string_view>
 

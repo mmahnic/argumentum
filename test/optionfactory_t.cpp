@@ -1,8 +1,6 @@
 // Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
-#include "vectors.h"
-
 #include <cppargparse/argparse-s.h>
 
 #include <gtest/gtest.h>
@@ -81,7 +79,7 @@ struct TestStructure
 
 // The structure and the first member have the same address (which is used as a
 // target id), but they must not be set through the same Value.
-TEST( ValueTest, shouldDistinguishStrutctureTargetFromMemberTarget )
+TEST( OptionFactoryTest, shouldDistinguishStrutctureTargetFromMemberTarget )
 {
    TestStructure test;
    OptionFactory factory;
@@ -89,27 +87,4 @@ TEST( ValueTest, shouldDistinguishStrutctureTargetFromMemberTarget )
    auto o2 = factory.createOption( test.shared );
 
    EXPECT_TRUE( o1.getValueId() != o2.getValueId() );
-}
-
-TEST( ValueTest, shouldAssignUniqueValueTypeId )
-{
-   int i;
-   unsigned u;
-   double d;
-   bool b;
-   char c;
-   TestStructure t;
-   auto v0 = VoidValue();
-   auto vi = ConvertedValue( i );
-   auto vu = ConvertedValue( u );
-   auto vd = ConvertedValue( d );
-   auto vb = ConvertedValue( b );
-   auto vc = ConvertedValue( c );
-   auto vt = ConvertedValue( t );
-   std::vector<Value*> all{ &v0, &vi, &vu, &vd, &vb, &vc, &vt };
-
-   for ( auto pv1 : all )
-      for ( auto pv2 : all )
-         if ( pv1 != pv2 )
-            EXPECT_TRUE( pv1->getValueTypeId() != pv2->getValueTypeId() );
 }

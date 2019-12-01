@@ -10,6 +10,7 @@
 #include "helpformatter.h"
 #include "optionconfig.h"
 #include "optionfactory.h"
+#include "optionpack.h"
 #include "parserconfig.h"
 #include "parserdefinition.h"
 #include "parseresult.h"

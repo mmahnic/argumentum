@@ -4,6 +4,7 @@
 #pragma once
 
 #include "exceptions.h"
+#include "optionpack.h"
 
 namespace argparse {
 

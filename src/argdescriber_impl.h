@@ -5,9 +5,9 @@
 
 #include "argdescriber.h"
 
-#include "commands.h"
-#include "groups.h"
-#include "options.h"
+#include "command.h"
+#include "group.h"
+#include "option.h"
 #include "parser.h"
 
 #include <string>
@@ -43,7 +43,8 @@ CPPARGPARSE_INLINE std::vector<ArgumentHelpResult> ArgumentDescriber::describe_a
    return descriptions;
 }
 
-CPPARGPARSE_INLINE ArgumentHelpResult ArgumentDescriber::describeOption( const Option& option ) const
+CPPARGPARSE_INLINE ArgumentHelpResult ArgumentDescriber::describeOption(
+      const Option& option ) const
 {
    ArgumentHelpResult help;
    help.help_name = option.getHelpName();
@@ -68,7 +69,8 @@ CPPARGPARSE_INLINE ArgumentHelpResult ArgumentDescriber::describeOption( const O
    return help;
 }
 
-CPPARGPARSE_INLINE ArgumentHelpResult ArgumentDescriber::describeCommand( const Command& command ) const
+CPPARGPARSE_INLINE ArgumentHelpResult ArgumentDescriber::describeCommand(
+      const Command& command ) const
 {
    ArgumentHelpResult help;
    help.isCommand = true;

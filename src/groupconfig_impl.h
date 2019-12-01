@@ -5,7 +5,7 @@
 
 #include "groupconfig.h"
 
-#include "groups.h"
+#include "group.h"
 
 namespace argparse {
 

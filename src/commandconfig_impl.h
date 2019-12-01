@@ -5,7 +5,7 @@
 
 #include "commandconfig.h"
 
-#include "commands.h"
+#include "command.h"
 
 namespace argparse {
 

@@ -4,8 +4,8 @@
 #pragma once
 
 #include "exceptions.h"
-#include "options.h"
-#include "values.h"
+#include "option.h"
+#include "value.h"
 
 #include <cassert>
 #include <map>
