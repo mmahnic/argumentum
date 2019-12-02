@@ -17,6 +17,7 @@ class Option;
 class Command;
 class ParseResultBuilder;
 class ArgumentStream;
+enum class EArgumentType;
 
 class Parser
 {
@@ -44,6 +45,7 @@ private:
    void parseCommandArguments(
          Command& command, ArgumentStream& argStream, ParseResultBuilder& result );
    void parseSubstream( std::string_view streamName, unsigned depth );
+   EArgumentType getNextArgumentType( std::string_view arg );
 };
 
 }   // namespace argparse

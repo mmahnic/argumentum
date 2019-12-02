@@ -32,60 +32,98 @@ CPPARGPARSE_INLINE void Parser::parse( ArgumentStream& argStream )
       closeOption();
 }
 
+enum class EArgumentType {
+   freeArgument,
+   include,
+   endOfOptions,
+   longOption,
+   shortOption,
+   multiOption,
+   optionValue,
+   commandName
+};
+
+CPPARGPARSE_INLINE EArgumentType Parser::getNextArgumentType( std::string_view arg )
+{
+   if ( mIgnoreOptions )
+      return EArgumentType::freeArgument;
+   if ( arg.substr( 0, 1 ) == "@" )
+      return EArgumentType::include;
+   if ( arg == "--" )
+      return EArgumentType::endOfOptions;
+   if ( arg.substr( 0, 2 ) == "--" )
+      return EArgumentType::longOption;
+
+   if ( arg.substr( 0, 1 ) == "-" ) {
+      if ( arg.size() == 2 )
+         return EArgumentType::shortOption;
+      if ( arg.size() > 2 )
+         return EArgumentType::multiOption;
+      // TODO: detect negative numbers
+   }
+
+   if ( haveActiveOption() ) {
+      if ( mpActiveOption->willAcceptArgument() )
+         return EArgumentType::optionValue;
+   }
+
+   auto pCommand = mParserDef.findCommand( arg );
+   if ( pCommand )
+      return EArgumentType::commandName;
+
+   return EArgumentType::freeArgument;
+}
+
 CPPARGPARSE_INLINE void Parser::parse( ArgumentStream& argStream, unsigned depth )
 {
    for ( auto optArg = argStream.next(); !!optArg; optArg = argStream.next() ) {
-      if ( optArg->substr( 0, 1 ) == "@" ) {
-         parseSubstream( optArg->substr( 1 ), depth );
-         continue;
-      }
+      switch ( getNextArgumentType( *optArg ) ) {
+         case EArgumentType::include:
+            parseSubstream( optArg->substr( 1 ), depth );
+            continue;
 
-      if ( *optArg == "--" ) {
-         mIgnoreOptions = true;
-         continue;
-      }
+         case EArgumentType::endOfOptions:
+            mIgnoreOptions = true;
+            continue;
 
-      if ( mIgnoreOptions ) {
-         addFreeArgument( *optArg );
-         continue;
-      }
+         case EArgumentType::freeArgument:
+            addFreeArgument( *optArg );
+            continue;
 
-      auto arg_view = std::string_view( *optArg );
-      if ( arg_view.substr( 0, 2 ) == "--" )
-         startOption( *optArg );
-      else if ( arg_view.substr( 0, 1 ) == "-" ) {
-         if ( optArg->size() == 2 )
+         case EArgumentType::longOption:
+         case EArgumentType::shortOption:
             startOption( *optArg );
-         else {
+            break;
+
+         case EArgumentType::multiOption: {
+            auto arg_view = std::string_view( *optArg );
             auto opt = std::string{ "--" };
             for ( int i = 1; i < arg_view.size(); ++i ) {
                opt[1] = arg_view[i];
                startOption( opt );
             }
+            break;
          }
-      }
-      else {
-         if ( haveActiveOption() ) {
-            auto& option = *mpActiveOption;
-            if ( option.willAcceptArgument() ) {
-               setValue( option, *optArg );
-               if ( !option.willAcceptArgument() )
-                  closeOption();
-            }
-         }
-         else {
+
+         case EArgumentType::optionValue:
+            assert( mpActiveOption != nullptr );
+            setValue( *mpActiveOption, *optArg );
+            if ( !mpActiveOption->willAcceptArgument() )
+               closeOption();
+            break;
+
+         case EArgumentType::commandName: {
             auto pCommand = mParserDef.findCommand( *optArg );
             if ( pCommand ) {
                parseCommandArguments( *pCommand, argStream, mResult );
-               break;
+               return;
             }
-            else
-               addFreeArgument( *optArg );
+            break;
          }
       }
 
       if ( mResult.wasExitRequested() )
-         break;
+         return;
    }
 }
 
