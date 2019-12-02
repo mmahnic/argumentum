@@ -69,6 +69,10 @@ CPPARGPARSE_INLINE EArgumentType Parser::getNextArgumentType( std::string_view a
          if ( isNumberLike( arg.substr( 1 ) ) )
             return EArgumentType::optionValue;
       }
+      else {
+         if ( isNumberLike( arg.substr( 1 ) ) )
+            return EArgumentType::freeArgument;
+      }
 
       if ( arg.size() == 2 )
          return EArgumentType::shortOption;
