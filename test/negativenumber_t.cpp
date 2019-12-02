@@ -71,3 +71,20 @@ TEST( NegativeNumberTest, shouldGivePrecedenceToDigitOptionOverPositionalParam )
    EXPECT_EQ( 0, j );
    EXPECT_EQ( 60, d );
 }
+
+TEST( NegativeNumberTest, shouldMakePositionalParamIfAnyDigitIsNotAnOption )
+{
+   auto parser = argument_parser{};
+   int i;
+   int j;
+   int d;
+   parser.add_argument( i, "--num" ).nargs( 1 );
+   parser.add_argument( j, "number" ).nargs( 1 );
+   parser.add_argument( d, "-6" ).nargs( 0 ).absent( 100 ).flagValue( "60" );
+
+   auto res = parser.parse_args( { "--num", "-5", "-6." } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_EQ( -5, i );
+   EXPECT_EQ( -6, j );
+   EXPECT_EQ( 100, d );
+}
