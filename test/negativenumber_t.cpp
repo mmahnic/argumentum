@@ -27,6 +27,20 @@ TEST( NegativeNumberTest, shouldDistinguishNegativeNumbersFromOptions )
    EXPECT_EQ( -5, i );
 }
 
+TEST( NegativeNumberTest, shouldGivePrecedenceToOptionValueOverDigitOption )
+{
+   auto parser = argument_parser{};
+   int i;
+   int d;
+   parser.add_argument( i, "--num" ).nargs( 1 );
+   parser.add_argument( d, "-5" ).nargs( 0 ).absent( 100 );
+
+   auto res = parser.parse_args( { "--num", "-5" } );
+   EXPECT_TRUE( static_cast<bool>( res ) );
+   EXPECT_EQ( -5, i );
+   EXPECT_EQ( 100, d );
+}
+
 TEST( NegativeNumberTest, shouldDistinguishNegativeNumbersFromOptionsInPositionalParams )
 {
    auto parser = argument_parser{};
@@ -39,4 +53,21 @@ TEST( NegativeNumberTest, shouldDistinguishNegativeNumbersFromOptionsInPositiona
    EXPECT_TRUE( static_cast<bool>( res ) );
    EXPECT_EQ( -5, i );
    EXPECT_EQ( -6, j );
+}
+
+TEST( NegativeNumberTest, shouldGivePrecedenceToDigitOptionOverPositionalParam )
+{
+   auto parser = argument_parser{};
+   int i;
+   int j;
+   int d;
+   parser.add_argument( i, "--num" ).nargs( 1 );
+   parser.add_argument( j, "number" ).nargs( 1 );
+   parser.add_argument( d, "-6" ).nargs( 0 ).absent( 100 ).flagValue( "60" );
+
+   auto res = parser.parse_args( { "--num", "-5", "-6" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+   EXPECT_EQ( -5, i );
+   EXPECT_EQ( 0, j );
+   EXPECT_EQ( 60, d );
 }
