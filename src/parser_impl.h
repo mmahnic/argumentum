@@ -53,6 +53,11 @@ CPPARGPARSE_INLINE bool isNumberLike( std::string_view arg )
 }
 }   // namespace
 
+CPPARGPARSE_INLINE bool Parser::optionWithNameExists( std::string_view name )
+{
+   return mParserDef.findOption( name ) != nullptr;
+}
+
 CPPARGPARSE_INLINE EArgumentType Parser::getNextArgumentType( std::string_view arg )
 {
    if ( mIgnoreOptions )
@@ -70,7 +75,7 @@ CPPARGPARSE_INLINE EArgumentType Parser::getNextArgumentType( std::string_view a
             return EArgumentType::optionValue;
       }
       else {
-         if ( isNumberLike( arg.substr( 1 ) ) )
+         if ( isNumberLike( arg.substr( 1 ) ) && !optionWithNameExists( arg.substr( 0, 2 ) ) )
             return EArgumentType::freeArgument;
       }
 

@@ -35,6 +35,7 @@ public:
 
 private:
    void startOption( std::string_view name );
+   bool optionWithNameExists( std::string_view name );
    bool haveActiveOption() const;
    void closeOption();
    void addFreeArgument( std::string_view arg );
