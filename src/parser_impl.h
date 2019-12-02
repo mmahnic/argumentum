@@ -10,6 +10,8 @@
 #include "parser.h"
 #include "parseresult.h"
 
+#include <regex>
+
 namespace argparse {
 
 CPPARGPARSE_INLINE Parser::Parser( ParserDefinition& parserDef, ParseResultBuilder& result )
@@ -43,6 +45,14 @@ enum class EArgumentType {
    commandName
 };
 
+namespace {
+CPPARGPARSE_INLINE bool isNumberLike( std::string_view arg )
+{
+   static auto rxFloat = std::regex( "^[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$" );
+   return std::regex_match( std::begin( arg ), std::end( arg ), rxFloat );
+}
+}   // namespace
+
 CPPARGPARSE_INLINE EArgumentType Parser::getNextArgumentType( std::string_view arg )
 {
    if ( mIgnoreOptions )
@@ -55,11 +65,15 @@ CPPARGPARSE_INLINE EArgumentType Parser::getNextArgumentType( std::string_view a
       return EArgumentType::longOption;
 
    if ( arg.substr( 0, 1 ) == "-" ) {
+      if ( haveActiveOption() ) {
+         if ( isNumberLike( arg.substr( 1 ) ) )
+            return EArgumentType::optionValue;
+      }
+
       if ( arg.size() == 2 )
          return EArgumentType::shortOption;
       if ( arg.size() > 2 )
          return EArgumentType::multiOption;
-      // TODO: detect negative numbers
    }
 
    if ( haveActiveOption() ) {
