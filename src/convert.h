@@ -3,11 +3,26 @@
 
 #pragma once
 
+#include <cerrno>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 namespace argparse {
+
+template<typename T, typename TStrtoxx>
+T parse_int( std::string_view s, TStrtoxx strtoxx )
+{
+   if ( s.substr( 0, 2 ) == "0d" )
+      s = s.substr( 2 );
+
+   T res = strtoxx( s.data(), nullptr, 10 );
+   if ( errno == ERANGE )
+      throw std::out_of_range( std::string{ s } );
+
+   return res;
+}
 
 template<typename T>
 struct from_string
@@ -37,7 +52,7 @@ struct from_string<bool>
 {
    static bool convert( const std::string& s )
    {
-      return stoi( s ) != 0;
+      return parse_int<bool>( s, std::strtol );
    }
 };
 
@@ -46,7 +61,7 @@ struct from_string<int8_t>
 {
    static int8_t convert( const std::string& s )
    {
-      return stoi( s );
+      return parse_int<int8_t>( s, std::strtol );
    }
 };
 
@@ -55,7 +70,7 @@ struct from_string<uint8_t>
 {
    static uint8_t convert( const std::string& s )
    {
-      return stoi( s );
+      return parse_int<uint8_t>( s, std::strtoul );
    }
 };
 
@@ -64,7 +79,7 @@ struct from_string<short>
 {
    static short convert( const std::string& s )
    {
-      return stoi( s );
+      return parse_int<short>( s, std::strtol );
    }
 };
 
@@ -73,7 +88,7 @@ struct from_string<unsigned short>
 {
    static unsigned short convert( const std::string& s )
    {
-      return stoi( s );
+      return parse_int<unsigned short>( s, std::strtoul );
    }
 };
 
@@ -82,7 +97,7 @@ struct from_string<int>
 {
    static int convert( const std::string& s )
    {
-      return stoi( s );
+      return parse_int<int>( s, std::strtol );
    }
 };
 
@@ -91,7 +106,7 @@ struct from_string<unsigned int>
 {
    static unsigned int convert( const std::string& s )
    {
-      return stoi( s );
+      return parse_int<unsigned int>( s, std::strtoul );
    }
 };
 
@@ -100,7 +115,7 @@ struct from_string<long>
 {
    static long convert( const std::string& s )
    {
-      return stol( s );
+      return parse_int<long>( s, std::strtol );
    }
 };
 
@@ -109,7 +124,7 @@ struct from_string<unsigned long>
 {
    static unsigned long convert( const std::string& s )
    {
-      return stoul( s );
+      return parse_int<unsigned long>( s, std::strtoul );
    }
 };
 
@@ -118,7 +133,7 @@ struct from_string<long long>
 {
    static long long convert( const std::string& s )
    {
-      return stoll( s );
+      return parse_int<long long>( s, std::strtoll );
    }
 };
 
@@ -127,7 +142,7 @@ struct from_string<unsigned long long>
 {
    static unsigned long long convert( const std::string& s )
    {
-      return stoull( s );
+      return parse_int<unsigned long long>( s, std::strtoull );
    }
 };
 

@@ -20,3 +20,14 @@ TEST( NumberTest, shouldParseIntegerWithDecimalPrefix )
    EXPECT_TRUE( static_cast<bool>( res ) );
    EXPECT_EQ( 12, d );
 }
+
+TEST( NumberTest, shouldParseLongWithDecimalPrefix )
+{
+   long d;
+   auto parser = argument_parser{};
+   parser.add_argument( d, "number" ).nargs( 1 );
+
+   auto res = parser.parse_args( { "0d12" } );
+   EXPECT_TRUE( static_cast<bool>( res ) );
+   EXPECT_EQ( 12, d );
+}
