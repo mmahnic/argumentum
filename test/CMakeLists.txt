@@ -10,6 +10,7 @@ add_executable( runUnitTests
    runtest.cpp
    testutil.cpp
    argparser_t.cpp
+   number_t.cpp
    negativenumber_t.cpp
    convert_t.cpp
    group_t.cpp
