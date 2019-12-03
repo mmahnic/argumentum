@@ -62,10 +62,13 @@ CPPARGPARSE_INLINE EArgumentType Parser::getNextArgumentType( std::string_view a
 {
    if ( mIgnoreOptions )
       return EArgumentType::freeArgument;
+
    if ( arg.substr( 0, 1 ) == "@" )
       return EArgumentType::include;
+
    if ( arg == "--" )
       return EArgumentType::endOfOptions;
+
    if ( arg.substr( 0, 2 ) == "--" )
       return EArgumentType::longOption;
 
@@ -75,8 +78,10 @@ CPPARGPARSE_INLINE EArgumentType Parser::getNextArgumentType( std::string_view a
             return EArgumentType::optionValue;
       }
       else {
-         if ( isNumberLike( arg.substr( 1 ) ) && !optionWithNameExists( arg.substr( 0, 2 ) ) )
-            return EArgumentType::freeArgument;
+         if ( isNumberLike( arg.substr( 1 ) ) ) {
+            if ( !optionWithNameExists( arg.substr( 0, 2 ) ) )
+               return EArgumentType::freeArgument;
+         }
       }
 
       if ( arg.size() == 2 )
