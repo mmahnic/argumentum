@@ -13,7 +13,7 @@ namespace argparse {
 
 class Option;
 class Command;
-struct ParserDefinition;
+class ParserDefinition;
 
 class ArgumentDescriber
 {

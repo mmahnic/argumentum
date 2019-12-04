@@ -11,7 +11,7 @@
 
 namespace argparse {
 
-struct ParserDefinition;
+class ParserDefinition;
 class Writer;
 
 struct ArgumentHelpResult

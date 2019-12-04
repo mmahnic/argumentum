@@ -14,13 +14,15 @@ namespace argparse {
 class Option;
 class Command;
 
-struct ParserDefinition
+class ParserDefinition
 {
+public:
    ParserConfig mConfig;
    std::vector<std::shared_ptr<Command>> mCommands;
    std::vector<std::shared_ptr<Option>> mOptions;
    std::vector<std::shared_ptr<Option>> mPositional;
 
+public:
    Option* findOption( std::string_view optionName );
    Command* findCommand( std::string_view commandName );
 
