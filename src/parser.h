@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+﻿// Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
@@ -25,7 +25,7 @@ class Parser
    ParseResultBuilder& mResult;
 
    bool mIgnoreOptions = false;
-   int mPosition = 0;
+   size_t mPosition = 0;
    // The active option will receive additional argument(s)
    Option* mpActiveOption = nullptr;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+﻿// Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
@@ -81,14 +81,15 @@ CPPARGPARSE_INLINE std::vector<std::string_view> Writer::splitIntoWords( std::st
    return words;
 }
 
-CPPARGPARSE_INLINE std::vector<std::string_view> Writer::splitIntoParagraphs( std::string_view text )
+CPPARGPARSE_INLINE std::vector<std::string_view> Writer::splitIntoParagraphs(
+      std::string_view text )
 {
    auto rxParagraph = std::regex( "[ \t]*\n[ \t]*\n\\s*" );
    std::vector<std::string_view> res;
 
    auto it = std::cregex_iterator( text.data(), text.data() + text.size(), rxParagraph );
    auto iend = std::cregex_iterator();
-   auto lastPosition = 0;
+   auto lastPosition = 0U;
    for ( ; it != iend; ++it ) {
       auto match = std::cmatch( *it );
       if ( match.position() == 0 )
