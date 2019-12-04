@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+﻿// Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
@@ -126,7 +126,7 @@ CPPARGPARSE_INLINE void Parser::parse( ArgumentStream& argStream, unsigned depth
          case EArgumentType::multiOption: {
             auto arg_view = std::string_view( *optArg );
             auto opt = std::string{ "--" };
-            for ( int i = 1; i < arg_view.size(); ++i ) {
+            for ( unsigned i = 1; i < arg_view.size(); ++i ) {
                opt[1] = arg_view[i];
                startOption( opt );
             }
