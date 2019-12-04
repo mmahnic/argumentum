@@ -7,19 +7,24 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace argparse {
 
 template<typename T, typename TStrtoxx>
-T parse_int( std::string_view s, TStrtoxx strtoxx )
+T parse_int( const std::string& s, TStrtoxx strtoxx )
 {
-   if ( s.substr( 0, 2 ) == "0d" )
-      s = s.substr( 2 );
+   std::string_view sv( s );
+   if ( sv.substr( 0, 2 ) == "0d" )
+      sv = sv.substr( 2 );
 
-   T res = strtoxx( s.data(), nullptr, 10 );
+   char* pend;
+   T res = strtoxx( sv.data(), &pend, 10 );
    if ( errno == ERANGE )
-      throw std::out_of_range( std::string{ s } );
+      throw std::out_of_range( s );
+   if ( pend == sv.data() )
+      throw std::invalid_argument( s );
 
    return res;
 }
