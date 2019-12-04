@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+﻿// Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
@@ -13,7 +13,7 @@ namespace argparse {
 
 class Option;
 class Command;
-class ParserDefinition;
+struct ParserDefinition;
 
 class ArgumentDescriber
 {
