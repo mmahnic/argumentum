@@ -16,8 +16,13 @@ template<typename T, typename TStrtoxx>
 T parse_int( const std::string& s, TStrtoxx strtoxx )
 {
    std::string_view sv( s );
+   int sign = 1;
    if ( sv.substr( 0, 2 ) == "0d" )
       sv = sv.substr( 2 );
+   else if ( sv.substr( 0, 3 ) == "-0d" ) {
+      sv = sv.substr( 3 );
+      sign = -1;
+   }
 
    char* pend;
    T res = strtoxx( sv.data(), &pend, 10 );
@@ -26,7 +31,7 @@ T parse_int( const std::string& s, TStrtoxx strtoxx )
    if ( pend == sv.data() )
       throw std::invalid_argument( s );
 
-   return res;
+   return sign * res;
 }
 
 template<typename T>

@@ -31,3 +31,23 @@ TEST( NumberTest, shouldParseLongWithDecimalPrefix )
    EXPECT_TRUE( static_cast<bool>( res ) );
    EXPECT_EQ( 12, d );
 }
+
+TEST( ParseInt, shouldParsePositiveDecimal )
+{
+   EXPECT_EQ( 123, parse_int<int>( "123", std::strtol ) );
+}
+
+TEST( ParseInt, shouldParsNegativeDecimal )
+{
+   EXPECT_EQ( -123, parse_int<int>( "-123", std::strtol ) );
+}
+
+TEST( ParseInt, shouldParsePositiveDecimalWithPrefix )
+{
+   EXPECT_EQ( 123, parse_int<int>( "0d123", std::strtol ) );
+}
+
+TEST( ParseInt, shouldParsNegativeDecimalWithPrefix )
+{
+   EXPECT_EQ( -123, parse_int<int>( "-0d123", std::strtol ) );
+}
