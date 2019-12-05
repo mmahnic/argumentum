@@ -92,3 +92,15 @@ TEST( ParseInt, shouldParsNegativeOctadecimalWithPrefix )
 }
 
 // TODO: MANY tests for parse_int edge cases for base 8
+
+TEST( ParseInt, shouldParsePositiveBinaryWithPrefix )
+{
+   EXPECT_EQ( 27, parse_int<int>( "0b11011" ) );
+}
+
+TEST( ParseInt, shouldParsNegativeBinaryWithPrefix )
+{
+   EXPECT_EQ( -85, parse_int<int>( "-0b1010101" ) );
+}
+
+// TODO: MANY tests for parse_int edge cases for base 2

@@ -10,7 +10,7 @@ namespace argparse {
 
 CPPARGPARSE_INLINE std::tuple<int, int, int> parse_int_prefix( std::string_view sv )
 {
-   static auto rxPrefix = std::regex( "^([-+]*)(0[dox])?" );
+   static auto rxPrefix = std::regex( "^([-+]*)(0[bdox])?" );
    int sign = 1;
    int base = 10;
    std::cmatch m;
@@ -19,11 +19,14 @@ CPPARGPARSE_INLINE std::tuple<int, int, int> parse_int_prefix( std::string_view 
          sign = std::count( m[1].first, m[1].second, '-' ) % 2 ? -1 : 1;
       if ( m.length( 2 ) ) {
          switch ( *( m[2].first + 1 ) ) {
-            case 'o':
-               base = 8;
+            case 'b':
+               base = 2;
                break;
             case 'd':
                base = 10;
+               break;
+            case 'o':
+               base = 8;
                break;
             case 'x':
                base = 16;
