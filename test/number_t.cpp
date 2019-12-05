@@ -67,6 +67,17 @@ TEST( ParseInt, shouldThrowOnShortRangeViolation )
    EXPECT_THROW( parse_int<short>( "99999" ), std::out_of_range );
 }
 
+TEST( ParseInt, shouldHandleMultiplePrefixSigns )
+{
+   EXPECT_EQ( -123, parse_int<int>( "---123" ) );
+   EXPECT_EQ( 123, parse_int<int>( "--123" ) );
+   EXPECT_EQ( 123, parse_int<int>( "+--123" ) );
+   EXPECT_EQ( 123, parse_int<int>( "-+-123" ) );
+   EXPECT_EQ( -123, parse_int<int>( "-+--123" ) );
+   EXPECT_EQ( 123, parse_int<int>( "-+-0d123" ) );
+   EXPECT_EQ( -123, parse_int<int>( "-+--0d123" ) );
+}
+
 // TODO: MANY tests for parse_int edge cases for base 10
 
 TEST( ParseInt, shouldParsePositiveHexadecimalWithPrefix )
