@@ -67,4 +67,14 @@ TEST( ParseInt, shouldThrowOnShortRangeViolation )
    EXPECT_THROW( parse_int<short>( "99999" ), std::out_of_range );
 }
 
-// TODO: MANY tests for parse_int edge cases
+// TODO: MANY tests for parse_int edge cases for base 10
+
+TEST( ParseInt, shouldParsePositiveHexadecimalWithPrefix )
+{
+   EXPECT_EQ( 37312, parse_int<int>( "0x91c0" ) );
+}
+
+TEST( ParseInt, shouldParsNegativeHexadecimalWithPrefix )
+{
+   EXPECT_EQ( -64222, parse_int<int>( "-0xfade" ) );
+}

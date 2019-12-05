@@ -13,17 +13,14 @@
 
 namespace argparse {
 
+std::tuple<int, int, int> parse_int_prefix( std::string_view sv );
+
 template<typename T>
 T parse_int( const std::string& s )
 {
    std::string_view sv( s );
-   int sign = 1;
-   if ( sv.substr( 0, 2 ) == "0d" )
-      sv = sv.substr( 2 );
-   else if ( sv.substr( 0, 3 ) == "-0d" ) {
-      sv = sv.substr( 3 );
-      sign = -1;
-   }
+   auto [sign, base, skip] = parse_int_prefix( sv );
+   sv = sv.substr( skip );
 
    struct ClearErrno
    {
@@ -45,9 +42,9 @@ T parse_int( const std::string& s )
    };
 
    if ( std::numeric_limits<T>::is_signed )
-      return checkResult( sign * strtoll( sv.data(), &pend, 10 ) );
+      return checkResult( sign * strtoll( sv.data(), &pend, base ) );
    else if ( sign > 0 )
-      return checkResult( strtoull( sv.data(), &pend, 10 ) );
+      return checkResult( strtoull( sv.data(), &pend, base ) );
    else
       throw std::out_of_range( s );
 }
