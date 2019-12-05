@@ -78,3 +78,17 @@ TEST( ParseInt, shouldParsNegativeHexadecimalWithPrefix )
 {
    EXPECT_EQ( -64222, parse_int<int>( "-0xfade" ) );
 }
+
+// TODO: MANY tests for parse_int edge cases for base 16
+
+TEST( ParseInt, shouldParsePositiveOctadecimalWithPrefix )
+{
+   EXPECT_EQ( 375, parse_int<int>( "0o567" ) );
+}
+
+TEST( ParseInt, shouldParsNegativeOctadecimalWithPrefix )
+{
+   EXPECT_EQ( -501, parse_int<int>( "-0o765" ) );
+}
+
+// TODO: MANY tests for parse_int edge cases for base 8
