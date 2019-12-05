@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cerrno>
+#include <charconv>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -24,6 +25,14 @@ T parse_int( const std::string& s, TStrtoxx strtoxx )
       sign = -1;
    }
 
+#if 1
+   T res;
+   auto fcr = from_chars( sv.begin(), sv.end(), res, 10 );
+   if ( fcr.ec == std::errc::result_out_of_range )
+      throw std::out_of_range( s );
+   if ( fcr.ec == std::errc::invalid_argument )
+      throw std::invalid_argument( s );
+#else
    struct ClearErrno
    {
       ~ClearErrno()
@@ -38,6 +47,7 @@ T parse_int( const std::string& s, TStrtoxx strtoxx )
       throw std::out_of_range( s );
    if ( errno == EINVAL || pend == sv.data() )
       throw std::invalid_argument( s );
+#endif
 
    return sign * res;
 }
