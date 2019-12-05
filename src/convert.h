@@ -24,11 +24,19 @@ T parse_int( const std::string& s, TStrtoxx strtoxx )
       sign = -1;
    }
 
+   struct ClearErrno
+   {
+      ~ClearErrno()
+      {
+         errno = 0;
+      }
+   } clear_errno;
+
    char* pend;
    T res = strtoxx( sv.data(), &pend, 10 );
    if ( errno == ERANGE )
       throw std::out_of_range( s );
-   if ( pend == sv.data() )
+   if ( errno == EINVAL || pend == sv.data() )
       throw std::invalid_argument( s );
 
    return sign * res;

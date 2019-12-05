@@ -51,3 +51,13 @@ TEST( ParseInt, shouldParsNegativeDecimalWithPrefix )
 {
    EXPECT_EQ( -123, parse_int<int>( "-0d123", std::strtol ) );
 }
+
+TEST( ParseInt, shouldThrowOnInvalidInput )
+{
+   EXPECT_THROW( parse_int<int>( "abc", std::strtol ), std::invalid_argument );
+}
+
+TEST( ParseInt, shouldThrowOnRangeViolation )
+{
+   EXPECT_THROW( parse_int<int>( "123456789123456789123456789", std::strtol ), std::out_of_range );
+}
