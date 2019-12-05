@@ -4,7 +4,7 @@
 #pragma once
 
 #include <cerrno>
-#include <charconv>
+#include <limits>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -13,8 +13,8 @@
 
 namespace argparse {
 
-template<typename T, typename TStrtoxx>
-T parse_int( const std::string& s, TStrtoxx strtoxx )
+template<typename T>
+T parse_int( const std::string& s )
 {
    std::string_view sv( s );
    int sign = 1;
@@ -25,14 +25,6 @@ T parse_int( const std::string& s, TStrtoxx strtoxx )
       sign = -1;
    }
 
-#if 1
-   T res;
-   auto fcr = from_chars( sv.begin(), sv.end(), res, 10 );
-   if ( fcr.ec == std::errc::result_out_of_range )
-      throw std::out_of_range( s );
-   if ( fcr.ec == std::errc::invalid_argument )
-      throw std::invalid_argument( s );
-#else
    struct ClearErrno
    {
       ~ClearErrno()
@@ -42,14 +34,22 @@ T parse_int( const std::string& s, TStrtoxx strtoxx )
    } clear_errno;
 
    char* pend;
-   T res = strtoxx( sv.data(), &pend, 10 );
-   if ( errno == ERANGE )
-      throw std::out_of_range( s );
-   if ( errno == EINVAL || pend == sv.data() )
-      throw std::invalid_argument( s );
-#endif
+   auto checkResult = [&]( auto res ) {
+      if ( errno == ERANGE )
+         throw std::out_of_range( s );
+      if ( errno == EINVAL || pend == sv.data() )
+         throw std::invalid_argument( s );
+      if ( res < std::numeric_limits<T>::min() || res > std::numeric_limits<T>::max() )
+         throw std::out_of_range( s );
+      return static_cast<T>( res );
+   };
 
-   return sign * res;
+   if ( std::numeric_limits<T>::is_signed )
+      return checkResult( sign * strtoll( sv.data(), &pend, 10 ) );
+   else if ( sign > 0 )
+      return checkResult( strtoull( sv.data(), &pend, 10 ) );
+   else
+      throw std::out_of_range( s );
 }
 
 template<typename T>
@@ -80,7 +80,7 @@ struct from_string<bool>
 {
    static bool convert( const std::string& s )
    {
-      return parse_int<bool>( s, std::strtol );
+      return parse_int<bool>( s );
    }
 };
 
@@ -89,7 +89,7 @@ struct from_string<int8_t>
 {
    static int8_t convert( const std::string& s )
    {
-      return parse_int<int8_t>( s, std::strtol );
+      return parse_int<int8_t>( s );
    }
 };
 
@@ -98,7 +98,7 @@ struct from_string<uint8_t>
 {
    static uint8_t convert( const std::string& s )
    {
-      return parse_int<uint8_t>( s, std::strtoul );
+      return parse_int<uint8_t>( s );
    }
 };
 
@@ -107,7 +107,7 @@ struct from_string<short>
 {
    static short convert( const std::string& s )
    {
-      return parse_int<short>( s, std::strtol );
+      return parse_int<short>( s );
    }
 };
 
@@ -116,7 +116,7 @@ struct from_string<unsigned short>
 {
    static unsigned short convert( const std::string& s )
    {
-      return parse_int<unsigned short>( s, std::strtoul );
+      return parse_int<unsigned short>( s );
    }
 };
 
@@ -125,7 +125,7 @@ struct from_string<int>
 {
    static int convert( const std::string& s )
    {
-      return parse_int<int>( s, std::strtol );
+      return parse_int<int>( s );
    }
 };
 
@@ -134,7 +134,7 @@ struct from_string<unsigned int>
 {
    static unsigned int convert( const std::string& s )
    {
-      return parse_int<unsigned int>( s, std::strtoul );
+      return parse_int<unsigned int>( s );
    }
 };
 
@@ -143,7 +143,7 @@ struct from_string<long>
 {
    static long convert( const std::string& s )
    {
-      return parse_int<long>( s, std::strtol );
+      return parse_int<long>( s );
    }
 };
 
@@ -152,7 +152,7 @@ struct from_string<unsigned long>
 {
    static unsigned long convert( const std::string& s )
    {
-      return parse_int<unsigned long>( s, std::strtoul );
+      return parse_int<unsigned long>( s );
    }
 };
 
@@ -161,7 +161,7 @@ struct from_string<long long>
 {
    static long long convert( const std::string& s )
    {
-      return parse_int<long long>( s, std::strtoll );
+      return parse_int<long long>( s );
    }
 };
 
@@ -170,7 +170,7 @@ struct from_string<unsigned long long>
 {
    static unsigned long long convert( const std::string& s )
    {
-      return parse_int<unsigned long long>( s, std::strtoull );
+      return parse_int<unsigned long long>( s );
    }
 };
 

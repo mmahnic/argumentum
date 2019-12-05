@@ -34,30 +34,37 @@ TEST( NumberTest, shouldParseLongWithDecimalPrefix )
 
 TEST( ParseInt, shouldParsePositiveDecimal )
 {
-   EXPECT_EQ( 123, parse_int<int>( "123", std::strtol ) );
+   EXPECT_EQ( 123, parse_int<int>( "123" ) );
 }
 
 TEST( ParseInt, shouldParsNegativeDecimal )
 {
-   EXPECT_EQ( -123, parse_int<int>( "-123", std::strtol ) );
+   EXPECT_EQ( -123, parse_int<int>( "-123" ) );
 }
 
 TEST( ParseInt, shouldParsePositiveDecimalWithPrefix )
 {
-   EXPECT_EQ( 123, parse_int<int>( "0d123", std::strtol ) );
+   EXPECT_EQ( 123, parse_int<int>( "0d123" ) );
 }
 
 TEST( ParseInt, shouldParsNegativeDecimalWithPrefix )
 {
-   EXPECT_EQ( -123, parse_int<int>( "-0d123", std::strtol ) );
+   EXPECT_EQ( -123, parse_int<int>( "-0d123" ) );
 }
 
 TEST( ParseInt, shouldThrowOnInvalidInput )
 {
-   EXPECT_THROW( parse_int<int>( "abc", std::strtol ), std::invalid_argument );
+   EXPECT_THROW( parse_int<int>( "abc" ), std::invalid_argument );
 }
 
 TEST( ParseInt, shouldThrowOnRangeViolation )
 {
-   EXPECT_THROW( parse_int<int>( "123456789123456789123456789", std::strtol ), std::out_of_range );
+   EXPECT_THROW( parse_int<int>( "123456789123456789123456789" ), std::out_of_range );
 }
+
+TEST( ParseInt, shouldThrowOnShortRangeViolation )
+{
+   EXPECT_THROW( parse_int<short>( "99999" ), std::out_of_range );
+}
+
+// TODO: MANY tests for parse_int edge cases
