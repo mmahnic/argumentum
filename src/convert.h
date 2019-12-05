@@ -77,7 +77,7 @@ struct from_string<bool>
 {
    static bool convert( const std::string& s )
    {
-      return parse_int<bool>( s );
+      return parse_int<int>( s );
    }
 };
 
