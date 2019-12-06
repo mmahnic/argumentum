@@ -115,3 +115,29 @@ TEST( ParseInt, shouldParsNegativeBinaryWithPrefix )
 }
 
 // TODO: MANY tests for parse_int edge cases for base 2
+
+TEST( ParseFloat, shouldParsPositiveDouble )
+{
+   EXPECT_NEAR( 2.345, parse_float<double>( "2.345" ), 1e-6 );
+}
+
+TEST( ParseFloat, shouldParsPositiveDoubleWithExponent )
+{
+   EXPECT_NEAR( 2.345e3, parse_float<double>( "2.345e3" ), 1e-6 );
+}
+
+TEST( ParseFloat, shouldParsNegativeDouble )
+{
+   EXPECT_NEAR( -2.345, parse_float<double>( "-2.345" ), 1e-6 );
+}
+
+TEST( ParseFloat, shouldParsNegativeDoubleWithExponent )
+{
+   EXPECT_NEAR( -2.345e3, parse_float<double>( "-2.345e3" ), 1e-6 );
+}
+
+TEST( ParseFloat, shouldThrowOnOutOfRangeFloat )
+{
+   EXPECT_THROW( parse_float<float>( "2e100" ), std::out_of_range );
+   EXPECT_THROW( parse_float<float>( "-2e100" ), std::out_of_range );
+}

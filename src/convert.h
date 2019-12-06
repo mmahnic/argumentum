@@ -50,6 +50,33 @@ T parse_int( const std::string& s )
 }
 
 template<typename T>
+T parse_float( const std::string& s )
+{
+   std::string_view sv( s );
+
+   struct ClearErrno
+   {
+      ~ClearErrno()
+      {
+         errno = 0;
+      }
+   } clear_errno;
+
+   char* pend;
+   auto checkResult = [&]( auto res ) {
+      if ( errno == ERANGE )
+         throw std::out_of_range( s );
+      if ( errno == EINVAL || pend == sv.data() )
+         throw std::invalid_argument( s );
+      if ( res < -std::numeric_limits<T>::max() || res > std::numeric_limits<T>::max() )
+         throw std::out_of_range( s );
+      return static_cast<T>( res );
+   };
+
+   return checkResult( strtod( sv.data(), &pend ) );
+}
+
+template<typename T>
 struct from_string
 {
 };
