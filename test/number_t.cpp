@@ -141,3 +141,27 @@ TEST( ParseFloat, shouldThrowOnOutOfRangeFloat )
    EXPECT_THROW( parse_float<float>( "2e100" ), std::out_of_range );
    EXPECT_THROW( parse_float<float>( "-2e100" ), std::out_of_range );
 }
+
+TEST( ParseFloat, shouldParsePositiveDoubleWithPrefix )
+{
+   EXPECT_NEAR( 2.345, parse_float<double>( "0d2.345" ), 1e-6 );
+   EXPECT_NEAR( 2.345e3, parse_float<double>( "0d2.345e3" ), 1e-6 );
+}
+
+TEST( ParseFloat, shouldParseNegativeDoubleWithPrefix )
+{
+   EXPECT_NEAR( -2.345, parse_float<double>( "-0d2.345" ), 1e-6 );
+   EXPECT_NEAR( -2.345e3, parse_float<double>( "-0d2.345e3" ), 1e-6 );
+}
+
+TEST( ParseFloat, shouldParsePositiveBinaryDoubleWithPrefix )
+{
+   EXPECT_NEAR( 0xa.3c5p0, parse_float<double>( "0xa.3c5" ), 1e-6 );
+   EXPECT_NEAR( 0xb.3d5p3, parse_float<double>( "0xb.3d5p3" ), 1e-6 );
+}
+
+TEST( ParseFloat, shouldParseNegativeBinaryDoubleWithPrefix )
+{
+   EXPECT_NEAR( -0xa.3c5p0, parse_float<double>( "-0xa.3c5" ), 1e-6 );
+   EXPECT_NEAR( -0xb.3d5p3, parse_float<double>( "-0xb.3d5p3" ), 1e-6 );
+}

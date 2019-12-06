@@ -14,13 +14,15 @@
 namespace argparse {
 
 std::tuple<int, int, int> parse_int_prefix( std::string_view sv );
+std::tuple<int, int> parse_float_prefix( std::string_view sv );
 
 template<typename T>
 T parse_int( const std::string& s )
 {
    std::string_view sv( s );
    auto [sign, base, skip] = parse_int_prefix( sv );
-   sv = sv.substr( skip );
+   if ( skip > 0 )
+      sv = sv.substr( skip );
 
    struct ClearErrno
    {
@@ -53,6 +55,9 @@ template<typename T>
 T parse_float( const std::string& s )
 {
    std::string_view sv( s );
+   auto [sign, skip] = parse_float_prefix( sv );
+   if ( skip > 0 )
+      sv = sv.substr( skip );
 
    struct ClearErrno
    {
@@ -73,7 +78,7 @@ T parse_float( const std::string& s )
       return static_cast<T>( res );
    };
 
-   return checkResult( strtod( sv.data(), &pend ) );
+   return checkResult( sign * strtod( sv.data(), &pend ) );
 }
 
 template<typename T>
