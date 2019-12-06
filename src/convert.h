@@ -51,6 +51,24 @@ T parse_int( const std::string& s )
       throw std::out_of_range( s );
 }
 
+namespace strtodx {
+template<typename T>
+T parse( const char* pdata, char** pend )
+{
+   return strtod( pdata, pend );
+}
+template<>
+inline float parse<float>( const char* pdata, char** pend )
+{
+   return strtof( pdata, pend );
+}
+template<>
+inline long double parse<long double>( const char* pdata, char** pend )
+{
+   return strtold( pdata, pend );
+}
+}   // namespace strtodx
+
 template<typename T>
 T parse_float( const std::string& s )
 {
@@ -78,7 +96,7 @@ T parse_float( const std::string& s )
       return static_cast<T>( res );
    };
 
-   return checkResult( sign * strtod( sv.data(), &pend ) );
+   return checkResult( sign * strtodx::parse<T>( sv.data(), &pend ) );
 }
 
 template<typename T>
@@ -208,7 +226,7 @@ struct from_string<float>
 {
    static float convert( const std::string& s )
    {
-      return stof( s );
+      return parse_float<float>( s );
    }
 };
 
@@ -217,7 +235,7 @@ struct from_string<double>
 {
    static double convert( const std::string& s )
    {
-      return stod( s );
+      return parse_float<double>( s );
    }
 };
 
@@ -226,7 +244,7 @@ struct from_string<long double>
 {
    static long double convert( const std::string& s )
    {
-      return stold( s );
+      return parse_float<long double>( s );
    }
 };
 

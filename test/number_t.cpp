@@ -165,3 +165,5 @@ TEST( ParseFloat, shouldParseNegativeBinaryDoubleWithPrefix )
    EXPECT_NEAR( -0xa.3c5p0, parse_float<double>( "-0xa.3c5" ), 1e-6 );
    EXPECT_NEAR( -0xb.3d5p3, parse_float<double>( "-0xb.3d5p3" ), 1e-6 );
 }
+
+// TODO: MANY tests for parse_float
