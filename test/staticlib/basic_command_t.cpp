@@ -1,7 +1,7 @@
 #include "../testutil.h"
 
 #include <climits>
-#include <cppargparse/argparse-s.h>
+#include <cppargparse/argparse.h>
 #include <gtest/gtest.h>
 #include <numeric>
 #include <vector>
