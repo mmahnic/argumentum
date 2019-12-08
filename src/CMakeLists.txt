@@ -1,9 +1,11 @@
 
-add_library(argparse-s STATIC
+set(CPPARGPARSE_STATIC_NAME argparse-s)
+add_library(${CPPARGPARSE_STATIC_NAME} STATIC
    argparser.cpp
    )
-
-install( TARGETS argparse-s
-   ARCHIVE DESTINATION lib
-   LIBRARY DESTINATION lib
-   )
+if( CPPARGPARSE_PEDANTIC )
+   target_compile_options(${CPPARGPARSE_STATIC_NAME} PRIVATE 
+      $<$<CXX_COMPILER_ID:GNU>:-Werror -Wall>
+      $<$<CXX_COMPILER_ID:MSVC>:/WX /permissive- /Za>
+      )
+endif()
