@@ -8,7 +8,10 @@ option( CPPARGPARSE_INSTALL          "enable library installation"    ON )
 option( CPPARGPARSE_PEDANTIC         "treat warnings as errors"    OFF )
 
 set(CMAKE_CXX_STANDARD 17)
+set(INCLUDE_INSTALL_DIR include/ )
+set(LIB_INSTALL_DIR lib/ )
 
+set(CPPARGPARSE_STATIC_NAME argparse-s)
 add_subdirectory(src)
 
 if( CPPARGPARSE_BUILD_EXAMPLES )
@@ -26,13 +29,6 @@ endif()
 if (CPPARGPARSE_INSTALL)
    include(CMakePackageConfigHelpers) 
 
-   set(INCLUDE_INSTALL_DIR include/ )
-   set(LIB_INSTALL_DIR lib/ )
-
-   install( TARGETS ${CPPARGPARSE_STATIC_NAME}
-      ARCHIVE DESTINATION lib
-      LIBRARY DESTINATION lib
-      )
    install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
    configure_package_config_file(cmake/CppArgparseConfig.cmake.in
