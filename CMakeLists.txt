@@ -27,9 +27,9 @@ if( CPPARGPARSE_BUILD_TESTS )
 endif()
 
 if (CPPARGPARSE_INSTALL)
-   include(CMakePackageConfigHelpers) 
+   add_subdirectory(include)
 
-   install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+   include(CMakePackageConfigHelpers)
 
    configure_package_config_file(cmake/CppArgparseConfig.cmake.in
       ${CMAKE_CURRENT_BINARY_DIR}/CppArgparseConfig.cmake
