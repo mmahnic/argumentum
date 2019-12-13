@@ -19,6 +19,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-7
+            - libgtest-dev
 
       compiler: gcc-7
 
@@ -34,6 +35,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-8
+            - libgtest-dev
 
       compiler: gcc-8
 
