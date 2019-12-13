@@ -39,7 +39,7 @@ matrix:
 
 install:
    - mkdir /tmp/build-gtest && cd /tmp/build-gtest
-   - cmake /usr/src/libgtest
+   - cmake /usr/src/gtest
    - make
    - sudo cp libgtest* /usr/lib/
    
