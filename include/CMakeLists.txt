@@ -1,10 +1,10 @@
 
 add_custom_command(
-   OUTPUT fake_create_headers.cpp
-   DEPENDS cppargparse/argparse.h
+   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/fake_create_headers.cpp
+   DEPENDS instutil cppargparse/argparse.h
    COMMENT "Preparing library headers for publishing"
 
-   COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/cppargparse/inc
+   COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/cppargparse
 
    COMMAND ${CMAKE_COMMAND} -E copy_directory
       ${CMAKE_SOURCE_DIR}/src  ${CMAKE_CURRENT_BINARY_DIR}/cppargparse/inc

@@ -10,6 +10,7 @@ option( CPPARGPARSE_PEDANTIC         "treat warnings as errors"    OFF )
 set(CMAKE_CXX_STANDARD 17)
 set(INCLUDE_INSTALL_DIR include/ )
 set(LIB_INSTALL_DIR lib/ )
+set(CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/CppArgparse)
 
 set(CPPARGPARSE_STATIC_NAME argparse-s)
 add_subdirectory(src)
@@ -19,7 +20,6 @@ if( CPPARGPARSE_BUILD_EXAMPLES )
    add_subdirectory(example)
 endif()
 
-
 if( CPPARGPARSE_BUILD_TESTS )
    enable_testing()
    add_subdirectory(test)
@@ -28,6 +28,7 @@ if( CPPARGPARSE_BUILD_TESTS )
 endif()
 
 if (CPPARGPARSE_INSTALL)
+   include(GNUInstallDirs)
    add_subdirectory(include)
 
    include(CMakePackageConfigHelpers)
@@ -42,4 +43,11 @@ if (CPPARGPARSE_INSTALL)
       VERSION ${PROJECT_VERSION}
       COMPATIBILITY AnyNewerVersion
       )
+
+   install(FILES
+      ${CMAKE_CURRENT_BINARY_DIR}/CppArgparseConfig.cmake
+      ${CMAKE_CURRENT_BINARY_DIR}/CppArgparseConfigVersion.cmake
+      DESTINATION ${CONFIG_INSTALL_DIR}
+      )
+
 endif()

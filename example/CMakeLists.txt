@@ -1,5 +1,6 @@
 
 include_directories( ../include )
+set ( CPPARGPARSE_EXAMPLE_LIB ${CPPARGPARSE_STATIC_NAME} )
 
 # The library is currently header-only.
 set(PARSER_SOURCES
@@ -12,6 +13,7 @@ add_executable( basic
 target_link_libraries( basic
    ${CMAKE_BINARY_DIR}/src/libargparse-s.a
    )
+add_dependencies( basic ${CPPARGPARSE_EXAMPLE_LIB} )
 
 add_executable( basic_action
    basic_action.cpp
@@ -19,6 +21,7 @@ add_executable( basic_action
 target_link_libraries( basic_action
    ${CMAKE_BINARY_DIR}/src/libargparse-s.a
    )
+add_dependencies( basic_action ${CPPARGPARSE_EXAMPLE_LIB} )
 
 add_executable( basic_struct
    basic_struct.cpp
@@ -26,6 +29,7 @@ add_executable( basic_struct
 target_link_libraries( basic_struct
    ${CMAKE_BINARY_DIR}/src/libargparse-s.a
    )
+add_dependencies( basic_struct ${CPPARGPARSE_EXAMPLE_LIB} )
 
 add_executable( basic_command
    basic_command.cpp
@@ -33,6 +37,7 @@ add_executable( basic_command
 target_link_libraries( basic_command
    ${CMAKE_BINARY_DIR}/src/libargparse-s.a
    )
+add_dependencies( basic_command ${CPPARGPARSE_EXAMPLE_LIB} )
 
 add_executable( example1
    example1.cpp
@@ -40,6 +45,7 @@ add_executable( example1
 target_link_libraries( example1
    ${CMAKE_BINARY_DIR}/src/libargparse-s.a
    )
+add_dependencies( example1 ${CPPARGPARSE_EXAMPLE_LIB} )
 
 add_executable( example2
    example2.cpp
@@ -47,4 +53,5 @@ add_executable( example2
 target_link_libraries( example2
    ${CMAKE_BINARY_DIR}/src/libargparse-s.a
    )
+add_dependencies( example2 ${CPPARGPARSE_EXAMPLE_LIB} )
 
