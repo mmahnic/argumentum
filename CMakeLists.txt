@@ -13,6 +13,7 @@ set(LIB_INSTALL_DIR lib/ )
 
 set(CPPARGPARSE_STATIC_NAME argparse-s)
 add_subdirectory(src)
+add_subdirectory(util)
 
 if( CPPARGPARSE_BUILD_EXAMPLES )
    add_subdirectory(example)
