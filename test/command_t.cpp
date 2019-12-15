@@ -241,3 +241,26 @@ TEST( ArgumentParserCommandTest, shouldStoreInstantiatedCommandsInParseResults )
    EXPECT_EQ( "works", pCmdTwo->str.value_or( "" ) );
    EXPECT_FALSE( pCmdTwo->count.has_value() );
 }
+
+TEST( ArgumentParserCommandTest, shouldReportErrorsOnlyInTopLevelParser )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout );
+
+   parser.add_command<CmdOneOptions>( "one" );
+
+   // -- WHEN
+   auto res = parser.parse_args( { "one", "--bad-option" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+
+   // -- THEN
+   auto help = strout.str();
+   auto lines = splitLines( help );
+   int count = 0;
+   for ( auto line: lines ) {
+      if ( strHasText( line, "--bad-option" ) )
+         ++count;
+   }
+   EXPECT_EQ( 1, count );
+}
