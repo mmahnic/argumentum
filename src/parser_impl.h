@@ -255,7 +255,7 @@ CPPARGPARSE_INLINE void Parser::setValue( Option& option, std::string_view value
 CPPARGPARSE_INLINE void Parser::parseCommandArguments(
       Command& command, ArgumentStream& argStream, ParseResultBuilder& result )
 {
-   auto parser = argument_parser{};
+   auto parser = argument_parser::createSubParser();
    auto commandpath = mParserDef.getConfig().program + " " + command.getName();
    parser.config().program( commandpath ).description( command.getHelp() );
 

@@ -15,6 +15,13 @@
 
 namespace argparse {
 
+CPPARGPARSE_INLINE argument_parser argument_parser::createSubParser()
+{
+   auto parser = argument_parser{};
+   parser.mTopLevel = false;
+   return parser;
+}
+
 CPPARGPARSE_INLINE ParserConfig& argument_parser::config()
 {
    return mParserDef.mConfig;
@@ -186,7 +193,7 @@ CPPARGPARSE_INLINE ParseResult argument_parser::parse_args( ArgumentStream& args
    assignDefaultValues();
    validateParsedOptions( result );
 
-   if ( result.hasArgumentProblems() ) {
+   if ( mTopLevel && result.hasArgumentProblems() ) {
       result.signalErrorsShown();
       auto res = std::move( result.getResult() );
       describe_errors( res );
