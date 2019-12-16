@@ -34,6 +34,7 @@ class argument_parser
    friend class Parser;
 
 private:
+   bool mTopLevel = true;
    ParserDefinition mParserDef;
    std::set<std::string> mHelpOptionNames;
    std::vector<std::shared_ptr<Options>> mTargets;
@@ -148,6 +149,7 @@ public:
    std::vector<ArgumentHelpResult> describe_arguments() const;
 
 private:
+   static argument_parser createSubParser();
    void resetOptionValues();
    void assignDefaultValues();
    void verifyDefinedOptions();
