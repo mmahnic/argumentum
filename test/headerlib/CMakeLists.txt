@@ -1,6 +1,9 @@
 
 include_directories( ../../include )
 
+find_package( GTest REQUIRED )
+find_package( Threads REQUIRED )
+
 add_executable( headerLibraryTest
    runtest.cpp
    ../testutil.cpp
@@ -8,7 +11,8 @@ add_executable( headerLibraryTest
    )
 
 target_link_libraries( headerLibraryTest 
-   gtest_main
+   ${GTEST_LIBRARIES}
+   ${CMAKE_THREAD_LIBS_INIT}
    )
 
 add_test(

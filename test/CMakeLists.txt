@@ -1,5 +1,9 @@
 
 include_directories( ../include )
+set ( CPPARGPARSE_TEST_LIB ${CPPARGPARSE_STATIC_NAME} )
+
+find_package( GTest REQUIRED )
+find_package( Threads REQUIRED )
 
 # The library is currently header-only.
 set(PARSER_SOURCES
@@ -16,7 +20,6 @@ add_executable( runUnitTests
    group_t.cpp
    command_t.cpp
    action_t.cpp
-   helpwriter_t.cpp
    help_t.cpp
    commandhelp_t.cpp
    filesystemarguments_t.cpp
@@ -27,9 +30,11 @@ add_executable( runUnitTests
    )
 
 target_link_libraries( runUnitTests 
-   gtest_main
+   ${GTEST_LIBRARIES}
+   ${CMAKE_THREAD_LIBS_INIT}
    ${CMAKE_BINARY_DIR}/src/libargparse-s.a
    )
+add_dependencies( runUnitTests ${CPPARGPARSE_TEST_LIB} )
 
 add_executable( utilityTests
    runtest.cpp
@@ -38,8 +43,10 @@ add_executable( utilityTests
    )
 
 target_link_libraries( utilityTests 
-   gtest_main
+   ${GTEST_LIBRARIES}
+   ${CMAKE_THREAD_LIBS_INIT}
    )
+add_dependencies( utilityTests ${CPPARGPARSE_TEST_LIB} )
 
 add_test(
   NAME

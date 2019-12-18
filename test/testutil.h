@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <cppargparse/argparse-s.h>
+#include <cppargparse/argparse.h>
 
 #include <memory>
 #include <sstream>
