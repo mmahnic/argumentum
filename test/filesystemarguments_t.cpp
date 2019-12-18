@@ -8,6 +8,18 @@
 #include <map>
 #include <sstream>
 
+#if __has_include( <filesystem> )
+#define HAVE_FILESYSTEM 1
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include( <experimental/filesystem> )
+#define HAVE_FILESYSTEM 1
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#define HAVE_FILESYSTEM 0
+#endif
+
 using namespace argparse;
 
 class TestFilesystem : public Filesystem
@@ -106,4 +118,29 @@ TEST( FilesystemArguments, shouldFailWhenStreamsRecursedTooDeep )
 
    EXPECT_FALSE( !!res );
    EXPECT_EQ( INCLUDE_TOO_DEEP, res.errors.front().errorCode );
+}
+
+// The default Filesystem reads from the real filesystem.
+TEST( FilesystemArguments, shouldUseDefaultFilesystemWhenNoneIsDefined )
+{
+#if HAVE_FILESYSTEM
+   auto tmpdir = fs::temp_directory_path() / "xdata";
+   if ( !fs::exists( tmpdir ) )
+      fs::create_directory( tmpdir );
+   auto tmpfile = tmpdir / "a.opt";
+   auto f = std::ofstream( tmpfile );
+   f << "--alpha\nfrom-file";
+   f.close();
+
+   auto parser = argument_parser{};
+   std::string alpha;
+   parser.add_argument( alpha, "--alpha" ).nargs( 1 );
+
+   auto res = parser.parse_args( { "@" + tmpfile.generic_string() } );
+
+   EXPECT_TRUE( !!res );
+   EXPECT_EQ( "from-file", alpha );
+#else
+   std::cout << "No filesystem. Test skipped.\n";
+#endif
 }

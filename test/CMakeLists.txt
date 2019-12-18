@@ -33,6 +33,7 @@ target_link_libraries( runUnitTests
    ${GTEST_LIBRARIES}
    ${CMAKE_THREAD_LIBS_INIT}
    ${CMAKE_BINARY_DIR}/src/libargparse-s.a
+   stdc++fs
    )
 add_dependencies( runUnitTests ${CPPARGPARSE_TEST_LIB} )
 
