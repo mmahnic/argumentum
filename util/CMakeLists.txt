@@ -7,8 +7,8 @@ add_executable(instutil
    instutil.cpp
    )
 
-if( CPPARGPARSE_PEDANTIC )
-   target_compile_options(${CPPARGPARSE_STATIC_NAME} PRIVATE 
+if( ARGUMENTUM_PEDANTIC )
+   target_compile_options(${ARGUMENTUM_STATIC_NAME} PRIVATE 
       $<$<CXX_COMPILER_ID:GNU>:-Werror -Wall>
       $<$<CXX_COMPILER_ID:MSVC>:/WX /permissive- /Za>
       )

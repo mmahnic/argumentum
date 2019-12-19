@@ -1,6 +1,6 @@
 
 include_directories( ../../include )
-set ( CPPARGPARSE_TEST_LIB ${CPPARGPARSE_STATIC_NAME} )
+set ( ARGUMENTUM_TEST_LIB ${ARGUMENTUM_STATIC_NAME} )
 
 find_package( GTest REQUIRED )
 find_package( Threads REQUIRED )
@@ -16,7 +16,7 @@ target_link_libraries( staticLibraryTest
    ${CMAKE_THREAD_LIBS_INIT}
    ${CMAKE_BINARY_DIR}/src/libargparse-s.a
    )
-add_dependencies( staticLibraryTest ${CPPARGPARSE_TEST_LIB} )
+add_dependencies( staticLibraryTest ${ARGUMENTUM_TEST_LIB} )
 
 add_test(
   NAME

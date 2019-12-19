@@ -3,7 +3,7 @@
 
 #include "testutil.h"
 
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 
 #include <algorithm>
 #include <gtest/gtest.h>
@@ -258,7 +258,7 @@ TEST( ArgumentParserCommandTest, shouldReportErrorsOnlyInTopLevelParser )
    auto help = strout.str();
    auto lines = splitLines( help );
    int count = 0;
-   for ( auto line: lines ) {
+   for ( auto line : lines ) {
       if ( strHasText( line, "--bad-option" ) )
          ++count;
    }

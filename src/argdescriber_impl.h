@@ -14,7 +14,7 @@
 
 namespace argparse {
 
-CPPARGPARSE_INLINE ArgumentHelpResult ArgumentDescriber::describe_argument(
+ARGUMENTUM_INLINE ArgumentHelpResult ArgumentDescriber::describe_argument(
       const ParserDefinition& parserDef, std::string_view name ) const
 {
    bool isPositional = name.substr( 0, 1 ) != "-";
@@ -26,7 +26,7 @@ CPPARGPARSE_INLINE ArgumentHelpResult ArgumentDescriber::describe_argument(
    throw std::invalid_argument( "Unknown option." );
 }
 
-CPPARGPARSE_INLINE std::vector<ArgumentHelpResult> ArgumentDescriber::describe_arguments(
+ARGUMENTUM_INLINE std::vector<ArgumentHelpResult> ArgumentDescriber::describe_arguments(
       const ParserDefinition& parserDef ) const
 {
    std::vector<ArgumentHelpResult> descriptions;
@@ -43,8 +43,7 @@ CPPARGPARSE_INLINE std::vector<ArgumentHelpResult> ArgumentDescriber::describe_a
    return descriptions;
 }
 
-CPPARGPARSE_INLINE ArgumentHelpResult ArgumentDescriber::describeOption(
-      const Option& option ) const
+ARGUMENTUM_INLINE ArgumentHelpResult ArgumentDescriber::describeOption( const Option& option ) const
 {
    ArgumentHelpResult help;
    help.help_name = option.getHelpName();
@@ -69,7 +68,7 @@ CPPARGPARSE_INLINE ArgumentHelpResult ArgumentDescriber::describeOption(
    return help;
 }
 
-CPPARGPARSE_INLINE ArgumentHelpResult ArgumentDescriber::describeCommand(
+ARGUMENTUM_INLINE ArgumentHelpResult ArgumentDescriber::describeCommand(
       const Command& command ) const
 {
    ArgumentHelpResult help;
@@ -81,7 +80,7 @@ CPPARGPARSE_INLINE ArgumentHelpResult ArgumentDescriber::describeCommand(
    return help;
 }
 
-CPPARGPARSE_INLINE std::string ArgumentDescriber::describeArguments(
+ARGUMENTUM_INLINE std::string ArgumentDescriber::describeArguments(
       const Option& option, const std::string& metavar ) const
 {
    std::string res;

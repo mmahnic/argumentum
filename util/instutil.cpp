@@ -1,7 +1,7 @@
 // Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 #include <fstream>
 #include <iostream>
 #include <regex>

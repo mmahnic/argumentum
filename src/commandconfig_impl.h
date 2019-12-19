@@ -9,7 +9,7 @@
 
 namespace argparse {
 
-CPPARGPARSE_INLINE CommandConfig::CommandConfig( const std::shared_ptr<Command>& pCommand )
+ARGUMENTUM_INLINE CommandConfig::CommandConfig( const std::shared_ptr<Command>& pCommand )
    : mpCommand( pCommand )
 {
    assert( pCommand );
@@ -19,13 +19,13 @@ CPPARGPARSE_INLINE CommandConfig::CommandConfig( const std::shared_ptr<Command>&
 
 // Define the description of the command that will be displayed in the
 // generated help.
-CPPARGPARSE_INLINE CommandConfig& CommandConfig::help( std::string_view help )
+ARGUMENTUM_INLINE CommandConfig& CommandConfig::help( std::string_view help )
 {
    getCommand().setHelp( help );
    return *this;
 }
 
-CPPARGPARSE_INLINE Command& CommandConfig::getCommand()
+ARGUMENTUM_INLINE Command& CommandConfig::getCommand()
 {
    return *mpCommand;
 }

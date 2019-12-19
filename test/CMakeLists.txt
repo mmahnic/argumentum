@@ -1,6 +1,6 @@
 
 include_directories( ../include )
-set ( CPPARGPARSE_TEST_LIB ${CPPARGPARSE_STATIC_NAME} )
+set ( ARGUMENTUM_TEST_LIB ${ARGUMENTUM_STATIC_NAME} )
 
 find_package( GTest REQUIRED )
 find_package( Threads REQUIRED )
@@ -35,7 +35,7 @@ target_link_libraries( runUnitTests
    ${CMAKE_BINARY_DIR}/src/libargparse-s.a
    stdc++fs
    )
-add_dependencies( runUnitTests ${CPPARGPARSE_TEST_LIB} )
+add_dependencies( runUnitTests ${ARGUMENTUM_TEST_LIB} )
 
 add_executable( utilityTests
    runtest.cpp
@@ -47,7 +47,7 @@ target_link_libraries( utilityTests
    ${GTEST_LIBRARIES}
    ${CMAKE_THREAD_LIBS_INIT}
    )
-add_dependencies( utilityTests ${CPPARGPARSE_TEST_LIB} )
+add_dependencies( utilityTests ${ARGUMENTUM_TEST_LIB} )
 
 add_test(
   NAME

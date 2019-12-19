@@ -9,7 +9,7 @@
 
 namespace argparse {
 
-CPPARGPARSE_INLINE OptionConfig::OptionConfig( const std::shared_ptr<Option>& pOption )
+ARGUMENTUM_INLINE OptionConfig::OptionConfig( const std::shared_ptr<Option>& pOption )
    : mpOption( pOption )
 {
    assert( pOption );
@@ -17,33 +17,33 @@ CPPARGPARSE_INLINE OptionConfig::OptionConfig( const std::shared_ptr<Option>& pO
       throw std::invalid_argument( "OptionConfig requires an option." );
 }
 
-CPPARGPARSE_INLINE OptionConfig& OptionConfig::action( AssignAction action )
+ARGUMENTUM_INLINE OptionConfig& OptionConfig::action( AssignAction action )
 {
    getOption().setAction( action );
    return *this;
 }
 
-CPPARGPARSE_INLINE Option& OptionConfig::getOption()
+ARGUMENTUM_INLINE Option& OptionConfig::getOption()
 {
    return *mpOption;
 }
 
-CPPARGPARSE_INLINE void OptionConfig::markCountWasSet()
+ARGUMENTUM_INLINE void OptionConfig::markCountWasSet()
 {
    mCountWasSet = true;
 }
 
-CPPARGPARSE_INLINE void OptionConfig::ensureCountWasNotSet() const
+ARGUMENTUM_INLINE void OptionConfig::ensureCountWasNotSet() const
 {
    if ( mCountWasSet )
       throw std::invalid_argument( "Only one of nargs, minargs and maxargs can be used." );
 }
 
-CPPARGPARSE_INLINE VoidOptionConfig::VoidOptionConfig( OptionConfig&& wrapped )
+ARGUMENTUM_INLINE VoidOptionConfig::VoidOptionConfig( OptionConfig&& wrapped )
    : OptionConfigBaseT<VoidOptionConfig>( std::move( wrapped ) )
 {}
 
-CPPARGPARSE_INLINE VoidOptionConfig& VoidOptionConfig::action( assign_action_env_t action )
+ARGUMENTUM_INLINE VoidOptionConfig& VoidOptionConfig::action( assign_action_env_t action )
 {
    if ( action ) {
       auto wrapAction = [=]( Value& value, const std::string& argument,

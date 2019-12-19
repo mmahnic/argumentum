@@ -8,7 +8,7 @@
 
 namespace argparse {
 
-CPPARGPARSE_INLINE std::tuple<int, int, int> parse_int_prefix( std::string_view sv )
+ARGUMENTUM_INLINE std::tuple<int, int, int> parse_int_prefix( std::string_view sv )
 {
    static auto rxPrefix = std::regex( "^([-+]*)(0[bdox])?" );
    int sign = 1;
@@ -38,7 +38,7 @@ CPPARGPARSE_INLINE std::tuple<int, int, int> parse_int_prefix( std::string_view 
    return std::make_tuple( sign, base, 0 );
 }
 
-CPPARGPARSE_INLINE std::tuple<int, int> parse_float_prefix( std::string_view sv )
+ARGUMENTUM_INLINE std::tuple<int, int> parse_float_prefix( std::string_view sv )
 {
    static auto rxPrefix = std::regex( "^([-+]*)(0[dx])?" );
    int sign = 1;

@@ -8,49 +8,49 @@
 
 namespace argparse {
 
-CPPARGPARSE_INLINE CommandOptions::CommandOptions( std::string_view name )
+ARGUMENTUM_INLINE CommandOptions::CommandOptions( std::string_view name )
    : mName( name )
 {}
 
-CPPARGPARSE_INLINE const std::string& CommandOptions::getName() const
+ARGUMENTUM_INLINE const std::string& CommandOptions::getName() const
 {
    return mName;
 }
 
-CPPARGPARSE_INLINE void CommandOptions::execute( const ParseResult& result )
+ARGUMENTUM_INLINE void CommandOptions::execute( const ParseResult& result )
 {}
 
-CPPARGPARSE_INLINE Command::Command( std::string_view name, options_factory_t factory )
+ARGUMENTUM_INLINE Command::Command( std::string_view name, options_factory_t factory )
    : mName( name )
    , mFactory( factory )
 {}
 
-CPPARGPARSE_INLINE void Command::setHelp( std::string_view help )
+ARGUMENTUM_INLINE void Command::setHelp( std::string_view help )
 {
    mHelp = help;
 }
 
-CPPARGPARSE_INLINE const std::string& Command::getName() const
+ARGUMENTUM_INLINE const std::string& Command::getName() const
 {
    return mName;
 }
 
-CPPARGPARSE_INLINE bool Command::hasName( std::string_view name ) const
+ARGUMENTUM_INLINE bool Command::hasName( std::string_view name ) const
 {
    return name == mName;
 }
 
-CPPARGPARSE_INLINE bool Command::hasFactory() const
+ARGUMENTUM_INLINE bool Command::hasFactory() const
 {
    return mFactory != nullptr;
 }
 
-CPPARGPARSE_INLINE const std::string& Command::getHelp() const
+ARGUMENTUM_INLINE const std::string& Command::getHelp() const
 {
    return mHelp;
 }
 
-CPPARGPARSE_INLINE std::shared_ptr<CommandOptions> Command::getOptions()
+ARGUMENTUM_INLINE std::shared_ptr<CommandOptions> Command::getOptions()
 {
    if ( !mpOptions ) {
       if ( !mFactory )

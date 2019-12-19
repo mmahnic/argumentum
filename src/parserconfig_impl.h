@@ -11,42 +11,43 @@
 
 namespace argparse {
 
-CPPARGPARSE_INLINE const ParserConfig::Data& ParserConfig::data() const
+ARGUMENTUM_INLINE const ParserConfig::Data& ParserConfig::data() const
 {
    return mData;
 }
 
-CPPARGPARSE_INLINE ParserConfig& ParserConfig::program( std::string_view program )
+ARGUMENTUM_INLINE ParserConfig& ParserConfig::program( std::string_view program )
 {
    mData.program = program;
    return *this;
 }
 
-CPPARGPARSE_INLINE ParserConfig& ParserConfig::usage( std::string_view usage )
+ARGUMENTUM_INLINE ParserConfig& ParserConfig::usage( std::string_view usage )
 {
    mData.usage = usage;
    return *this;
 }
 
-CPPARGPARSE_INLINE ParserConfig& ParserConfig::description( std::string_view description )
+ARGUMENTUM_INLINE ParserConfig& ParserConfig::description( std::string_view description )
 {
    mData.description = description;
    return *this;
 }
 
-CPPARGPARSE_INLINE ParserConfig& ParserConfig::epilog( std::string_view epilog )
+ARGUMENTUM_INLINE ParserConfig& ParserConfig::epilog( std::string_view epilog )
 {
    mData.epilog = epilog;
    return *this;
 }
 
-CPPARGPARSE_INLINE ParserConfig& ParserConfig::cout( std::ostream& stream )
+ARGUMENTUM_INLINE ParserConfig& ParserConfig::cout( std::ostream& stream )
 {
    mData.pOutStream = &stream;
    return *this;
 }
 
-CPPARGPARSE_INLINE ParserConfig& ParserConfig::filesystem( const std::shared_ptr<Filesystem> pFilesystem )
+ARGUMENTUM_INLINE ParserConfig& ParserConfig::filesystem(
+      const std::shared_ptr<Filesystem> pFilesystem )
 {
    if ( pFilesystem )
       mData.pFilesystem = pFilesystem;
