@@ -10,6 +10,8 @@
 #include "parser.h"
 #include "writer.h"
 
+#include <sstream>
+
 namespace argparse {
 
 ARGUMENTUM_INLINE std::string HelpFormatter::formatArgument( const ArgumentHelpResult& arg ) const
