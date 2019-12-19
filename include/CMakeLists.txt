@@ -14,11 +14,10 @@ add_custom_command(
       ${CMAKE_CURRENT_BINARY_DIR}/argumentum/inc/*.txt
       ${CMAKE_CURRENT_BINARY_DIR}/argumentum/inc/*_impl.h
 
-   COMMAND sed -e "s#\.\./\.\./src#inc#g"
+   COMMAND instutil fake-target fake_create_headers.cpp
+   COMMAND instutil header
       ${CMAKE_CURRENT_SOURCE_DIR}/argumentum/argparse.h
-      > ${CMAKE_CURRENT_BINARY_DIR}/argumentum/argparse.h
-
-   COMMAND ${CMAKE_COMMAND} -E echo 'int main(){ return 0\; }' > fake_create_headers.cpp
+      ${CMAKE_CURRENT_BINARY_DIR}/argumentum/argparse.h
    )
 
 add_executable(fake_create_headers

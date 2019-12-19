@@ -44,11 +44,35 @@ protected:
    }
 };
 
+class FakeTargetCmd : public argparse::CommandOptions
+{
+   std::string outputFilename;
+
+public:
+   using CommandOptions::CommandOptions;
+   void execute( const argparse::ParseResult& res ) override
+   {
+      auto fout = ofstream( outputFilename );
+      fout << "int main() { return 0; }";
+   }
+
+protected:
+   void add_arguments( argparse::argument_parser& parser ) override
+   {
+      parser.add_argument( outputFilename, "output" )
+            .nargs( 1 )
+            .help( "The path of the destination file." );
+   }
+};
+
 int main( int argc, char** argv )
 {
    auto parser = argument_parser{};
    parser.config().program( argv[0] ).description( "cpp-argparse installation utility" );
    parser.add_command<MainHeaderCmd>( "header" ).help( "Transform the main header." );
+   parser.add_command<FakeTargetCmd>( "fake-target" )
+         .help( "Create a cpp file with the function main() "
+                "that will serve as a fake target." );
 
    auto res = parser.parse_args( argc, argv, 1 );
    if ( !res )
