@@ -12,7 +12,7 @@ set(INCLUDE_INSTALL_DIR include/ )
 set(LIB_INSTALL_DIR lib/ )
 set(CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/Argumentum)
 
-set(ARGUMENTUM_STATIC_NAME argparse-s)
+set(ARGUMENTUM_STATIC_NAME argumentum-s)
 add_subdirectory(src)
 add_subdirectory(util)
 
