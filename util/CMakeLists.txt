@@ -1,5 +1,6 @@
 
 include_directories( ../include )
+set ( ARGUMENTUM_UTIL_LIB ${ARGUMENTUM_STATIC_NAME} )
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -15,5 +16,6 @@ if( ARGUMENTUM_PEDANTIC )
 endif()
 
 target_link_libraries( instutil
-   argparse-s
+   ${ARGUMENTUM_UTIL_LIB}
    )
+add_dependencies( instutil ${ARGUMENTUM_UTIL_LIB} )

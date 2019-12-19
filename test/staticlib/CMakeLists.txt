@@ -1,6 +1,5 @@
 
 include_directories( ../../include )
-set ( ARGUMENTUM_TEST_LIB ${ARGUMENTUM_STATIC_NAME} )
 
 find_package( GTest REQUIRED )
 find_package( Threads REQUIRED )
@@ -14,9 +13,9 @@ add_executable( staticLibraryTest
 target_link_libraries( staticLibraryTest 
    ${GTEST_LIBRARIES}
    ${CMAKE_THREAD_LIBS_INIT}
-   ${CMAKE_BINARY_DIR}/src/libargparse-s.a
+   ${ARGUMENTUM_STATIC_NAME}
    )
-add_dependencies( staticLibraryTest ${ARGUMENTUM_TEST_LIB} )
+add_dependencies( staticLibraryTest ${ARGUMENTUM_STATIC_NAME} )
 
 add_test(
   NAME

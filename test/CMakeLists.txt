@@ -32,7 +32,7 @@ add_executable( runUnitTests
 target_link_libraries( runUnitTests 
    ${GTEST_LIBRARIES}
    ${CMAKE_THREAD_LIBS_INIT}
-   ${CMAKE_BINARY_DIR}/src/libargparse-s.a
+   ${ARGUMENTUM_TEST_LIB}
    stdc++fs
    )
 add_dependencies( runUnitTests ${ARGUMENTUM_TEST_LIB} )
@@ -46,6 +46,7 @@ add_executable( utilityTests
 target_link_libraries( utilityTests 
    ${GTEST_LIBRARIES}
    ${CMAKE_THREAD_LIBS_INIT}
+   ${ARGUMENTUM_TEST_LIB}
    )
 add_dependencies( utilityTests ${ARGUMENTUM_TEST_LIB} )
 
