@@ -4,21 +4,23 @@ project(Argumentum VERSION 0.2.0)
 
 option( ARGUMENTUM_BUILD_EXAMPLES   "build examples" ON )
 option( ARGUMENTUM_BUILD_TESTS      "build tests"    ON )
-option( ARGUMENTUM_INSTALL          "enable library installation"    ON )
-option( ARGUMENTUM_INSTALL_CONFIG   "enable config file installation" ON )
 option( ARGUMENTUM_PEDANTIC         "treat warnings as errors"    OFF )
 
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_DEBUG_POSTFIX d)
 
-set(CMAKE_CXX_STANDARD 17)
 set(INCLUDE_INSTALL_DIR include/ )
 set(LIB_INSTALL_DIR lib/ )
 set(CONFIG_INSTALL_DIR cmake/${PROJECT_NAME}
    CACHE STRING "The destination for the generated config files." )
+include(GNUInstallDirs)
 
 set(ARGUMENTUM_STATIC_NAME argumentum-s)
 add_subdirectory(src)
 add_subdirectory(util)
+add_subdirectory(include)
+
+include(InstallConfig.cmake)
 
 if( ARGUMENTUM_BUILD_EXAMPLES )
    add_subdirectory(example)
@@ -31,29 +33,3 @@ if( ARGUMENTUM_BUILD_TESTS )
    add_subdirectory(test/headerlib)
 endif()
 
-if (ARGUMENTUM_INSTALL)
-   include(GNUInstallDirs)
-   add_subdirectory(include)
-
-   if (ARGUMENTUM_INSTALL_CONFIG)
-      include(CMakePackageConfigHelpers)
-
-      configure_package_config_file(cmake/ArgumentumConfig.cmake.in
-         ${CMAKE_CURRENT_BINARY_DIR}/ArgumentumConfig.cmake
-         INSTALL_DESTINATION ${LIB_INSTALL_DIR}/Argumentum/cmake
-         PATH_VARS INCLUDE_INSTALL_DIR LIB_INSTALL_DIR )
-
-      write_basic_package_version_file(
-         ${CMAKE_CURRENT_BINARY_DIR}/ArgumentumConfigVersion.cmake
-         VERSION ${PROJECT_VERSION}
-         COMPATIBILITY AnyNewerVersion
-         )
-
-      install(FILES
-         ${CMAKE_CURRENT_BINARY_DIR}/ArgumentumConfig.cmake
-         ${CMAKE_CURRENT_BINARY_DIR}/ArgumentumConfigVersion.cmake
-         DESTINATION ${CONFIG_INSTALL_DIR}
-         )
-   endif()
-
-endif()

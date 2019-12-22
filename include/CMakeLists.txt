@@ -9,11 +9,6 @@ add_custom_command(
    COMMAND ${CMAKE_COMMAND} -E copy_directory
       ${CMAKE_SOURCE_DIR}/src  ${CMAKE_CURRENT_BINARY_DIR}/argumentum/inc
 
-   COMMAND ${CMAKE_COMMAND} -E remove
-      ${CMAKE_CURRENT_BINARY_DIR}/argumentum/inc/*.cpp
-      ${CMAKE_CURRENT_BINARY_DIR}/argumentum/inc/*.txt
-      ${CMAKE_CURRENT_BINARY_DIR}/argumentum/inc/*_impl.h
-
    COMMAND instutil fake-target fake_create_headers.cpp
    COMMAND instutil header
       ${CMAKE_CURRENT_SOURCE_DIR}/argumentum/argparse.h
@@ -27,5 +22,8 @@ add_executable(fake_create_headers
 install(DIRECTORY ${CMAKE_BINARY_DIR}/include/argumentum
    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
    FILES_MATCHING PATTERN "*.h"
+   PATTERN "inc/*_impl.h" EXCLUDE
+   PATTERN "inc/*.txt" EXCLUDE
+   PATTERN "inc/*.cpp" EXCLUDE
    )
 
