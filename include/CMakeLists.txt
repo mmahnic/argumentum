@@ -25,5 +25,7 @@ add_executable(fake_create_headers
    )
 
 install(DIRECTORY ${CMAKE_BINARY_DIR}/include/argumentum
-   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+   FILES_MATCHING PATTERN "*.h"
+   )
 
