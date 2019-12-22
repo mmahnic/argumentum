@@ -21,6 +21,6 @@ add_test(
   NAME
     staticlib
   COMMAND
-    ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/test/staticlib/staticLibraryTest
+    ${CMAKE_BINARY_DIR}/test/staticlib/staticLibraryTest
 )
 

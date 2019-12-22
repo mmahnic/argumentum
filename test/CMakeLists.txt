@@ -5,11 +5,6 @@ set ( ARGUMENTUM_TEST_LIB ${ARGUMENTUM_STATIC_NAME} )
 find_package( GTest REQUIRED )
 find_package( Threads REQUIRED )
 
-# The library is currently header-only.
-set(PARSER_SOURCES
-   # ../src/argparser.cpp
-   )
-
 add_executable( runUnitTests
    runtest.cpp
    testutil.cpp
@@ -26,7 +21,6 @@ add_executable( runUnitTests
    argumentstream_t.cpp
    optionfactory_t.cpp
    value_t.cpp
-   ${PARSER_SOURCES}
    )
 
 target_link_libraries( runUnitTests 
@@ -54,13 +48,13 @@ add_test(
   NAME
     utility
   COMMAND
-    ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/test/utilityTests
+    ${CMAKE_BINARY_DIR}/test/utilityTests
 )
 
 add_test(
   NAME
     parser
   COMMAND
-    ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/test/runUnitTests
+    ${CMAKE_BINARY_DIR}/test/runUnitTests
 )
 
