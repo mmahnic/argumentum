@@ -17,6 +17,8 @@ public:
    enum EPeekResult { peekDone, peekNext };
 
 public:
+   virtual ~ArgumentStream() = default;
+
    // Returns the argument on the current position in an argument stream and
    // moves to the next position.  Returns nullopt if there are no more
    // arguments.
