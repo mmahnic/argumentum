@@ -16,7 +16,7 @@ add_subdirectory( src )
 add_subdirectory( util )
 add_subdirectory( include )
 
-include( InstallConfig.cmake )
+include( cmake/InstallConfig.cmake )
 
 if( ARGUMENTUM_BUILD_EXAMPLES )
    add_subdirectory( example )
