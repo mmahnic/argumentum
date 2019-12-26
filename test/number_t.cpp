@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-using namespace argparse;
+using namespace argumentum;
 using namespace testing;
 
 TEST( NumberTest, shouldParseIntegerWithDecimalPrefix )

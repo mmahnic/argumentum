@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace argparse;
+using namespace argumentum;
 using namespace testing;
 
 namespace {

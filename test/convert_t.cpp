@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <gtest/gtest.h>
 
-using namespace argparse;
+using namespace argumentum;
 using namespace testing;
 
 namespace {
@@ -106,7 +106,7 @@ struct CustomType_fromstring_test
 };
 }   // namespace
 
-namespace argparse {
+namespace argumentum {
 template<>
 struct from_string<CustomType_fromstring_test>
 {
@@ -119,7 +119,7 @@ struct from_string<CustomType_fromstring_test>
       return custom;
    }
 };
-}   // namespace argparse
+}   // namespace argumentum
 
 TEST( ArgumentParserConvertTest, shouldSupportCustomOptionTypesWith_from_string )
 {

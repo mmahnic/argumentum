@@ -8,7 +8,7 @@
 #include "exceptions.h"
 #include "group.h"
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE void Option::setShortName( std::string_view name )
 {
@@ -234,4 +234,4 @@ ARGUMENTUM_INLINE TargetId Option::getTargetId() const
    return {};
 }
 
-}   // namespace argparse
+}   // namespace argumentum

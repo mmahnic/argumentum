@@ -8,7 +8,7 @@
 
 #include <string_view>
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE Option* ParserDefinition::findOption( std::string_view optionName )
 {
@@ -33,4 +33,4 @@ ARGUMENTUM_INLINE const ParserConfig::Data& ParserDefinition::getConfig() const
    return mConfig.data();
 }
 
-}   // namespace argparse
+}   // namespace argumentum

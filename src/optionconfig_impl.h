@@ -7,7 +7,7 @@
 
 #include <cassert>
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE OptionConfig::OptionConfig( const std::shared_ptr<Option>& pOption )
    : mpOption( pOption )
@@ -61,4 +61,4 @@ ARGUMENTUM_INLINE VoidOptionConfig& VoidOptionConfig::action( assign_action_env_
    return *this;
 }
 
-}   // namespace argparse
+}   // namespace argumentum

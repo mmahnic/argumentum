@@ -12,7 +12,7 @@
 
 #include <string>
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE ArgumentHelpResult ArgumentDescriber::describe_argument(
       const ParserDefinition& parserDef, std::string_view name ) const
@@ -105,4 +105,4 @@ ARGUMENTUM_INLINE std::string ArgumentDescriber::describeArguments(
    return res;
 }
 
-}   // namespace argparse
+}   // namespace argumentum

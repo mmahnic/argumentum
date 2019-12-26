@@ -7,7 +7,7 @@
 #include "notifier.h"
 #include "optionpack.h"
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE ParseError::ParseError( std::string_view optionName, int code )
    : option( optionName )
@@ -203,4 +203,4 @@ ARGUMENTUM_INLINE void ParseResultBuilder::addResult( ParseResult&& result )
       mResult.ignoredArguments.push_back( std::move( arg ) );
 }
 
-}   // namespace argparse
+}   // namespace argumentum

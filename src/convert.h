@@ -11,7 +11,7 @@
 #include <string_view>
 #include <vector>
 
-namespace argparse {
+namespace argumentum {
 
 std::tuple<int, int, int> parse_int_prefix( std::string_view sv );
 std::tuple<int, int> parse_float_prefix( std::string_view sv );
@@ -248,4 +248,4 @@ struct from_string<long double>
    }
 };
 
-}   // namespace argparse
+}   // namespace argumentum

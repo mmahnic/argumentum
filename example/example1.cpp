@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-using namespace argparse;
+using namespace argumentum;
 using namespace std;
 
 int main( int argc, char** argv )

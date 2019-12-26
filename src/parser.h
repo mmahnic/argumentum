@@ -11,7 +11,7 @@
 #include <string_view>
 #include <vector>
 
-namespace argparse {
+namespace argumentum {
 
 class Option;
 class Command;
@@ -49,4 +49,4 @@ private:
    EArgumentType getNextArgumentType( std::string_view arg );
 };
 
-}   // namespace argparse
+}   // namespace argumentum

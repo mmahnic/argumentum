@@ -9,10 +9,10 @@
 #include <string>
 #include <vector>
 
-using namespace argparse;
+using namespace argumentum;
 using namespace std;
 
-struct OptionsA : public argparse::Options
+struct OptionsA : public argumentum::Options
 {
    optional<string> stringValue;
    vector<long> intValues;
@@ -23,7 +23,7 @@ struct OptionsA : public argparse::Options
    }
 };
 
-struct OptionsB : public argparse::Options
+struct OptionsB : public argumentum::Options
 {
    optional<double> floatValue;
    long flag = 0;

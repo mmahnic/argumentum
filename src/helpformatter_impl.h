@@ -12,7 +12,7 @@
 
 #include <sstream>
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE std::string HelpFormatter::formatArgument( const ArgumentHelpResult& arg ) const
 {
@@ -205,4 +205,4 @@ ARGUMENTUM_INLINE void HelpFormatter::format( const ParserDefinition& parserDef,
    }
 }
 
-}   // namespace argparse
+}   // namespace argumentum

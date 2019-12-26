@@ -7,7 +7,7 @@
 
 #include "command.h"
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE CommandConfig::CommandConfig( const std::shared_ptr<Command>& pCommand )
    : mpCommand( pCommand )
@@ -30,4 +30,4 @@ ARGUMENTUM_INLINE Command& CommandConfig::getCommand()
    return *mpCommand;
 }
 
-}   // namespace argparse
+}   // namespace argumentum

@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE Writer::Writer( std::ostream& outStream, size_t widthBytes )
    : stream( outStream )
@@ -128,4 +128,4 @@ ARGUMENTUM_INLINE void Writer::write_paragraph( std::string_view text )
    }
 }
 
-}   // namespace argparse
+}   // namespace argumentum

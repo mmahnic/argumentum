@@ -7,7 +7,7 @@
 
 #include "group.h"
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE GroupConfig::GroupConfig( std::shared_ptr<OptionGroup> pGroup )
    : mpGroup( pGroup )
@@ -31,4 +31,4 @@ ARGUMENTUM_INLINE GroupConfig& GroupConfig::required( bool isRequired )
    return *this;
 }
 
-}   // namespace argparse
+}   // namespace argumentum

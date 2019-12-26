@@ -9,7 +9,7 @@
 #include <string>
 #include <string_view>
 
-namespace argparse {
+namespace argumentum {
 
 class ParserConfig
 {
@@ -55,4 +55,4 @@ public:
    ParserConfig& filesystem( const std::shared_ptr<Filesystem> pFilesystem );
 };
 
-}   // namespace argparse
+}   // namespace argumentum

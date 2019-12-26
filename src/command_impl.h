@@ -6,7 +6,7 @@
 #include "exceptions.h"
 #include "optionpack.h"
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE CommandOptions::CommandOptions( std::string_view name )
    : mName( name )
@@ -63,4 +63,4 @@ ARGUMENTUM_INLINE std::shared_ptr<CommandOptions> Command::getOptions()
    return mpOptions;
 }
 
-}   // namespace argparse
+}   // namespace argumentum

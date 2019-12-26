@@ -9,7 +9,7 @@
 #include <gtest/gtest.h>
 #include <sstream>
 
-using namespace argparse;
+using namespace argumentum;
 using namespace testutil;
 
 TEST( ArgumentParserHelpTest, shouldAcceptArgumentHelpStrings )
@@ -83,7 +83,7 @@ TEST( ArgumentParserHelpTest, shouldReturnDescriptionsOfAllArguments )
 
 namespace {
 
-class TestOptions : public argparse::Options
+class TestOptions : public argumentum::Options
 {
 public:
    std::string str;

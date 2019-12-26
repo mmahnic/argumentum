@@ -8,7 +8,7 @@
 #include <functional>
 #include <string>
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE ValueId Value::getValueId() const
 {
@@ -80,4 +80,4 @@ ARGUMENTUM_INLINE AssignAction VoidValue::getDefaultAction()
    return {};
 }
 
-}   // namespace argparse
+}   // namespace argumentum

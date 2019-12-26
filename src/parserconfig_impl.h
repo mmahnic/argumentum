@@ -9,7 +9,7 @@
 #include <string>
 #include <string_view>
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE const ParserConfig::Data& ParserConfig::data() const
 {
@@ -54,4 +54,4 @@ ARGUMENTUM_INLINE ParserConfig& ParserConfig::filesystem(
    return *this;
 }
 
-}   // namespace argparse
+}   // namespace argumentum

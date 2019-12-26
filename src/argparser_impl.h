@@ -13,7 +13,7 @@
 #include "option.h"
 #include "parser.h"
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE argument_parser argument_parser::createSubParser()
 {
@@ -497,4 +497,4 @@ ARGUMENTUM_INLINE void argument_parser::describe_errors( ParseResult& result )
    }
 }
 
-}   // namespace argparse
+}   // namespace argumentum

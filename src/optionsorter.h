@@ -7,7 +7,7 @@
 
 #include <vector>
 
-namespace argparse {
+namespace argumentum {
 
 class OptionSorter
 {
@@ -35,4 +35,4 @@ public:
    void reorderOptions( GroupLimit& limit );
 };
 
-}   // namespace argparse
+}   // namespace argumentum

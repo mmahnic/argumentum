@@ -20,7 +20,7 @@ namespace fs = std::experimental::filesystem;
 #define HAVE_FILESYSTEM 0
 #endif
 
-using namespace argparse;
+using namespace argumentum;
 
 class TestFilesystem : public Filesystem
 {

@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace argparse;
+using namespace argumentum;
 
 TEST( ArgumentParserActionTest, shouldSetValueOnTargetWithAction )
 {
@@ -193,7 +193,7 @@ TEST( ArgumentParserActionTest, shouldThrowWhenExitRequestIsUnchecked )
    try {
       auto res = parser.parse_args( { "-x" } );
    }
-   catch ( const argparse::UncheckedParseResult& e ) {
+   catch ( const argumentum::UncheckedParseResult& e ) {
       caught = true;
    }
    EXPECT_TRUE( caught );

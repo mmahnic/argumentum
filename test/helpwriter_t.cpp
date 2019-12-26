@@ -9,7 +9,7 @@
 #include <gtest/gtest.h>
 #include <sstream>
 
-using namespace argparse;
+using namespace argumentum;
 
 namespace {
 enum class EKeepEmpty : bool { no = false, yes = true };

@@ -5,7 +5,7 @@
 
 #include "group.h"
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE OptionGroup::OptionGroup( std::string_view name, bool isExclusive )
    : mName( name )
@@ -57,4 +57,4 @@ ARGUMENTUM_INLINE bool OptionGroup::isRequired() const
    return mIsRequired;
 }
 
-}   // namespace argparse
+}   // namespace argumentum

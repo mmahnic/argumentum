@@ -9,16 +9,16 @@
 #include <vector>
 
 using namespace std;
-using namespace argparse;
+using namespace argumentum;
 
-class MainHeaderCmd : public argparse::CommandOptions
+class MainHeaderCmd : public argumentum::CommandOptions
 {
    std::string inputFilename;
    std::string outputFilename;
 
 public:
    using CommandOptions::CommandOptions;
-   void execute( const argparse::ParseResult& res ) override
+   void execute( const argumentum::ParseResult& res ) override
    {
       auto fin = ifstream( inputFilename );
       auto fout = ofstream( outputFilename );
@@ -32,7 +32,7 @@ public:
    }
 
 protected:
-   void add_arguments( argparse::argument_parser& parser ) override
+   void add_arguments( argumentum::argument_parser& parser ) override
    {
       parser.add_argument( inputFilename, "input" )
             .nargs( 1 )
@@ -44,20 +44,20 @@ protected:
    }
 };
 
-class FakeTargetCmd : public argparse::CommandOptions
+class FakeTargetCmd : public argumentum::CommandOptions
 {
    std::string outputFilename;
 
 public:
    using CommandOptions::CommandOptions;
-   void execute( const argparse::ParseResult& res ) override
+   void execute( const argumentum::ParseResult& res ) override
    {
       auto fout = ofstream( outputFilename );
       fout << "int main() { return 0; }";
    }
 
 protected:
-   void add_arguments( argparse::argument_parser& parser ) override
+   void add_arguments( argumentum::argument_parser& parser ) override
    {
       parser.add_argument( outputFilename, "output" )
             .nargs( 1 )

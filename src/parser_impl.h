@@ -12,7 +12,7 @@
 
 #include <regex>
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE Parser::Parser( ParserDefinition& parserDef, ParseResultBuilder& result )
    : mParserDef( parserDef )
@@ -284,4 +284,4 @@ ARGUMENTUM_INLINE void Parser::parseSubstream( std::string_view streamName, unsi
       parse( *pSubstream, depth + 1 );
 }
 
-}   // namespace argparse
+}   // namespace argumentum

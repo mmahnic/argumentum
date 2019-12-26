@@ -9,7 +9,7 @@
 #include <string_view>
 #include <vector>
 
-namespace argparse {
+namespace argumentum {
 
 class Writer
 {
@@ -38,4 +38,4 @@ private:
    void write_paragraph( std::string_view text );
 };
 
-}   // namespace argparse
+}   // namespace argumentum

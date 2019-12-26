@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <gtest/gtest.h>
 
-using namespace argparse;
+using namespace argumentum;
 using namespace testing;
 
 // A negative number looks like a short option.  The parser should detect if the

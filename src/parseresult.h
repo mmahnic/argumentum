@@ -9,7 +9,7 @@
 #include <string_view>
 #include <vector>
 
-namespace argparse {
+namespace argumentum {
 
 // Errors known by the parser
 enum EError {
@@ -119,4 +119,4 @@ public:
    void addResult( ParseResult&& result );
 };
 
-}   // namespace argparse
+}   // namespace argumentum

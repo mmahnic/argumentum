@@ -7,7 +7,7 @@
 
 #include <algorithm>
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE std::vector<OptionSorter::GroupLimit> OptionSorter::reorderGroups(
       std::vector<ArgumentHelpResult>& args )
@@ -54,4 +54,4 @@ ARGUMENTUM_INLINE void OptionSorter::reorderOptions( GroupLimit& limit )
          limit.iendpos, limit.iend, []( auto&& opt ) { return opt.is_required(); } );
 }
 
-}   // namespace argparse
+}   // namespace argumentum

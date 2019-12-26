@@ -8,7 +8,7 @@
 #include "option.h"
 #include "parseresult.h"
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE Environment::Environment( Option& option, ParseResultBuilder& result )
    : mOption( option )
@@ -38,4 +38,4 @@ ARGUMENTUM_INLINE void Environment::notify_help_was_shown()
    mResult.signalHelpShown();
 }
 
-}   // namespace argparse
+}   // namespace argumentum

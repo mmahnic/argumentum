@@ -6,7 +6,7 @@
 
 #include "argumentstream.h"
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE void ArgumentStream::peek( std::function<EPeekResult( std::string_view )> fnPeek )
 {}
@@ -27,4 +27,4 @@ ARGUMENTUM_INLINE std::optional<std::string_view> StdStreamArgumentStream::next(
    return mCurrent;
 }
 
-}   // namespace argparse
+}   // namespace argumentum

@@ -9,7 +9,7 @@
 #include <optional>
 #include <string_view>
 
-namespace argparse {
+namespace argumentum {
 
 class ArgumentStream
 {
@@ -82,4 +82,4 @@ public:
    std::optional<std::string_view> next() override;
 };
 
-}   // namespace argparse
+}   // namespace argumentum

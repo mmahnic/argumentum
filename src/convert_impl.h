@@ -6,7 +6,7 @@
 #include <regex>
 #include <string_view>
 
-namespace argparse {
+namespace argumentum {
 
 ARGUMENTUM_INLINE std::tuple<int, int, int> parse_int_prefix( std::string_view sv )
 {
@@ -59,4 +59,4 @@ ARGUMENTUM_INLINE std::tuple<int, int> parse_float_prefix( std::string_view sv )
    return std::make_tuple( sign, 0 );
 }
 
-}   // namespace argparse
+}   // namespace argumentum

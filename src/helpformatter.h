@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace argparse {
+namespace argumentum {
 
 class ParserDefinition;
 class Writer;
@@ -78,4 +78,4 @@ private:
    size_t deriveMaxArgumentWidth( const std::vector<ArgumentHelpResult>& args ) const;
 };
 
-}   // namespace argparse
+}   // namespace argumentum

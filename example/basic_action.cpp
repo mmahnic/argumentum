@@ -5,7 +5,7 @@
 #include <vector>
 
 using namespace std;
-using namespace argparse;
+using namespace argumentum;
 
 int main( int argc, char** argv )
 {
