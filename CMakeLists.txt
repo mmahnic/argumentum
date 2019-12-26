@@ -2,9 +2,9 @@ cmake_minimum_required( VERSION 3.1 )
 
 project( Argumentum VERSION 0.2.0 )
 
-option( ARGUMENTUM_BUILD_EXAMPLES   "build examples" ON )
-option( ARGUMENTUM_BUILD_TESTS      "build tests"    ON )
-option( ARGUMENTUM_PEDANTIC         "treat warnings as errors"    OFF )
+option( ARGUMENTUM_BUILD_EXAMPLES   "build examples" OFF )
+option( ARGUMENTUM_BUILD_TESTS      "build tests"    OFF )
+option( ARGUMENTUM_PEDANTIC         "treat warnings as errors (TODO)"    OFF )
 
 set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_DEBUG_POSTFIX d )
