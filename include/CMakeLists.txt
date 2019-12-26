@@ -15,11 +15,11 @@ add_custom_command(
       ${CMAKE_CURRENT_BINARY_DIR}/argumentum/argparse.h
    )
 
-add_executable(fake_create_headers
+add_executable( fake_create_headers
    ${CMAKE_CURRENT_BINARY_DIR}/fake_create_headers.cpp
    )
 
-install(DIRECTORY ${CMAKE_BINARY_DIR}/include/argumentum
+install( DIRECTORY ${CMAKE_BINARY_DIR}/include/argumentum
    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
    FILES_MATCHING PATTERN "*.h"
    PATTERN "inc/*_impl.h" EXCLUDE
