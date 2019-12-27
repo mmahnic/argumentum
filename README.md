@@ -15,6 +15,13 @@ supported with parsing actions. The library requires a C++17 compiler.
 
 The library is loosely based on the Python argparse module. It covers most functionality of Python argparse. 
 
+## Building
+
+The library can be prebuilt as a static library or used as header-only.
+See [Building and consuming the library](doc/building.md).
+
+## Examples
+
 A basic example (compare with [Python argparse](https://docs.python.org/3/library/argparse.html#example)):
 
 ```c++
