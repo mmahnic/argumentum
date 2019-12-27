@@ -1,7 +1,7 @@
 // Copyright (c) 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 
 #include <algorithm>
 #include <gtest/gtest.h>
@@ -20,7 +20,7 @@ namespace fs = std::experimental::filesystem;
 #define HAVE_FILESYSTEM 0
 #endif
 
-using namespace argparse;
+using namespace argumentum;
 
 class TestFilesystem : public Filesystem
 {

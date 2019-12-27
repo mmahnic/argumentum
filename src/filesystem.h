@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-namespace argparse {
+namespace argumentum {
 
 // A virtual filesystem for opening streams of arguments.
 class Filesystem
@@ -28,4 +28,4 @@ public:
    }
 };
 
-}   // namespace argparse
+}   // namespace argumentum

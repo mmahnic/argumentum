@@ -3,17 +3,17 @@
 
 #include "testutil.h"
 
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 
 #include <algorithm>
 #include <gtest/gtest.h>
 #include <sstream>
 
-using namespace argparse;
+using namespace argumentum;
 using namespace testutil;
 
 namespace {
-struct CmdOneOptions : public argparse::CommandOptions
+struct CmdOneOptions : public argumentum::CommandOptions
 {
    std::optional<std::string> str;
    std::optional<long> count;
@@ -27,7 +27,7 @@ struct CmdOneOptions : public argparse::CommandOptions
    }
 };
 
-struct CmdTwoOptions : public argparse::CommandOptions
+struct CmdTwoOptions : public argumentum::CommandOptions
 {
    std::optional<std::string> str;
    std::optional<long> count;
@@ -41,7 +41,7 @@ struct CmdTwoOptions : public argparse::CommandOptions
    }
 };
 
-struct GlobalOptions : public argparse::Options
+struct GlobalOptions : public argumentum::Options
 {
    std::optional<std::string> global;
    void add_arguments( argument_parser& parser ) override
@@ -50,7 +50,7 @@ struct GlobalOptions : public argparse::Options
    }
 };
 
-struct TestCommandOptions : public argparse::Options
+struct TestCommandOptions : public argumentum::Options
 {
    std::shared_ptr<GlobalOptions> pGlobal;
 

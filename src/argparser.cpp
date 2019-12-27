@@ -1,5 +1,5 @@
 
-#define CPPARGPARSE_INLINE
+#define ARGUMENTUM_INLINE
 
 #include "argdescriber_impl.h"
 #include "argparser_impl.h"
@@ -21,4 +21,4 @@
 #include "value_impl.h"
 #include "writer_impl.h"
 
-#undef CPPARGPARSE_INLINE
+#undef ARGUMENTUM_INLINE

@@ -9,7 +9,7 @@
 #include <functional>
 #include <string>
 
-namespace argparse {
+namespace argumentum {
 
 class Environment;
 class Value;
@@ -81,7 +81,7 @@ template<typename TTarget>
 class ConvertedValue : public Value
 {
    template<typename T>
-   friend class ::argparse::OptionConfigA;
+   friend class ::argumentum::OptionConfigA;
 
    // Check if std::string can be converted to TVal with argparse::from_string.
    template<typename TVal>
@@ -97,7 +97,7 @@ class ConvertedValue : public Value
       static NoType& test( ... );
 
    public:
-      enum { value = sizeof( test<::argparse::from_string<TVal>>( 0 ) ) == sizeof( YesType ) };
+      enum { value = sizeof( test<::argumentum::from_string<TVal>>( 0 ) ) == sizeof( YesType ) };
    };
 
    // Check if std::string can be converted to TVal with constructors or
@@ -183,7 +183,7 @@ protected:
    template<typename TVar, std::enable_if_t<has_from_string<TVar>::value, int> = 0>
    void assign( TVar& var, const std::string& value )
    {
-      var = ::argparse::from_string<TVar>::convert( value );
+      var = ::argumentum::from_string<TVar>::convert( value );
    }
 
    template<typename TVar,
@@ -201,4 +201,4 @@ protected:
    }
 };
 
-}   // namespace argparse
+}   // namespace argumentum

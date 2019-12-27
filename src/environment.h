@@ -5,7 +5,7 @@
 
 #include <string_view>
 
-namespace argparse {
+namespace argumentum {
 
 class Option;
 class ParseResultBuilder;
@@ -23,4 +23,4 @@ public:
    void notify_help_was_shown();
 };
 
-}   // namespace argparse
+}   // namespace argumentum

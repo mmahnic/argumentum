@@ -5,7 +5,7 @@
 
 #include <iostream>
 
-namespace argparse {
+namespace argumentum {
 
 class Notifier
 {
@@ -16,4 +16,4 @@ public:
    }
 };
 
-}   // namespace argparse
+}   // namespace argumentum

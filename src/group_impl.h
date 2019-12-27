@@ -5,20 +5,20 @@
 
 #include "group.h"
 
-namespace argparse {
+namespace argumentum {
 
-CPPARGPARSE_INLINE OptionGroup::OptionGroup( std::string_view name, bool isExclusive )
+ARGUMENTUM_INLINE OptionGroup::OptionGroup( std::string_view name, bool isExclusive )
    : mName( name )
    , mTitle( name )
    , mIsExclusive( isExclusive )
 {}
 
-CPPARGPARSE_INLINE void OptionGroup::setTitle( std::string_view title )
+ARGUMENTUM_INLINE void OptionGroup::setTitle( std::string_view title )
 {
    mTitle = title;
 }
 
-CPPARGPARSE_INLINE void OptionGroup::setDescription( std::string_view description )
+ARGUMENTUM_INLINE void OptionGroup::setDescription( std::string_view description )
 {
    mDescription = description;
 }
@@ -26,35 +26,35 @@ CPPARGPARSE_INLINE void OptionGroup::setDescription( std::string_view descriptio
 // The required option can be set only when the group is not yet required.
 // Because a group can be defined in multiple places, it is required as
 // soon as it is required in one place.
-CPPARGPARSE_INLINE void OptionGroup::setRequired( bool isRequired )
+ARGUMENTUM_INLINE void OptionGroup::setRequired( bool isRequired )
 {
    if ( !mIsRequired )
       mIsRequired = isRequired;
 }
 
-CPPARGPARSE_INLINE const std::string& OptionGroup::getName() const
+ARGUMENTUM_INLINE const std::string& OptionGroup::getName() const
 {
    return mName;
 }
 
-CPPARGPARSE_INLINE const std::string& OptionGroup::getTitle() const
+ARGUMENTUM_INLINE const std::string& OptionGroup::getTitle() const
 {
    return mTitle;
 }
 
-CPPARGPARSE_INLINE const std::string& OptionGroup::getDescription() const
+ARGUMENTUM_INLINE const std::string& OptionGroup::getDescription() const
 {
    return mDescription;
 }
 
-CPPARGPARSE_INLINE bool OptionGroup::isExclusive() const
+ARGUMENTUM_INLINE bool OptionGroup::isExclusive() const
 {
    return mIsExclusive;
 }
 
-CPPARGPARSE_INLINE bool OptionGroup::isRequired() const
+ARGUMENTUM_INLINE bool OptionGroup::isRequired() const
 {
    return mIsRequired;
 }
 
-}   // namespace argparse
+}   // namespace argumentum

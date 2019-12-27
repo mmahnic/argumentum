@@ -10,9 +10,11 @@
 #include "parser.h"
 #include "writer.h"
 
-namespace argparse {
+#include <sstream>
 
-CPPARGPARSE_INLINE std::string HelpFormatter::formatArgument( const ArgumentHelpResult& arg ) const
+namespace argumentum {
+
+ARGUMENTUM_INLINE std::string HelpFormatter::formatArgument( const ArgumentHelpResult& arg ) const
 {
    if ( arg.isCommand )
       return arg.help_name;
@@ -30,7 +32,7 @@ CPPARGPARSE_INLINE std::string HelpFormatter::formatArgument( const ArgumentHelp
    return !arg.arguments.empty() ? res + " " + arg.arguments : res;
 }
 
-CPPARGPARSE_INLINE size_t HelpFormatter::deriveMaxArgumentWidth(
+ARGUMENTUM_INLINE size_t HelpFormatter::deriveMaxArgumentWidth(
       const std::vector<ArgumentHelpResult>& args ) const
 {
    if ( args.empty() )
@@ -44,7 +46,7 @@ CPPARGPARSE_INLINE size_t HelpFormatter::deriveMaxArgumentWidth(
    return formatArgument( *imax ).size();
 }
 
-CPPARGPARSE_INLINE void HelpFormatter::formatUsage(
+ARGUMENTUM_INLINE void HelpFormatter::formatUsage(
       const ParserDefinition& parserDef, std::vector<ArgumentHelpResult>& args, Writer& writer )
 {
    const auto& config = parserDef.getConfig();
@@ -93,7 +95,7 @@ CPPARGPARSE_INLINE void HelpFormatter::formatUsage(
    }
 }
 
-CPPARGPARSE_INLINE void HelpFormatter::format( const ParserDefinition& parserDef,
+ARGUMENTUM_INLINE void HelpFormatter::format( const ParserDefinition& parserDef,
       const std::vector<ParserDefinition>& subparsers, std::ostream& out )
 {
    if ( subparsers.empty() )
@@ -111,7 +113,7 @@ CPPARGPARSE_INLINE void HelpFormatter::format( const ParserDefinition& parserDef
    }
 }
 
-CPPARGPARSE_INLINE void HelpFormatter::format( const ParserDefinition& parserDef, std::ostream& out )
+ARGUMENTUM_INLINE void HelpFormatter::format( const ParserDefinition& parserDef, std::ostream& out )
 {
    const auto& config = parserDef.getConfig();
    ArgumentDescriber describer;
@@ -203,4 +205,4 @@ CPPARGPARSE_INLINE void HelpFormatter::format( const ParserDefinition& parserDef
    }
 }
 
-}   // namespace argparse
+}   // namespace argumentum

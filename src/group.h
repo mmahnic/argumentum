@@ -7,7 +7,7 @@
 #include <string>
 #include <string_view>
 
-namespace argparse {
+namespace argumentum {
 
 // NOTE: An option group with the same name can be defined in multiple
 // places.  When it is configured multiple times the last configured values
@@ -37,4 +37,4 @@ public:
    bool isRequired() const;
 };
 
-}   // namespace argparse
+}   // namespace argumentum

@@ -9,7 +9,7 @@
 #include <string_view>
 #include <vector>
 
-namespace argparse {
+namespace argumentum {
 
 class Option;
 class Command;
@@ -32,4 +32,4 @@ public:
    const ParserConfig::Data& getConfig() const;
 };
 
-}   // namespace argparse
+}   // namespace argumentum

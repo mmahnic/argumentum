@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace argparse {
+namespace argumentum {
 
 class InvalidChoiceError : public std::invalid_argument
 {
@@ -92,4 +92,4 @@ public:
    {}
 };
 
-}   // namespace argparse
+}   // namespace argumentum

@@ -6,15 +6,15 @@
 #include <regex>
 #include <string_view>
 
-namespace argparse {
+namespace argumentum {
 
-CPPARGPARSE_INLINE std::tuple<int, int, int> parse_int_prefix( std::string_view sv )
+ARGUMENTUM_INLINE std::tuple<int, int, int> parse_int_prefix( std::string_view sv )
 {
    static auto rxPrefix = std::regex( "^([-+]*)(0[bdox])?" );
    int sign = 1;
    int base = 10;
-   std::cmatch m;
-   if ( std::regex_search( std::begin( sv ), std::end( sv ), m, rxPrefix ) ) {
+   std::match_results<std::string_view::iterator> m;
+   if ( std::regex_search( sv.begin(), sv.end(), m, rxPrefix ) ) {
       if ( m.length( 1 ) )
          sign = std::count( m[1].first, m[1].second, '-' ) % 2 ? -1 : 1;
       if ( m.length( 2 ) ) {
@@ -38,12 +38,12 @@ CPPARGPARSE_INLINE std::tuple<int, int, int> parse_int_prefix( std::string_view 
    return std::make_tuple( sign, base, 0 );
 }
 
-CPPARGPARSE_INLINE std::tuple<int, int> parse_float_prefix( std::string_view sv )
+ARGUMENTUM_INLINE std::tuple<int, int> parse_float_prefix( std::string_view sv )
 {
    static auto rxPrefix = std::regex( "^([-+]*)(0[dx])?" );
    int sign = 1;
-   std::cmatch m;
-   if ( std::regex_search( std::begin( sv ), std::end( sv ), m, rxPrefix ) ) {
+   std::match_results<std::string_view::iterator> m;
+   if ( std::regex_search( sv.begin(), sv.end(), m, rxPrefix ) ) {
       if ( m.length( 1 ) )
          sign = std::count( m[1].first, m[1].second, '-' ) % 2 ? -1 : 1;
       if ( m.length( 2 ) ) {
@@ -59,4 +59,4 @@ CPPARGPARSE_INLINE std::tuple<int, int> parse_float_prefix( std::string_view sv 
    return std::make_tuple( sign, 0 );
 }
 
-}   // namespace argparse
+}   // namespace argumentum

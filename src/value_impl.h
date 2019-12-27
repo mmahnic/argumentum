@@ -8,19 +8,19 @@
 #include <functional>
 #include <string>
 
-namespace argparse {
+namespace argumentum {
 
-CPPARGPARSE_INLINE ValueId Value::getValueId() const
+ARGUMENTUM_INLINE ValueId Value::getValueId() const
 {
    return reinterpret_cast<ValueId>( this );
 }
 
-CPPARGPARSE_INLINE TargetId Value::getTargetId() const
+ARGUMENTUM_INLINE TargetId Value::getTargetId() const
 {
    return std::make_pair( getValueTypeId(), 0 );
 }
 
-CPPARGPARSE_INLINE void Value::setValue(
+ARGUMENTUM_INLINE void Value::setValue(
       std::string_view value, AssignAction action, Environment& env )
 {
    ++mAssignCount;
@@ -30,7 +30,7 @@ CPPARGPARSE_INLINE void Value::setValue(
       action( *this, std::string{ value }, env );
 }
 
-CPPARGPARSE_INLINE void Value::setDefault( AssignDefaultAction action )
+ARGUMENTUM_INLINE void Value::setDefault( AssignDefaultAction action )
 {
    if ( action ) {
       ++mAssignCount;
@@ -38,36 +38,36 @@ CPPARGPARSE_INLINE void Value::setDefault( AssignDefaultAction action )
    }
 }
 
-CPPARGPARSE_INLINE void Value::markBadArgument()
+ARGUMENTUM_INLINE void Value::markBadArgument()
 {
    // Increase the assign count so that flagValue will not be used.
    mHasErrors = true;
 }
 
-CPPARGPARSE_INLINE int Value::getAssignCount() const
+ARGUMENTUM_INLINE int Value::getAssignCount() const
 {
    return mAssignCount;
 }
 
-CPPARGPARSE_INLINE void Value::onOptionStarted()
+ARGUMENTUM_INLINE void Value::onOptionStarted()
 {}
 
-CPPARGPARSE_INLINE void Value::reset()
+ARGUMENTUM_INLINE void Value::reset()
 {
    mAssignCount = 0;
    mHasErrors = false;
    doReset();
 }
 
-CPPARGPARSE_INLINE void Value::doReset()
+ARGUMENTUM_INLINE void Value::doReset()
 {}
 
-CPPARGPARSE_INLINE uintptr_t VoidValue::getValueTypeId() const
+ARGUMENTUM_INLINE uintptr_t VoidValue::getValueTypeId() const
 {
    return 0;
 }
 
-CPPARGPARSE_INLINE VoidValue* VoidValue::value_cast( Value& value )
+ARGUMENTUM_INLINE VoidValue* VoidValue::value_cast( Value& value )
 {
    if ( value.getValueTypeId() != 0 )
       return nullptr;
@@ -75,9 +75,9 @@ CPPARGPARSE_INLINE VoidValue* VoidValue::value_cast( Value& value )
    return static_cast<VoidValue*>( &value );
 }
 
-CPPARGPARSE_INLINE AssignAction VoidValue::getDefaultAction()
+ARGUMENTUM_INLINE AssignAction VoidValue::getDefaultAction()
 {
    return {};
 }
 
-}   // namespace argparse
+}   // namespace argumentum

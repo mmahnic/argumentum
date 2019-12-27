@@ -1,18 +1,18 @@
 #include "../testutil.h"
 
+#include <argumentum/argparse.h>
 #include <climits>
-#include <cppargparse/argparse.h>
 #include <gtest/gtest.h>
 #include <numeric>
 #include <vector>
 
 using namespace std;
-using namespace argparse;
+using namespace argumentum;
 using namespace testutil;
 
 // NOTE: Both command classes use the same definitions, but each uses a separate
 // instance of these common options.
-class SharedOptions : public argparse::Options
+class SharedOptions : public argumentum::Options
 {
 public:
    vector<int> numbers;
@@ -24,7 +24,7 @@ public:
    }
 };
 
-class CmdAccumulatorOptions : public argparse::CommandOptions
+class CmdAccumulatorOptions : public argumentum::CommandOptions
 {
 public:
    std::shared_ptr<SharedOptions> common;
@@ -59,7 +59,7 @@ protected:
    }
 };
 
-class CmdEchoOptions : public argparse::CommandOptions
+class CmdEchoOptions : public argumentum::CommandOptions
 {
 public:
    std::shared_ptr<SharedOptions> common;

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 
 #include <memory>
 #include <sstream>
@@ -28,7 +28,7 @@ std::string getTestHelp( P&& parser, F&& formatter )
 }
 
 template<typename TCommand>
-std::shared_ptr<TCommand> findCommand( const argparse::ParseResult& res )
+std::shared_ptr<TCommand> findCommand( const argumentum::ParseResult& res )
 {
    for ( auto& pCmd : res.commands ) {
       auto pDesired = std::dynamic_pointer_cast<TCommand>( pCmd );
@@ -39,7 +39,7 @@ std::shared_ptr<TCommand> findCommand( const argparse::ParseResult& res )
 }
 
 template<typename TCommand>
-std::shared_ptr<TCommand> findCommand( const argparse::ParseResult& res, std::string_view name )
+std::shared_ptr<TCommand> findCommand( const argumentum::ParseResult& res, std::string_view name )
 {
    for ( auto& pCmd : res.commands ) {
       auto pDesired = std::dynamic_pointer_cast<TCommand>( pCmd );

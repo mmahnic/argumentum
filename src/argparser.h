@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-namespace argparse {
+namespace argumentum {
 
 class argument_parser
 {
@@ -172,4 +172,4 @@ private:
    OptionFactory& getOptionFactory();
 };
 
-}   // namespace argparse
+}   // namespace argumentum

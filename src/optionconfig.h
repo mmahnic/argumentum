@@ -5,7 +5,7 @@
 
 #include "option.h"
 
-namespace argparse {
+namespace argumentum {
 
 /**
  * OptionConfig is used to configure an option after an option was created with add_argument.
@@ -213,4 +213,4 @@ public:
    VoidOptionConfig& action( assign_action_env_t action );
 };
 
-}   // namespace argparse
+}   // namespace argumentum

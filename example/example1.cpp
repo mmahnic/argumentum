@@ -2,14 +2,14 @@
 //
 // ./example1 -s str -i 1 --float=3.5 -g param
 
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 
 #include <iostream>
 #include <optional>
 #include <string>
 #include <vector>
 
-using namespace argparse;
+using namespace argumentum;
 using namespace std;
 
 int main( int argc, char** argv )

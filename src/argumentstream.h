@@ -9,7 +9,7 @@
 #include <optional>
 #include <string_view>
 
-namespace argparse {
+namespace argumentum {
 
 class ArgumentStream
 {
@@ -17,6 +17,8 @@ public:
    enum EPeekResult { peekDone, peekNext };
 
 public:
+   virtual ~ArgumentStream() = default;
+
    // Returns the argument on the current position in an argument stream and
    // moves to the next position.  Returns nullopt if there are no more
    // arguments.
@@ -80,4 +82,4 @@ public:
    std::optional<std::string_view> next() override;
 };
 
-}   // namespace argparse
+}   // namespace argumentum

@@ -10,7 +10,7 @@
 #include <string_view>
 #include <vector>
 
-namespace argparse {
+namespace argumentum {
 
 class OptionGroup;
 
@@ -97,4 +97,4 @@ private:
    {}
 };
 
-}   // namespace argparse
+}   // namespace argumentum

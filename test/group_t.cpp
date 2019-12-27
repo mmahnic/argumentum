@@ -1,12 +1,12 @@
 // Copyright (c) 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 
 #include <algorithm>
 #include <gtest/gtest.h>
 
-using namespace argparse;
+using namespace argumentum;
 
 TEST( ArgumentParserGroupsTest, shouldDefineExclusiveGroups )
 {
@@ -55,7 +55,7 @@ TEST( ArgumentParserGroupsTest, shouldDefineExclusiveGroups )
 
 // The logic for this requirement may seem strange.  But this might be useful
 // when a group of exclusive options is scattered among multiple
-// argparse::Options instances that are used by a parser.
+// argumentum::Options instances that are used by a parser.
 TEST( ArgumentParserGroupsTest, shouldStartSameGroupMultipleTimes )
 {
    std::optional<int> maybeInt;
@@ -119,7 +119,7 @@ TEST( ArgumentParserGroupsTest, shouldNotMixSimpleAndExclusiveGroups )
    parser.add_argument( first, "--first" );
    parser.add_argument( second, "--second" );
    parser.end_group();
-   EXPECT_THROW( parser.add_exclusive_group( "ints" ), argparse::MixingGroupTypes );
+   EXPECT_THROW( parser.add_exclusive_group( "ints" ), argumentum::MixingGroupTypes );
 }
 
 TEST( ArgumentParserGroupsTest, shouldNotMixExclusiveAndSimpleGroups )
@@ -133,7 +133,7 @@ TEST( ArgumentParserGroupsTest, shouldNotMixExclusiveAndSimpleGroups )
    parser.add_argument( first, "--first" );
    parser.add_argument( second, "--second" );
    parser.end_group();
-   EXPECT_THROW( parser.add_group( "ints" ), argparse::MixingGroupTypes );
+   EXPECT_THROW( parser.add_group( "ints" ), argumentum::MixingGroupTypes );
 }
 
 TEST( ArgumentParserGroupsTest, shouldRequireOptionsFromRequiredExclusiveGroups )
@@ -188,7 +188,7 @@ TEST( ArgumentParserGroupsTest, shouldForbidRequiredOptionsInExclusiveGroup )
    // The combination of exclusive groups with required options can be verified
    // only after the options are configured.  We make such checks in parse_args
    // before actually parsing anything.
-   EXPECT_THROW( parser.parse_args( {} ), argparse::RequiredExclusiveOption );
+   EXPECT_THROW( parser.parse_args( {} ), argumentum::RequiredExclusiveOption );
 }
 
 TEST( ArgumentParserGroupsTest, shouldNotAddDefaultHelpToGroupWhenHelpNotDefined )

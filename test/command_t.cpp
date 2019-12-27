@@ -3,16 +3,16 @@
 
 #include "testutil.h"
 
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 
 #include <algorithm>
 #include <gtest/gtest.h>
 
-using namespace argparse;
+using namespace argumentum;
 using namespace testutil;
 
 namespace {
-struct CmdOneOptions : public argparse::CommandOptions
+struct CmdOneOptions : public argumentum::CommandOptions
 {
    std::optional<std::string> str;
    std::optional<long> count;
@@ -26,7 +26,7 @@ struct CmdOneOptions : public argparse::CommandOptions
    }
 };
 
-struct CmdTwoOptions : public argparse::CommandOptions
+struct CmdTwoOptions : public argumentum::CommandOptions
 {
    std::optional<std::string> str;
    std::optional<long> count;
@@ -118,7 +118,7 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent2 )
    auto parser = argument_parser{};
    parser.config().cout( strout );
 
-   struct GlobalOptions : public argparse::Options
+   struct GlobalOptions : public argumentum::Options
    {
       std::optional<std::string> global;
       void add_arguments( argument_parser& parser ) override
@@ -149,7 +149,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredOptionsWhenCommandP
    auto parser = argument_parser{};
    parser.config().cout( strout );
 
-   struct GlobalOptions : public argparse::Options
+   struct GlobalOptions : public argumentum::Options
    {
       std::optional<std::string> global;
       void add_arguments( argument_parser& parser ) override
@@ -182,7 +182,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredPositionalWhenComma
    auto parser = argument_parser{};
    parser.config().cout( strout );
 
-   struct GlobalOptions : public argparse::Options
+   struct GlobalOptions : public argumentum::Options
    {
       std::optional<std::string> global;
       void add_arguments( argument_parser& parser ) override
@@ -258,7 +258,7 @@ TEST( ArgumentParserCommandTest, shouldReportErrorsOnlyInTopLevelParser )
    auto help = strout.str();
    auto lines = splitLines( help );
    int count = 0;
-   for ( auto line: lines ) {
+   for ( auto line : lines ) {
       if ( strHasText( line, "--bad-option" ) )
          ++count;
    }

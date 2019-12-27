@@ -1,12 +1,12 @@
 // Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 
 #include <algorithm>
 #include <gtest/gtest.h>
 
-using namespace argparse;
+using namespace argumentum;
 using namespace testing;
 
 // A negative number looks like a short option.  The parser should detect if the

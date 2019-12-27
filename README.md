@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.com/mmahnic/cpp-argparse.svg?branch=master)](https://travis-ci.com/mmahnic/cpp-argparse)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/mmahnic/cpp-argparse.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/mmahnic/cpp-argparse/context:cpp)
 
-# Argparse
+# Argumentum / Argparse
 
 cpp-argparse is a C++ library for writing command-line program interfaces. The arguments that a
 program supports are registered in an instance of `arument_parser`, the main library class.
@@ -15,11 +15,18 @@ supported with parsing actions. The library requires a C++17 compiler.
 
 The library is loosely based on the Python argparse module. It covers most functionality of Python argparse. 
 
+## Building
+
+The library can be prebuilt as a static library or used as header-only.
+See [Building and consuming the library](doc/building.md).
+
+## Examples
+
 A basic example (compare with [Python argparse](https://docs.python.org/3/library/argparse.html#example)):
 
 ```c++
 #include <climits>
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 #include <numeric>
 #include <vector>
 
@@ -53,7 +60,7 @@ The same example implemented with an action and a default value:
 
 ```c++
 #include <climits>
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 #include <numeric>
 #include <vector>
 
@@ -93,7 +100,7 @@ This is the same example rewritten so that it stores options in a structure:
 
 ```c++
 #include <climits>
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 #include <numeric>
 #include <vector>
 
@@ -156,7 +163,7 @@ future.
 
 ```C++
 #include <climits>
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 #include <numeric>
 #include <vector>
 

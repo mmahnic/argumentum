@@ -1,12 +1,12 @@
+#include <argumentum/argparse.h>
 #include <climits>
-#include <cppargparse/argparse.h>
 #include <numeric>
 #include <vector>
 
 using namespace std;
-using namespace argparse;
+using namespace argumentum;
 
-class AccumulatorOptions : public argparse::Options
+class AccumulatorOptions : public argumentum::Options
 {
 public:
    vector<int> numbers;

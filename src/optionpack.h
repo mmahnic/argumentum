@@ -6,7 +6,7 @@
 #include <string>
 #include <string_view>
 
-namespace argparse {
+namespace argumentum {
 
 class ParseResult;
 class argument_parser;
@@ -27,4 +27,4 @@ public:
    virtual void execute( const ParseResult& result );
 };
 
-}   // namespace argparse
+}   // namespace argumentum

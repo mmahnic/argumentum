@@ -12,7 +12,7 @@
 #include <memory>
 #include <vector>
 
-namespace argparse {
+namespace argumentum {
 
 class OptionFactory
 {
@@ -63,4 +63,4 @@ private:
    }
 };
 
-}   // namespace argparse
+}   // namespace argumentum

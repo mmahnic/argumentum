@@ -10,7 +10,7 @@
 #include <string_view>
 #include <vector>
 
-namespace argparse {
+namespace argumentum {
 
 class CommandOptions;
 
@@ -37,4 +37,4 @@ public:
    std::shared_ptr<CommandOptions> getOptions();
 };
 
-}   // namespace argparse
+}   // namespace argumentum

@@ -4,12 +4,12 @@
 #include "testutil.h"
 #include "vectors.h"
 
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 
 #include <algorithm>
 #include <gtest/gtest.h>
 
-using namespace argparse;
+using namespace argumentum;
 using namespace testing;
 using namespace testutil;
 
@@ -678,7 +678,7 @@ TEST( ArgumentParserTest, shouldNotAcceptOptionsWithWhitespace )
 
 TEST( ArgumentParserTest, shouldAcceptSharedOptionStructure )
 {
-   struct Options : public argparse::Options
+   struct Options : public argumentum::Options
    {
       std::string str;
       long count;
@@ -700,7 +700,7 @@ TEST( ArgumentParserTest, shouldAcceptSharedOptionStructure )
 
 TEST( ArgumentParserTest, shouldAcceptMultipleSharedOptionStructures )
 {
-   struct Options : public argparse::Options
+   struct Options : public argumentum::Options
    {
       std::string str;
       long count;
@@ -712,7 +712,7 @@ TEST( ArgumentParserTest, shouldAcceptMultipleSharedOptionStructures )
       }
    };
 
-   struct MoreOptions : public argparse::Options
+   struct MoreOptions : public argumentum::Options
    {
       std::string str;
       long count;
@@ -1008,7 +1008,7 @@ TEST( ArgumentParserTest, shouldForbidDuplicateOptions )
    std::string second;
    auto parser = argument_parser{};
    parser.add_argument( first, "--first" );
-   EXPECT_THROW( parser.add_argument( second, "--first" ), argparse::DuplicateOption );
+   EXPECT_THROW( parser.add_argument( second, "--first" ), argumentum::DuplicateOption );
 }
 
 TEST( ArgumentParserTest, shouldForbidDuplicateHelpOptions )
@@ -1016,7 +1016,7 @@ TEST( ArgumentParserTest, shouldForbidDuplicateHelpOptions )
    std::string first;
    auto parser = argument_parser{};
    parser.add_argument( first, "--aiuto" );
-   EXPECT_THROW( parser.add_help_option( "--aiuto" ), argparse::DuplicateOption );
+   EXPECT_THROW( parser.add_help_option( "--aiuto" ), argumentum::DuplicateOption );
 }
 
 TEST( ArgumentParserTest, shouldForbidDuplicateHelpOptions2 )
@@ -1024,7 +1024,7 @@ TEST( ArgumentParserTest, shouldForbidDuplicateHelpOptions2 )
    std::string first;
    auto parser = argument_parser{};
    parser.add_help_option( "--aiuto" );
-   EXPECT_THROW( parser.add_argument( first, "--aiuto" ), argparse::DuplicateOption );
+   EXPECT_THROW( parser.add_argument( first, "--aiuto" ), argumentum::DuplicateOption );
 }
 
 TEST( ArgumentParserTest, shouldSkipInitialArguments )

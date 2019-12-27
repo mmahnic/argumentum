@@ -12,14 +12,14 @@
 
 #include <regex>
 
-namespace argparse {
+namespace argumentum {
 
-CPPARGPARSE_INLINE Parser::Parser( ParserDefinition& parserDef, ParseResultBuilder& result )
+ARGUMENTUM_INLINE Parser::Parser( ParserDefinition& parserDef, ParseResultBuilder& result )
    : mParserDef( parserDef )
    , mResult( result )
 {}
 
-CPPARGPARSE_INLINE void Parser::parse( ArgumentStream& argStream )
+ARGUMENTUM_INLINE void Parser::parse( ArgumentStream& argStream )
 {
    mResult.clear();
 
@@ -46,19 +46,19 @@ enum class EArgumentType {
 };
 
 namespace {
-CPPARGPARSE_INLINE bool isNumberLike( std::string_view arg )
+ARGUMENTUM_INLINE bool isNumberLike( std::string_view arg )
 {
    static auto rxFloat = std::regex( "^[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$" );
    return std::regex_match( std::begin( arg ), std::end( arg ), rxFloat );
 }
 }   // namespace
 
-CPPARGPARSE_INLINE bool Parser::optionWithNameExists( std::string_view name )
+ARGUMENTUM_INLINE bool Parser::optionWithNameExists( std::string_view name )
 {
    return mParserDef.findOption( name ) != nullptr;
 }
 
-CPPARGPARSE_INLINE EArgumentType Parser::getNextArgumentType( std::string_view arg )
+ARGUMENTUM_INLINE EArgumentType Parser::getNextArgumentType( std::string_view arg )
 {
    if ( mIgnoreOptions )
       return EArgumentType::freeArgument;
@@ -102,7 +102,7 @@ CPPARGPARSE_INLINE EArgumentType Parser::getNextArgumentType( std::string_view a
    return EArgumentType::freeArgument;
 }
 
-CPPARGPARSE_INLINE void Parser::parse( ArgumentStream& argStream, unsigned depth )
+ARGUMENTUM_INLINE void Parser::parse( ArgumentStream& argStream, unsigned depth )
 {
    for ( auto optArg = argStream.next(); !!optArg; optArg = argStream.next() ) {
       switch ( getNextArgumentType( *optArg ) ) {
@@ -155,7 +155,7 @@ CPPARGPARSE_INLINE void Parser::parse( ArgumentStream& argStream, unsigned depth
    }
 }
 
-CPPARGPARSE_INLINE void Parser::startOption( std::string_view name )
+ARGUMENTUM_INLINE void Parser::startOption( std::string_view name )
 {
    if ( haveActiveOption() )
       closeOption();
@@ -187,12 +187,12 @@ CPPARGPARSE_INLINE void Parser::startOption( std::string_view name )
       addError( name, UNKNOWN_OPTION );
 }
 
-CPPARGPARSE_INLINE bool Parser::haveActiveOption() const
+ARGUMENTUM_INLINE bool Parser::haveActiveOption() const
 {
    return mpActiveOption != nullptr;
 }
 
-CPPARGPARSE_INLINE void Parser::closeOption()
+ARGUMENTUM_INLINE void Parser::closeOption()
 {
    if ( haveActiveOption() ) {
       auto& option = *mpActiveOption;
@@ -204,7 +204,7 @@ CPPARGPARSE_INLINE void Parser::closeOption()
    mpActiveOption = nullptr;
 }
 
-CPPARGPARSE_INLINE void Parser::addFreeArgument( std::string_view arg )
+ARGUMENTUM_INLINE void Parser::addFreeArgument( std::string_view arg )
 {
    if ( mPosition < mParserDef.mPositional.size() ) {
       auto& option = *mParserDef.mPositional[mPosition];
@@ -228,12 +228,12 @@ CPPARGPARSE_INLINE void Parser::addFreeArgument( std::string_view arg )
    mResult.addIgnored( arg );
 }
 
-CPPARGPARSE_INLINE void Parser::addError( std::string_view optionName, int errorCode )
+ARGUMENTUM_INLINE void Parser::addError( std::string_view optionName, int errorCode )
 {
    mResult.addError( optionName, errorCode );
 }
 
-CPPARGPARSE_INLINE void Parser::setValue( Option& option, std::string_view value )
+ARGUMENTUM_INLINE void Parser::setValue( Option& option, std::string_view value )
 {
    try {
       auto env = Environment{ option, mResult };
@@ -252,7 +252,7 @@ CPPARGPARSE_INLINE void Parser::setValue( Option& option, std::string_view value
 
 // A parser for command's (sub)options is instantiated only when a command is
 // selected by an input argument.
-CPPARGPARSE_INLINE void Parser::parseCommandArguments(
+ARGUMENTUM_INLINE void Parser::parseCommandArguments(
       Command& command, ArgumentStream& argStream, ParseResultBuilder& result )
 {
    auto parser = argument_parser::createSubParser();
@@ -271,7 +271,7 @@ CPPARGPARSE_INLINE void Parser::parseCommandArguments(
    result.addResult( parser.parse_args( argStream ) );
 }
 
-CPPARGPARSE_INLINE void Parser::parseSubstream( std::string_view streamName, unsigned depth )
+ARGUMENTUM_INLINE void Parser::parseSubstream( std::string_view streamName, unsigned depth )
 {
    if ( !mParserDef.getConfig().pFilesystem )
       throw MissingFilesystem();
@@ -284,4 +284,4 @@ CPPARGPARSE_INLINE void Parser::parseSubstream( std::string_view streamName, uns
       parse( *pSubstream, depth + 1 );
 }
 
-}   // namespace argparse
+}   // namespace argumentum

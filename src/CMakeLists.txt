@@ -1,17 +1,19 @@
 
-add_library(${CPPARGPARSE_STATIC_NAME} STATIC
+set( static_library_name ${ARGUMENTUM_STATIC_NAME} )
+set( target_list_name ${PROJECT_NAME}Targets )
+
+add_library( ${static_library_name} STATIC
    argparser.cpp
    )
-if( CPPARGPARSE_PEDANTIC )
-   target_compile_options(${CPPARGPARSE_STATIC_NAME} PRIVATE 
+if( ARGUMENTUM_PEDANTIC )
+   target_compile_options( ${static_library_name} PRIVATE
       $<$<CXX_COMPILER_ID:GNU>:-Werror -Wall>
       $<$<CXX_COMPILER_ID:MSVC>:/WX /permissive- /Za>
       )
 endif()
 
-if (CPPARGPARSE_INSTALL)
-   install( TARGETS ${CPPARGPARSE_STATIC_NAME}
-      ARCHIVE DESTINATION lib
-      LIBRARY DESTINATION lib
-      )
-endif()
+install( TARGETS ${static_library_name}
+   EXPORT ${target_list_name}
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   )

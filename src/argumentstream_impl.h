@@ -6,17 +6,17 @@
 
 #include "argumentstream.h"
 
-namespace argparse {
+namespace argumentum {
 
-CPPARGPARSE_INLINE void ArgumentStream::peek( std::function<EPeekResult( std::string_view )> fnPeek )
+ARGUMENTUM_INLINE void ArgumentStream::peek( std::function<EPeekResult( std::string_view )> fnPeek )
 {}
 
-CPPARGPARSE_INLINE StdStreamArgumentStream::StdStreamArgumentStream(
+ARGUMENTUM_INLINE StdStreamArgumentStream::StdStreamArgumentStream(
       const std::shared_ptr<std::istream>& pStream )
    : mpStream( pStream )
 {}
 
-CPPARGPARSE_INLINE std::optional<std::string_view> StdStreamArgumentStream::next()
+ARGUMENTUM_INLINE std::optional<std::string_view> StdStreamArgumentStream::next()
 {
    if ( !mpStream )
       return {};
@@ -27,4 +27,4 @@ CPPARGPARSE_INLINE std::optional<std::string_view> StdStreamArgumentStream::next
    return mCurrent;
 }
 
-}   // namespace argparse
+}   // namespace argumentum

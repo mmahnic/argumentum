@@ -1,11 +1,11 @@
 // Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 
 #include <gtest/gtest.h>
 
-using namespace argparse;
+using namespace argumentum;
 using namespace testing;
 
 TEST( OptionFactoryTest, shouldCreateASimpleOption )

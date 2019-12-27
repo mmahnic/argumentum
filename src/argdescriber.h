@@ -9,7 +9,7 @@
 #include <string_view>
 #include <vector>
 
-namespace argparse {
+namespace argumentum {
 
 class Option;
 class Command;
@@ -28,4 +28,4 @@ private:
    std::string describeArguments( const Option& option, const std::string& metavar ) const;
 };
 
-}   // namespace argparse
+}   // namespace argumentum

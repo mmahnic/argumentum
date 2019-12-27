@@ -8,9 +8,9 @@
 
 #include <string_view>
 
-namespace argparse {
+namespace argumentum {
 
-CPPARGPARSE_INLINE Option* ParserDefinition::findOption( std::string_view optionName )
+ARGUMENTUM_INLINE Option* ParserDefinition::findOption( std::string_view optionName )
 {
    for ( auto& pOption : mOptions )
       if ( pOption->hasName( optionName ) )
@@ -19,7 +19,7 @@ CPPARGPARSE_INLINE Option* ParserDefinition::findOption( std::string_view option
    return nullptr;
 }
 
-CPPARGPARSE_INLINE Command* ParserDefinition::findCommand( std::string_view commandName )
+ARGUMENTUM_INLINE Command* ParserDefinition::findCommand( std::string_view commandName )
 {
    for ( auto& pCommand : mCommands )
       if ( pCommand->hasName( commandName ) )
@@ -28,9 +28,9 @@ CPPARGPARSE_INLINE Command* ParserDefinition::findCommand( std::string_view comm
    return nullptr;
 }
 
-CPPARGPARSE_INLINE const ParserConfig::Data& ParserDefinition::getConfig() const
+ARGUMENTUM_INLINE const ParserConfig::Data& ParserDefinition::getConfig() const
 {
    return mConfig.data();
 }
 
-}   // namespace argparse
+}   // namespace argumentum

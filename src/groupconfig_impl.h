@@ -7,28 +7,28 @@
 
 #include "group.h"
 
-namespace argparse {
+namespace argumentum {
 
-CPPARGPARSE_INLINE GroupConfig::GroupConfig( std::shared_ptr<OptionGroup> pGroup )
+ARGUMENTUM_INLINE GroupConfig::GroupConfig( std::shared_ptr<OptionGroup> pGroup )
    : mpGroup( pGroup )
 {}
 
-CPPARGPARSE_INLINE GroupConfig& GroupConfig::title( std::string_view title )
+ARGUMENTUM_INLINE GroupConfig& GroupConfig::title( std::string_view title )
 {
    mpGroup->setTitle( title );
    return *this;
 }
 
-CPPARGPARSE_INLINE GroupConfig& GroupConfig::description( std::string_view description )
+ARGUMENTUM_INLINE GroupConfig& GroupConfig::description( std::string_view description )
 {
    mpGroup->setDescription( description );
    return *this;
 }
 
-CPPARGPARSE_INLINE GroupConfig& GroupConfig::required( bool isRequired )
+ARGUMENTUM_INLINE GroupConfig& GroupConfig::required( bool isRequired )
 {
    mpGroup->setRequired( isRequired );
    return *this;
 }
 
-}   // namespace argparse
+}   // namespace argumentum

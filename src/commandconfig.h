@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace argparse {
+namespace argumentum {
 
 class Command;
 
@@ -22,4 +22,4 @@ private:
    Command& getCommand();
 };
 
-}   // namespace argparse
+}   // namespace argumentum

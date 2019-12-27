@@ -6,7 +6,7 @@
 #include <memory>
 #include <string_view>
 
-namespace argparse {
+namespace argumentum {
 
 class OptionGroup;
 
@@ -29,4 +29,4 @@ public:
    GroupConfig& required( bool isRequired = true );
 };
 
-}   // namespace argparse
+}   // namespace argumentum

@@ -19,6 +19,6 @@ add_test(
   NAME
     headerlib
   COMMAND
-    ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/test/headerlib/headerLibraryTest
+    ${CMAKE_BINARY_DIR}/test/headerlib/headerLibraryTest
 )
 

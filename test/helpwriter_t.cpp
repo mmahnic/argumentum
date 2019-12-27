@@ -1,15 +1,15 @@
 // Copyright (c) 2018, 2019 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
-#include <cppargparse/argparse.h>
+#include <argumentum/argparse.h>
 
-#include <cppargparse/../../src/writer.h>
+#include <argumentum/../../src/writer.h>
 
 #include <algorithm>
 #include <gtest/gtest.h>
 #include <sstream>
 
-using namespace argparse;
+using namespace argumentum;
 
 namespace {
 enum class EKeepEmpty : bool { no = false, yes = true };

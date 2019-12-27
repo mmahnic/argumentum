@@ -1,14 +1,9 @@
 
 include_directories( ../include )
-set ( CPPARGPARSE_TEST_LIB ${CPPARGPARSE_STATIC_NAME} )
+set ( argumentum_test_lib ${ARGUMENTUM_STATIC_NAME} )
 
 find_package( GTest REQUIRED )
 find_package( Threads REQUIRED )
-
-# The library is currently header-only.
-set(PARSER_SOURCES
-   # ../src/argparser.cpp
-   )
 
 add_executable( runUnitTests
    runtest.cpp
@@ -26,16 +21,15 @@ add_executable( runUnitTests
    argumentstream_t.cpp
    optionfactory_t.cpp
    value_t.cpp
-   ${PARSER_SOURCES}
    )
 
 target_link_libraries( runUnitTests 
    ${GTEST_LIBRARIES}
    ${CMAKE_THREAD_LIBS_INIT}
-   ${CMAKE_BINARY_DIR}/src/libargparse-s.a
+   ${argumentum_test_lib}
    stdc++fs
    )
-add_dependencies( runUnitTests ${CPPARGPARSE_TEST_LIB} )
+add_dependencies( runUnitTests ${argumentum_test_lib} )
 
 add_executable( utilityTests
    runtest.cpp
@@ -46,20 +40,21 @@ add_executable( utilityTests
 target_link_libraries( utilityTests 
    ${GTEST_LIBRARIES}
    ${CMAKE_THREAD_LIBS_INIT}
+   ${argumentum_test_lib}
    )
-add_dependencies( utilityTests ${CPPARGPARSE_TEST_LIB} )
+add_dependencies( utilityTests ${argumentum_test_lib} )
 
 add_test(
   NAME
     utility
   COMMAND
-    ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/test/utilityTests
+    ${CMAKE_BINARY_DIR}/test/utilityTests
 )
 
 add_test(
   NAME
     parser
   COMMAND
-    ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/test/runUnitTests
+    ${CMAKE_BINARY_DIR}/test/runUnitTests
 )
 
