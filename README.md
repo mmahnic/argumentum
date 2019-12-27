@@ -31,7 +31,7 @@ A basic example (compare with [Python argparse](https://docs.python.org/3/librar
 #include <vector>
 
 using namespace std;
-using namespace argparse;
+using namespace argumentum;
 
 int main( int argc, char** argv )
 {
@@ -65,7 +65,7 @@ The same example implemented with an action and a default value:
 #include <vector>
 
 using namespace std;
-using namespace argparse;
+using namespace argumentum;
 
 int main( int argc, char** argv )
 {
@@ -105,9 +105,9 @@ This is the same example rewritten so that it stores options in a structure:
 #include <vector>
 
 using namespace std;
-using namespace argparse;
+using namespace argumentum;
 
-class AccumulatorOptions : public argparse::Options
+class AccumulatorOptions : public argumentum::Options
 {
 public:
    vector<int> numbers;
@@ -168,9 +168,9 @@ future.
 #include <vector>
 
 using namespace std;
-using namespace argparse;
+using namespace argumentum;
 
-class AccumulatorOptions : public argparse::CommandOptions
+class AccumulatorOptions : public argumentum::CommandOptions
 {
 public:
    vector<int> numbers;
@@ -190,7 +190,7 @@ protected:
    }
 };
 
-class CmdEchoOptions : public argparse::CommandOptions
+class CmdEchoOptions : public argumentum::CommandOptions
 {
 public:
    vector<int> numbers;
