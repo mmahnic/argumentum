@@ -1,6 +1,6 @@
 
 include_directories( ../include )
-set ( argumentum_test_lib ${ARGUMENTUM_STATIC_NAME} )
+set ( argumentum_test_lib ${ARGUMENTUM_INTERNAL_NAME} )
 
 find_package( GTest REQUIRED )
 find_package( Threads REQUIRED )

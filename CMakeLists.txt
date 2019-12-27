@@ -2,16 +2,26 @@ cmake_minimum_required( VERSION 3.1 )
 
 project( Argumentum VERSION 0.2.0 )
 
-option( ARGUMENTUM_BUILD_EXAMPLES   "build examples" OFF )
-option( ARGUMENTUM_BUILD_TESTS      "build tests"    OFF )
-option( ARGUMENTUM_PEDANTIC         "treat warnings as errors (TODO)"    OFF )
+option( BUILD_STATIC_LIBS           "Build static libraries" ON )
+option( ARGUMENTUM_BUILD_EXAMPLES   "Build examples" OFF )
+option( ARGUMENTUM_BUILD_TESTS      "Build tests"    OFF )
+option( ARGUMENTUM_PEDANTIC         "Treat warnings as errors (TODO)"    OFF )
+
+if( BUILD_SHARED_LIBS )
+   message( FATAL_ERROR "Shared libries are not supported ATM" )
+endif()
 
 set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_DEBUG_POSTFIX d )
 
 include( GNUInstallDirs )
 
+# The name of the published static library target.
 set( ARGUMENTUM_STATIC_NAME argumentum-s )
+
+# The name of the internal static library target used for instutil, tests, examples.
+set( ARGUMENTUM_INTERNAL_NAME argumentum-si )
+
 add_subdirectory( src )
 add_subdirectory( util )
 add_subdirectory( include )

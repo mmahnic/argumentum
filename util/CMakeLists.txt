@@ -1,6 +1,6 @@
 
 include_directories( ../include )
-set ( argumentum_util_lib ${ARGUMENTUM_STATIC_NAME} )
+set ( argumentum_util_lib ${ARGUMENTUM_INTERNAL_NAME} )
 
 set(CMAKE_CXX_STANDARD 17)
 

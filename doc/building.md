@@ -3,7 +3,7 @@
 The recommended way to consume the library is build and link the static
 library.  A dynamic version is planned.
 
-The library will also be available in VCPKG ([pull request](TODO)).
+The library will also be available in VCPKG ([pull request](https://github.com/microsoft/vcpkg/pull/9477)).
 
 If building is not an option, the library can be used as header-only by cloning
 the repository and using the appropriate include path.
