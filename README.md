@@ -3,7 +3,7 @@
 
 # Argumentum / Argparse
 
-cpp-argparse is a C++ library for writing command-line program interfaces. The arguments that a
+Argumentum is a C++ library for writing command-line program interfaces. The arguments that a
 program supports are registered in an instance of `arument_parser`, the main library class.
 `argument_parser` processes the input arguments, checks that they are valid and converts them to C++
 variables. It also generates help and usage messages when requested.
@@ -17,12 +17,14 @@ The library is loosely based on the Python argparse module. It covers most funct
 
 ## Building
 
-The library can be prebuilt as a static library or used as header-only.
+The library can be built as a static library or used as header-only.
 See [Building and consuming the library](doc/building.md).
 
-## Examples
+## A basic example
 
-A basic example (compare with [Python argparse](https://docs.python.org/3/library/argparse.html#example)):
+In this example the program accepts integers and finds the largest one.  If the
+option `--sum` is passed to the program, the numbers are summed, instead.
+(Compare with [Python argparse](https://docs.python.org/3/library/argparse.html#example).)
 
 ```c++
 #include <climits>
@@ -55,6 +57,40 @@ int main( int argc, char** argv )
    return 0;
 }
 ```
+
+## Target values
+
+The parser parses input strings and stores the parsed results in target values
+which are ordinary C++ variables.  The target values must outlive the parser
+because the parser stores target value references. On the other hand, the
+parser can be destroyed after parsing is done.
+
+The supported types of target values are:
+
+- C++ numeric types, `bool`, `std::string`,
+- any type that has a constructor that accepts `std::string`,
+- any type that has an `operator=` that accepts `std::string`,
+- any type `T` for which a converter `argumentum::from_string<T>::convert` exists,
+- `std::vector` of simple target values.
+
+If information about whether a value was set or not is needed, `std::optional` can be used:
+
+```c++
+   std::optional<std::string> str;
+   parser.add_argument( str, "-s" ).maxargs( 1 );
+
+   // ... parser.parse_args ...
+
+   if ( !str )
+      std::cout << "The option -s was not used.\n";
+   else
+      std::cout << "The option -s was set with value '" << *str << "' .\n";
+```
+
+Additional types can be supported through parsing actions like in the examples below.
+
+
+## Variants of the basic example
 
 The same example implemented with an action and a default value:
 
