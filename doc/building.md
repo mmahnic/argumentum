@@ -21,15 +21,13 @@ sudo make install
 
 ```
 find_package( Argumentum CONFIG REQUIRED )
-set( Argumentum_LIBRARIES Argumentum::argumentum-s )
-
 set( CMAKE_CXX_STANDARD 17 )
 
 add_executable( example
    main.cpp
    )
 target_link_libraries( example
-   ${Argumentum_LIBRARIES}
+   Argumentum::argumentum
    )
 ```
 
