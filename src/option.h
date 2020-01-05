@@ -59,6 +59,8 @@ public:
    void setAssignDefaultAction( AssignDefaultAction action );
    void setGroup( const std::shared_ptr<OptionGroup>& pGroup );
    bool isRequired() const;
+   bool isPositional() const;
+   bool isShortNumeric() const;
    const std::string& getName() const;
    const std::string& getShortName() const;
    const std::string& getLongName() const;

@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+// Copyright (c) 2018, 2019, 2020 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
@@ -10,7 +10,7 @@
 
 namespace argumentum {
 
-ARGUMENTUM_INLINE Option* ParserDefinition::findOption( std::string_view optionName )
+ARGUMENTUM_INLINE Option* ParserDefinition::findOption( std::string_view optionName ) const
 {
    for ( auto& pOption : mOptions )
       if ( pOption->hasName( optionName ) )
@@ -19,7 +19,7 @@ ARGUMENTUM_INLINE Option* ParserDefinition::findOption( std::string_view optionN
    return nullptr;
 }
 
-ARGUMENTUM_INLINE Command* ParserDefinition::findCommand( std::string_view commandName )
+ARGUMENTUM_INLINE Command* ParserDefinition::findCommand( std::string_view commandName ) const
 {
    for ( auto& pCommand : mCommands )
       if ( pCommand->hasName( commandName ) )
@@ -31,6 +31,15 @@ ARGUMENTUM_INLINE Command* ParserDefinition::findCommand( std::string_view comma
 ARGUMENTUM_INLINE const ParserConfig::Data& ParserDefinition::getConfig() const
 {
    return mConfig.data();
+}
+
+ARGUMENTUM_INLINE bool ParserDefinition::hasNumericOptions() const
+{
+   for ( auto& pOption : mOptions )
+      if ( pOption->isShortNumeric() )
+         return true;
+
+   return false;
 }
 
 }   // namespace argumentum
