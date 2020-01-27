@@ -99,7 +99,7 @@ T parse_float( const std::string& s )
    return checkResult( sign * strtodx::parse<T>( sv.data(), &pend ) );
 }
 
-template<typename T>
+template<typename T, typename Enable = void>
 struct from_string
 {
 };
@@ -131,120 +131,21 @@ struct from_string<bool>
    }
 };
 
-template<>
-struct from_string<int8_t>
+template<typename T>
+struct from_string<T, typename std::enable_if<std::is_integral<T>::value>::type>
 {
-   static int8_t convert( const std::string& s )
+   static T convert( const std::string& s )
    {
-      return parse_int<int8_t>( s );
+      return parse_int<T>( s );
    }
 };
 
-template<>
-struct from_string<uint8_t>
+template<typename T>
+struct from_string<T, typename std::enable_if<std::is_floating_point<T>::value>::type>
 {
-   static uint8_t convert( const std::string& s )
+   static T convert( const std::string& s )
    {
-      return parse_int<uint8_t>( s );
-   }
-};
-
-template<>
-struct from_string<short>
-{
-   static short convert( const std::string& s )
-   {
-      return parse_int<short>( s );
-   }
-};
-
-template<>
-struct from_string<unsigned short>
-{
-   static unsigned short convert( const std::string& s )
-   {
-      return parse_int<unsigned short>( s );
-   }
-};
-
-template<>
-struct from_string<int>
-{
-   static int convert( const std::string& s )
-   {
-      return parse_int<int>( s );
-   }
-};
-
-template<>
-struct from_string<unsigned int>
-{
-   static unsigned int convert( const std::string& s )
-   {
-      return parse_int<unsigned int>( s );
-   }
-};
-
-template<>
-struct from_string<long>
-{
-   static long convert( const std::string& s )
-   {
-      return parse_int<long>( s );
-   }
-};
-
-template<>
-struct from_string<unsigned long>
-{
-   static unsigned long convert( const std::string& s )
-   {
-      return parse_int<unsigned long>( s );
-   }
-};
-
-template<>
-struct from_string<long long>
-{
-   static long long convert( const std::string& s )
-   {
-      return parse_int<long long>( s );
-   }
-};
-
-template<>
-struct from_string<unsigned long long>
-{
-   static unsigned long long convert( const std::string& s )
-   {
-      return parse_int<unsigned long long>( s );
-   }
-};
-
-template<>
-struct from_string<float>
-{
-   static float convert( const std::string& s )
-   {
-      return parse_float<float>( s );
-   }
-};
-
-template<>
-struct from_string<double>
-{
-   static double convert( const std::string& s )
-   {
-      return parse_float<double>( s );
-   }
-};
-
-template<>
-struct from_string<long double>
-{
-   static long double convert( const std::string& s )
-   {
-      return parse_float<long double>( s );
+      return parse_float<T>( s );
    }
 };
 
