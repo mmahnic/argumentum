@@ -23,13 +23,18 @@ public:
    std::vector<std::shared_ptr<Option>> mPositional;
 
 public:
-   Option* findOption( std::string_view optionName );
-   Command* findCommand( std::string_view commandName );
+   Option* findOption( std::string_view optionName ) const;
+   Command* findCommand( std::string_view commandName ) const;
 
    /**
     * Get a reference to the parser configuration for inspection.
     */
    const ParserConfig::Data& getConfig() const;
+
+   /**
+    * @Returns true if there are short options that include digits.
+    */
+   bool hasNumericOptions() const;
 };
 
 }   // namespace argumentum

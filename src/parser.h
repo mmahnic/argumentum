@@ -21,7 +21,7 @@ enum class EArgumentType;
 
 class Parser
 {
-   ParserDefinition& mParserDef;
+   const ParserDefinition& mParserDef;
    ParseResultBuilder& mResult;
 
    bool mIgnoreOptions = false;
@@ -30,7 +30,7 @@ class Parser
    Option* mpActiveOption = nullptr;
 
 public:
-   Parser( ParserDefinition& argParser, ParseResultBuilder& result );
+   Parser( const ParserDefinition& argParser, ParseResultBuilder& result );
    void parse( ArgumentStream& argStream );
 
 private:

@@ -83,6 +83,16 @@ ARGUMENTUM_INLINE bool Option::isRequired() const
    return mIsRequired;
 }
 
+ARGUMENTUM_INLINE bool Option::isPositional() const
+{
+   return mShortName.substr( 0, 1 ) != "-" && mLongName.substr( 0, 1 ) != "-";
+}
+
+ARGUMENTUM_INLINE bool Option::isShortNumeric() const
+{
+   return mShortName.size() == 2 && mShortName[0] == '-' && isdigit( mShortName[1] );
+}
+
 ARGUMENTUM_INLINE const std::string& Option::getName() const
 {
    return mLongName.empty() ? mShortName : mLongName;
@@ -100,8 +110,7 @@ ARGUMENTUM_INLINE const std::string& Option::getLongName() const
 
 ARGUMENTUM_INLINE std::string Option::getHelpName() const
 {
-   auto is_positional = mShortName.substr( 0, 1 ) != "-" && mLongName.substr( 0, 1 ) != "-";
-   if ( is_positional ) {
+   if ( isPositional() ) {
       const auto& name = !mMetavar.empty() ? mMetavar : !mLongName.empty() ? mLongName : mShortName;
       return !name.empty() ? name : "ARG";
    }

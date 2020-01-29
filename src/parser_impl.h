@@ -14,7 +14,7 @@
 
 namespace argumentum {
 
-ARGUMENTUM_INLINE Parser::Parser( ParserDefinition& parserDef, ParseResultBuilder& result )
+ARGUMENTUM_INLINE Parser::Parser( const ParserDefinition& parserDef, ParseResultBuilder& result )
    : mParserDef( parserDef )
    , mResult( result )
 {}
@@ -48,8 +48,15 @@ enum class EArgumentType {
 namespace {
 ARGUMENTUM_INLINE bool isNumberLike( std::string_view arg )
 {
-   static auto rxFloat = std::regex( "^[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$" );
-   return std::regex_match( std::begin( arg ), std::end( arg ), rxFloat );
+   static auto rxNumber = std::regex(
+         "^0b[01]+$"
+         "|"
+         "^0o[0-7]+$"
+         "|"
+         "^(0d)?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?$"
+         "|"
+         "^0x[0-9a-fA-F]*\\.?[0-9a-fA-F]+([pP][-+]?[0-9a-fA-F]+)?$" );
+   return std::regex_match( std::begin( arg ), std::end( arg ), rxNumber );
 }
 }   // namespace
 
@@ -72,20 +79,35 @@ ARGUMENTUM_INLINE EArgumentType Parser::getNextArgumentType( std::string_view ar
    if ( arg.substr( 0, 2 ) == "--" )
       return EArgumentType::longOption;
 
+   // TODO: negativeMode should be a global parser setting.
+   //   - argparse mode: if a -N option exists, treat -M args as options
+   //   - argumentum mode:
+   //      - options that take arguments will accept -M as a value; to treat it
+   //        as an option, change the order of arguments;
+   //      - positionals will accept -M as a value if -M is not an option; to
+   //        treat it as a value, put it after --.
+   enum class ENegativeMode { argparse, argumentum };
+   const auto negativeMode = ENegativeMode::argumentum;
+
    if ( arg.substr( 0, 1 ) == "-" ) {
-      if ( haveActiveOption() ) {
-         if ( isNumberLike( arg.substr( 1 ) ) )
-            return EArgumentType::optionValue;
-      }
-      else {
-         if ( isNumberLike( arg.substr( 1 ) ) ) {
-            if ( !optionWithNameExists( arg.substr( 0, 2 ) ) )
+      if ( isNumberLike( arg.substr( 1 ) ) ) {
+         if ( negativeMode == ENegativeMode::argparse ) {
+            if ( !mParserDef.hasNumericOptions() )
+               return haveActiveOption() ? EArgumentType::optionValue : EArgumentType::freeArgument;
+         }
+         else {
+            if ( haveActiveOption() ) {
+               if ( mpActiveOption->willAcceptArgument() && !mpActiveOption->isPositional() )
+                  return EArgumentType::optionValue;
+            }
+            else if ( !optionWithNameExists( arg.substr( 0, 2 ) ) )
                return EArgumentType::freeArgument;
          }
       }
 
       if ( arg.size() == 2 )
          return EArgumentType::shortOption;
+
       if ( arg.size() > 2 )
          return EArgumentType::multiOption;
    }
