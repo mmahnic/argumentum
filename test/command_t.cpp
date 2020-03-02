@@ -264,3 +264,21 @@ TEST( ArgumentParserCommandTest, shouldReportErrorsOnlyInTopLevelParser )
    }
    EXPECT_EQ( 1, count );
 }
+
+TEST( ArgumentParserCommandTest, shouldAcceptInstantiatedOptions )
+{
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout );
+
+   auto pCmdOne = std::make_shared<CmdOneOptions>( "one" );
+   parser.add_command( pCmdOne, "one" );
+
+   // -- WHEN
+   auto res = parser.parse_args( { "one", "-s", "works" } );
+
+   // -- THEN
+   EXPECT_TRUE( pCmdOne->str.has_value() );
+   EXPECT_EQ( "works", pCmdOne->str.value_or( "" ) );
+   EXPECT_FALSE( pCmdOne->count.has_value() );
+}

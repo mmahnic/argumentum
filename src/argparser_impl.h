@@ -46,6 +46,13 @@ ARGUMENTUM_INLINE OptionFactory& argument_parser::getOptionFactory()
 }
 
 ARGUMENTUM_INLINE CommandConfig argument_parser::add_command(
+      std::shared_ptr<CommandOptions> pOptions, const std::string& name )
+{
+   auto command = Command( name, pOptions );
+   return tryAddCommand( command );
+}
+
+ARGUMENTUM_INLINE CommandConfig argument_parser::add_command(
       const std::string& name, Command::options_factory_t factory )
 {
    auto command = Command( name, factory );
@@ -426,7 +433,7 @@ ARGUMENTUM_INLINE CommandConfig argument_parser::tryAddCommand( Command& command
 {
    if ( command.getName().empty() )
       throw std::invalid_argument( "A command must have a name." );
-   if ( !command.hasFactory() )
+   if ( !command.hasOptions() && !command.hasFactory() )
       throw std::invalid_argument( "A command must have an options factory." );
    if ( command.getName()[0] == '-' )
       throw std::invalid_argument( "Command name must not start with a dash." );
