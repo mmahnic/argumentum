@@ -46,9 +46,12 @@ ARGUMENTUM_INLINE OptionFactory& argument_parser::getOptionFactory()
 }
 
 ARGUMENTUM_INLINE CommandConfig argument_parser::add_command(
-      std::shared_ptr<CommandOptions> pOptions, const std::string& name )
+      std::shared_ptr<CommandOptions> pOptions )
 {
-   auto command = Command( name, pOptions );
+   if ( !pOptions )
+      throw MissingCommandOptions( "<unknown>" );
+
+   auto command = Command( pOptions->getName(), pOptions );
    return tryAddCommand( command );
 }
 

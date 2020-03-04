@@ -272,7 +272,7 @@ TEST( ArgumentParserCommandTest, shouldAcceptInstantiatedOptions )
    parser.config().cout( strout );
 
    auto pCmdOne = std::make_shared<CmdOneOptions>( "one" );
-   parser.add_command( pCmdOne, "one" );
+   parser.add_command( pCmdOne );
 
    // -- WHEN
    auto res = parser.parse_args( { "one", "-s", "works" } );

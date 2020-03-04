@@ -60,7 +60,7 @@ public:
 
    // Define a command.  The options from @p pOptions will be registered only
    // when the command is activated with an input argument.
-   CommandConfig add_command( std::shared_ptr<CommandOptions> pOptions, const std::string& name );
+   CommandConfig add_command( std::shared_ptr<CommandOptions> pOptions );
 
    // Define a command.  The CommandOptions (@p TOptions) will be instantiated
    // when the command is activated with an input argument.
