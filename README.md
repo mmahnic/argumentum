@@ -267,7 +267,68 @@ int main( int argc, char** argv )
 }
 ```
 
-Command options are instantiated only when the appropriate command is selected with an argument.
-The chain of instantiated subcommands is stored in `ParseResults::commands`.  Typically we execute
-only the last instantiated (the "deepest") subcommand.
+Command options are instantiated and added to the parser only when the appropriate command is
+selected with an argument.  The chain of instantiated subcommands is stored in
+`ParseResults::commands`.  Typically we execute only the last instantiated (the "deepest")
+subcommand.
 
+If a program has global options that we want to access from a command, we have to instantiate
+command options in advance and set a link in command options to global options.  In this case it is
+most convenient to store global options in an Options structure.  In the following example
+AccumulatorOptions need access to global options.  Only the added and modified methods are shown:
+
+```C++
+class GlobalOptions : public argumentum::Options
+{
+public:
+   int logLevel = 0;
+   void add_arguments( argument_parser& parser ) override
+   {
+      parser.add_argument( logLevel, "--loglevel" ).nargs( 1 );
+   }
+};
+
+class AccumulatorOptions : public argumentum::CommandOptions
+{
+   std::shared_ptr<GloblaOptions> mpGlobal;
+public:
+   AccumulatorOptions( std::string_view name, std::shared_ptr<GloblaOptions> pGlobal )
+      : CommandOptions( name )
+      , mpGlobal( pGlobal )
+  {}
+
+  void execute( const ParseResults& res )
+  {
+     if ( mpGlobal && mpGlobal->logLevel > 0 )
+       cout << "Accumulating " << numbers.size() << " numbers\n";
+
+     auto acc = accumulate(
+        numbers.begin(), numbers.end(), operation.second, operation.first );
+     cout << acc << "\n";
+  }
+};
+
+int main( int argc, char** argv )
+{
+   auto parser = argument_parser{};
+   parser.config().program( argv[0] ).description( "Accumulator" );
+
+   auto pGlobal = std::make_shared<GlobalOptions>();
+   auto pAccumulator = std::make_shared<CmdAccumulatorOptions>( "fold", pGlobal );
+
+   parser.add_arguments( pGlobal );
+   parser.add_command( pAccumulator ).help( "Accumulate integer values." );
+   parser.add_command<CmdEchoOptions>( "echo" ).help( "Echo integers from the command line." );
+
+   auto res = parser.parse_args( argc, argv, 1 );
+   if ( !res )
+      return 1;
+
+   auto pcmd = res.commands.back();
+   if ( !pcmd )
+      return 1;
+
+   pcmd->execute( res );
+   return 0;
+}
+```
