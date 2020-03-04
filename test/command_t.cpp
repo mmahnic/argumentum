@@ -282,3 +282,50 @@ TEST( ArgumentParserCommand, shouldAcceptInstantiatedOptions )
    EXPECT_EQ( "works", pCmdOne->str.value_or( "" ) );
    EXPECT_FALSE( pCmdOne->count.has_value() );
 }
+
+// When using commands we may need to access global options from the command.
+// We can do this by using instantiated command options that have a reference to
+// the global options.  Global options must be stored in an Options structure.
+TEST( ArgumentParserCommand, shouldAccessParentOptionsFromCommand )
+{
+   class Global : public argumentum::Options
+   {
+   public:
+      int global = 0;
+      void add_arguments( argument_parser& parser ) override
+      {
+         parser.add_argument( global, "--global" ).nargs( 1 );
+      }
+   };
+
+   class CmdOneWithGlobal : public CmdOneOptions
+   {
+   public:
+      std::shared_ptr<Global> mpGlobal;
+
+   public:
+      CmdOneWithGlobal( std::string_view name, std::shared_ptr<Global> pGlobal )
+         : CmdOneOptions( name )
+         , mpGlobal( pGlobal )
+      {}
+   };
+
+   std::stringstream strout;
+   auto parser = argument_parser{};
+   parser.config().cout( strout );
+
+   auto pGlobal = std::make_shared<Global>();
+   auto pCmdOne = std::make_shared<CmdOneWithGlobal>( "one", pGlobal );
+   parser.add_arguments( pGlobal );
+   parser.add_command( pCmdOne );
+
+   // -- WHEN
+   auto res = parser.parse_args( { "--global", "5", "one", "-s", "works" } );
+
+   // -- THEN
+   EXPECT_TRUE( pCmdOne->str.has_value() );
+   EXPECT_EQ( "works", pCmdOne->str.value_or( "" ) );
+   EXPECT_FALSE( pCmdOne->count.has_value() );
+   ASSERT_NE( nullptr, pCmdOne->mpGlobal );
+   EXPECT_EQ( 5, pCmdOne->mpGlobal->global );
+}
