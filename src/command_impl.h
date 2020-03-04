@@ -22,7 +22,13 @@ ARGUMENTUM_INLINE void CommandOptions::execute( const ParseResult& result )
 
 ARGUMENTUM_INLINE Command::Command( std::string_view name, options_factory_t factory )
    : mName( name )
-   , mFactory( factory )
+   , mFactory( std::move( factory ) )
+{}
+
+ARGUMENTUM_INLINE Command::Command(
+      std::string_view name, std::shared_ptr<CommandOptions> pOptions )
+   : mName( name )
+   , mpOptions( std::move( pOptions ) )
 {}
 
 ARGUMENTUM_INLINE void Command::setHelp( std::string_view help )
@@ -43,6 +49,11 @@ ARGUMENTUM_INLINE bool Command::hasName( std::string_view name ) const
 ARGUMENTUM_INLINE bool Command::hasFactory() const
 {
    return mFactory != nullptr;
+}
+
+ARGUMENTUM_INLINE bool Command::hasOptions() const
+{
+   return mpOptions != nullptr;
 }
 
 ARGUMENTUM_INLINE const std::string& Command::getHelp() const

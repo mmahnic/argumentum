@@ -29,10 +29,12 @@ private:
 
 public:
    Command( std::string_view name, options_factory_t factory );
+   Command( std::string_view name, std::shared_ptr<CommandOptions> pOptions );
    void setHelp( std::string_view help );
    const std::string& getName() const;
    bool hasName( std::string_view name ) const;
    bool hasFactory() const;
+   bool hasOptions() const;
    const std::string& getHelp() const;
    std::shared_ptr<CommandOptions> getOptions();
 };
