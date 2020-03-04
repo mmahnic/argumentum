@@ -41,7 +41,7 @@ struct CmdTwoOptions : public argumentum::CommandOptions
 };
 }   // namespace
 
-TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
+TEST( ArgumentParserCommand, shouldHandleCommandsWithSubparsers )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
@@ -90,7 +90,7 @@ TEST( ArgumentParserCommandTest, shouldHandleCommandsWithSubparsers )
 }
 
 // Form: program --global-options command --command-options
-TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent )
+TEST( ArgumentParserCommand, shouldHandleGlobalOptionsWhenCommandsPresent )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
@@ -112,7 +112,7 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent )
 }
 
 // A rewrite of the previous test with GlobalOptions structure.
-TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent2 )
+TEST( ArgumentParserCommand, shouldHandleGlobalOptionsWhenCommandsPresent2 )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
@@ -143,7 +143,7 @@ TEST( ArgumentParserCommandTest, shouldHandleGlobalOptionsWhenCommandsPresent2 )
    EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
 }
 
-TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredOptionsWhenCommandPresent )
+TEST( ArgumentParserCommand, shouldRequireParentsRequiredOptionsWhenCommandPresent )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
@@ -176,7 +176,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredOptionsWhenCommandP
 // The parser tries to process commands before positional arguments. If an
 // allowed argument value is equal to the name of a command, the ambiguity is
 // resolved in favour of the command.
-TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredPositionalWhenCommandPresent )
+TEST( ArgumentParserCommand, shouldRequireParentsRequiredPositionalWhenCommandPresent )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
@@ -206,7 +206,7 @@ TEST( ArgumentParserCommandTest, shouldRequireParentsRequiredPositionalWhenComma
    EXPECT_EQ( "command-works", pCmdOne->str.value_or( "" ) );
 }
 
-TEST( ArgumentParserCommandTest, shouldStoreInstantiatedCommandsInParseResults )
+TEST( ArgumentParserCommand, shouldStoreInstantiatedCommandsInParseResults )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
@@ -242,7 +242,7 @@ TEST( ArgumentParserCommandTest, shouldStoreInstantiatedCommandsInParseResults )
    EXPECT_FALSE( pCmdTwo->count.has_value() );
 }
 
-TEST( ArgumentParserCommandTest, shouldReportErrorsOnlyInTopLevelParser )
+TEST( ArgumentParserCommand, shouldReportErrorsOnlyInTopLevelParser )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
@@ -265,7 +265,7 @@ TEST( ArgumentParserCommandTest, shouldReportErrorsOnlyInTopLevelParser )
    EXPECT_EQ( 1, count );
 }
 
-TEST( ArgumentParserCommandTest, shouldAcceptInstantiatedOptions )
+TEST( ArgumentParserCommand, shouldAcceptInstantiatedOptions )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
