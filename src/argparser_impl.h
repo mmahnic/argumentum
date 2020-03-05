@@ -64,10 +64,8 @@ ARGUMENTUM_INLINE CommandConfig argument_parser::add_command(
 
 ARGUMENTUM_INLINE void argument_parser::add_arguments( std::shared_ptr<Options> pOptions )
 {
-   if ( pOptions ) {
-      // TODO (mmahnic): remove mTargets.push_back( pOptions );
+   if ( pOptions )
       pOptions->add_arguments( *this );
-   }
 }
 
 ARGUMENTUM_INLINE VoidOptionConfig argument_parser::add_default_help_option()

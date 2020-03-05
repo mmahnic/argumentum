@@ -40,8 +40,6 @@ private:
    ParserDefinition mParserDef;
    // TODO (mmahnic): mHelpOptionNames should be on mParserDef
    std::set<std::string> mHelpOptionNames;
-   // TODO (mmahnic): remove std::vector<std::shared_ptr<Options>> mTargets;
-   // TODO (mmahnic): remove std::map<std::string, std::shared_ptr<OptionGroup>> mGroups;
    std::shared_ptr<OptionGroup> mpActiveGroup;
    std::unique_ptr<OptionFactory> mpOptionFactory;
 
