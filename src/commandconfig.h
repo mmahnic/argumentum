@@ -1,7 +1,10 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+// Copyright (c) 2018, 2019, 2020 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
+
+#include <memory>
+#include <string_view>
 
 namespace argumentum {
 

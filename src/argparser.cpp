@@ -3,6 +3,7 @@
 
 #include "argdescriber_impl.h"
 #include "argparser_impl.h"
+#include "argumentconfig_impl.h"
 #include "argumentstream_impl.h"
 #include "command_impl.h"
 #include "commandconfig_impl.h"

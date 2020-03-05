@@ -3,69 +3,30 @@
 
 #pragma once
 
-#include "argumentconfig.h"
-#include "argumentstream.h"
+#include "command.h"
 #include "commandconfig.h"
-#include "environment.h"
 #include "groupconfig.h"
-#include "helpformatter.h"
 #include "optionconfig.h"
 #include "optionfactory.h"
 #include "optionpack.h"
-#include "parserconfig.h"
-#include "parserdefinition.h"
-#include "parseresult.h"
 
-#include <algorithm>
-#include <cassert>
-#include <cctype>
-#include <functional>
-#include <iostream>
-#include <map>
 #include <memory>
-#include <optional>
-#include <set>
 #include <string>
-#include <vector>
 
 namespace argumentum {
 
-class argument_parser
-{
-   friend class Parser;
-   friend class ArgumentConfig;
+class argument_parser;
+class ParserDefinition;
 
-private:
-   bool mTopLevel = true;
-   ParserDefinition mParserDef;
-   // TODO (mmahnic): mHelpOptionNames should be on mParserDef
-   std::set<std::string> mHelpOptionNames;
-   // TODO (mmahnic): remove std::vector<std::shared_ptr<Options>> mTargets;
-   // TODO (mmahnic): remove std::map<std::string, std::shared_ptr<OptionGroup>> mGroups;
-   std::shared_ptr<OptionGroup> mpActiveGroup;
+class ArgumentConfig
+{
+   friend class argument_parser;
+   // TODO (mmahnic): this should be ParserDefinition mParserDef.
+   argument_parser& mParser;
+   ParserDefinition& mParserDef;
    std::unique_ptr<OptionFactory> mpOptionFactory;
 
 public:
-   /**
-    * Get a reference to the parser configuration through which the parser can
-    * be configured.
-    */
-   ParserConfig& config();
-
-   ArgumentConfig arguments()
-   {
-      return ArgumentConfig( *this );
-   }
-
-   /**
-    * Get a reference to the parser configuration for inspection.
-    */
-   const ParserConfig::Data& getConfig() const;
-   /**
-    * Get a reference to the definition of the parser for inspection.
-    */
-   const ParserDefinition& getDefinition() const;
-
    // Define a command.  The options from @p pOptions will be registered only
    // when the command is activated with an input argument.
    CommandConfig add_command( std::shared_ptr<CommandOptions> pOptions );
@@ -144,32 +105,10 @@ public:
    // End a group.
    void end_group();
 
-   // Parse input arguments and return commands and errors in a ParseResult.
-   ParseResult parse_args( int argc, char** argv, int skip_args = 1 );
-
-   // Parse input arguments and return commands and errors in a ParseResult.
-   ParseResult parse_args( const std::vector<std::string>& args, int skip_args = 0 );
-
-   // Parse input arguments and return commands and errors in a ParseResult.
-   ParseResult parse_args( std::vector<std::string>::const_iterator ibegin,
-         std::vector<std::string>::const_iterator iend );
-
-   // Parse input arguments and return errors in a ParseResult.
-   ParseResult parse_args( ArgumentStream& args );
-
-   ArgumentHelpResult describe_argument( std::string_view name ) const;
-   std::vector<ArgumentHelpResult> describe_arguments() const;
+private:
+   ArgumentConfig( argument_parser& parser );
 
 private:
-   static argument_parser createSubParser();
-   void resetOptionValues();
-   void assignDefaultValues();
-   void verifyDefinedOptions();
-   void validateParsedOptions( ParseResultBuilder& result );
-   void reportMissingOptions( ParseResultBuilder& result );
-   bool hasRequiredArguments() const;
-   void reportExclusiveViolations( ParseResultBuilder& result );
-   void reportMissingGroups( ParseResultBuilder& result );
    OptionConfig tryAddArgument( Option& newOption, std::vector<std::string_view> names );
    OptionConfig addPositional( Option&& newOption, const std::vector<std::string_view>& names );
    OptionConfig addOption( Option&& newOption, const std::vector<std::string_view>& names );
@@ -178,10 +117,6 @@ private:
    CommandConfig tryAddCommand( Command& command );
    void ensureIsNewCommand( const std::string& name );
    std::shared_ptr<OptionGroup> addGroup( std::string name, bool isExclusive );
-   std::shared_ptr<OptionGroup> findGroup( std::string name ) const;
-   void generate_help();
-   void describe_errors( ParseResult& result );
-   // TODO (mmahnic): remove, moved to ArgumentConfig
    OptionFactory& getOptionFactory();
 };
 

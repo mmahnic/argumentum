@@ -28,6 +28,15 @@ ARGUMENTUM_INLINE Command* ParserDefinition::findCommand( std::string_view comma
    return nullptr;
 }
 
+ARGUMENTUM_INLINE std::shared_ptr<OptionGroup> ParserDefinition::findGroup( std::string name ) const
+{
+   std::transform( name.begin(), name.end(), name.begin(), tolower );
+   auto igrp = mGroups.find( name );
+   if ( igrp == mGroups.end() )
+      return {};
+   return igrp->second;
+}
+
 ARGUMENTUM_INLINE const ParserConfig::Data& ParserDefinition::getConfig() const
 {
    return mConfig.data();

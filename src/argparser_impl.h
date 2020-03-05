@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+// Copyright (c) 2018, 2019, 2020 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
@@ -65,7 +65,7 @@ ARGUMENTUM_INLINE CommandConfig argument_parser::add_command(
 ARGUMENTUM_INLINE void argument_parser::add_arguments( std::shared_ptr<Options> pOptions )
 {
    if ( pOptions ) {
-      mTargets.push_back( pOptions );
+      // TODO (mmahnic): remove mTargets.push_back( pOptions );
       pOptions->add_arguments( *this );
    }
 }
@@ -462,18 +462,18 @@ ARGUMENTUM_INLINE std::shared_ptr<OptionGroup> argument_parser::addGroup(
       throw std::invalid_argument( "A group must have a name." );
 
    std::transform( name.begin(), name.end(), name.begin(), tolower );
-   assert( mGroups.count( name ) == 0 );
+   assert( mParserDef.mGroups.count( name ) == 0 );
 
    auto pGroup = std::make_shared<OptionGroup>( name, isExclusive );
-   mGroups[name] = pGroup;
+   mParserDef.mGroups[name] = pGroup;
    return pGroup;
 }
 
 ARGUMENTUM_INLINE std::shared_ptr<OptionGroup> argument_parser::findGroup( std::string name ) const
 {
    std::transform( name.begin(), name.end(), name.begin(), tolower );
-   auto igrp = mGroups.find( name );
-   if ( igrp == mGroups.end() )
+   auto igrp = mParserDef.mGroups.find( name );
+   if ( igrp == mParserDef.mGroups.end() )
       return {};
    return igrp->second;
 }
