@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "argumentconfig.h"
+#include "parameterconfig.h"
 
 #include "argparser.h"
 #include "command.h"

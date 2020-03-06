@@ -9,7 +9,6 @@
 
 #include "../../src/argdescriber_impl.h"
 #include "../../src/argparser_impl.h"
-#include "../../src/argumentconfig_impl.h"
 #include "../../src/argumentstream_impl.h"
 #include "../../src/command_impl.h"
 #include "../../src/commandconfig_impl.h"
@@ -22,6 +21,7 @@
 #include "../../src/optionconfig_impl.h"
 #include "../../src/optionpack_impl.h"
 #include "../../src/optionsorter_impl.h"
+#include "../../src/parameterconfig_impl.h"
 #include "../../src/parser_impl.h"
 #include "../../src/parserconfig_impl.h"
 #include "../../src/parserdefinition_impl.h"

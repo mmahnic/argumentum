@@ -3,7 +3,6 @@
 
 #include "argdescriber_impl.h"
 #include "argparser_impl.h"
-#include "argumentconfig_impl.h"
 #include "argumentstream_impl.h"
 #include "command_impl.h"
 #include "commandconfig_impl.h"
@@ -16,6 +15,7 @@
 #include "optionconfig_impl.h"
 #include "optionpack_impl.h"
 #include "optionsorter_impl.h"
+#include "parameterconfig_impl.h"
 #include "parser_impl.h"
 #include "parserconfig_impl.h"
 #include "parserdefinition_impl.h"

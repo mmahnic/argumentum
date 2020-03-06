@@ -18,9 +18,9 @@ struct OptionPack : public argumentum::Options
 {
    std::optional<std::string> str;
 
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
-      parser.add_argument( str, "-s" ).nargs( 1 );
+      params.add_parameter( str, "-s" ).nargs( 1 );
    }
 };
 
@@ -30,9 +30,9 @@ struct CmdOneOptions : public argumentum::CommandOptions
 
    using CommandOptions::CommandOptions;
 
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
-      parser.add_argument( str, "-s" ).nargs( 1 );
+      params.add_parameter( str, "-s" ).nargs( 1 );
    }
 };
 }   // namespace
@@ -40,11 +40,11 @@ struct CmdOneOptions : public argumentum::CommandOptions
 TEST( ArgumentConfig, shouldAddInstantiatedCommands )
 {
    auto parser = argument_parser{};
-   auto args = parser.arguments();
+   auto params = parser.params();
    auto pCmdOne = std::make_shared<CmdOneOptions>( "one" );
 
    // -- WHEN
-   args.add_command( pCmdOne );
+   params.add_command( pCmdOne );
 
    // -- THEN
    auto res = parser.parse_args( { "one", "-s", "works" } );
@@ -55,11 +55,11 @@ TEST( ArgumentConfig, shouldAddInstantiatedCommands )
 TEST( ArgumentConfig, shouldAddOptions )
 {
    auto parser = argument_parser{};
-   auto args = parser.arguments();
+   auto params = parser.params();
    auto pOptions = std::make_shared<OptionPack>();
 
    // -- WHEN
-   args.add_arguments( pOptions );
+   params.add_parameters( pOptions );
 
    // -- THEN
    auto res = parser.parse_args( { "-s", "works" } );
@@ -70,13 +70,13 @@ TEST( ArgumentConfig, shouldAddOptions )
 TEST( ArgumentConfig, shouldAddArguments )
 {
    auto parser = argument_parser{};
-   auto args = parser.arguments();
+   auto params = parser.params();
 
    // -- WHEN
    std::string str;
    std::optional<std::string> optStr;
-   args.add_argument( str, "-s" ).nargs( 1 );
-   args.add_argument( optStr, "-o" ).nargs( 1 );
+   params.add_parameter( str, "-s" ).nargs( 1 );
+   params.add_parameter( optStr, "-o" ).nargs( 1 );
 
    // -- THEN
    auto res = parser.parse_args( { "-s", "works", "-o", "works" } );
@@ -90,10 +90,10 @@ TEST( ArgumentConfig, shouldAddDefaultHelpOption )
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout );
-   auto args = parser.arguments();
+   auto params = parser.params();
 
    // -- WHEN
-   args.add_default_help_option();
+   params.add_default_help_option();
 
    // -- THEN
    auto res = parser.parse_args( { "-h" } );
@@ -106,10 +106,10 @@ TEST( ArgumentConfig, shouldAddCustomHelpOption )
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout );
-   auto args = parser.arguments();
+   auto params = parser.params();
 
    // -- WHEN
-   args.add_help_option( "-a" );
+   params.add_help_option( "-a" );
 
    // -- THEN
    auto res = parser.parse_args( { "-a" } );
@@ -120,14 +120,14 @@ TEST( ArgumentConfig, shouldAddCustomHelpOption )
 TEST( ArgumentConfig, shouldAddGroup )
 {
    auto parser = argument_parser{};
-   auto args = parser.arguments();
+   auto params = parser.params();
    std::string str;
 
    // -- WHEN
-   args.add_group( "testgroup" );
-   args.add_argument( str, "-s" ).nargs( 1 );
-   args.add_argument( str, "-t" ).nargs( 1 );
-   args.end_group();
+   params.add_group( "testgroup" );
+   params.add_parameter( str, "-s" ).nargs( 1 );
+   params.add_parameter( str, "-t" ).nargs( 1 );
+   params.end_group();
 
    // -- THEN
    auto res = parser.parse_args( { "-s", "works", "-t", "works" } );
@@ -138,14 +138,14 @@ TEST( ArgumentConfig, shouldAddGroup )
 TEST( ArgumentConfig, shouldAddExclusiveGroup )
 {
    auto parser = argument_parser{};
-   auto args = parser.arguments();
+   auto params = parser.params();
    std::string str;
 
    // -- WHEN
-   args.add_exclusive_group( "testgroup" );
-   args.add_argument( str, "-s" ).nargs( 1 );
-   args.add_argument( str, "-t" ).nargs( 1 );
-   args.end_group();
+   params.add_exclusive_group( "testgroup" );
+   params.add_parameter( str, "-s" ).nargs( 1 );
+   params.add_parameter( str, "-t" ).nargs( 1 );
+   params.end_group();
 
    // -- THEN
    auto res = parser.parse_args( { "-s", "works", "-t", "fails" } );

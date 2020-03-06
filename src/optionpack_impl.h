@@ -4,8 +4,8 @@
 #pragma once
 
 #include "argparser.h"
-#include "argumentconfig.h"
 #include "optionpack.h"
+#include "parameterconfig.h"
 
 namespace argumentum {
 

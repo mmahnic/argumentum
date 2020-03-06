@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "argumentconfig.h"
 #include "argumentstream.h"
 #include "commandconfig.h"
 #include "environment.h"
@@ -12,6 +11,7 @@
 #include "optionconfig.h"
 #include "optionfactory.h"
 #include "optionpack.h"
+#include "parameterconfig.h"
 #include "parserconfig.h"
 #include "parserdefinition.h"
 #include "parseresult.h"
