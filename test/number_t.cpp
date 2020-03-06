@@ -14,7 +14,8 @@ TEST( NumberTest, shouldParseIntegerWithDecimalPrefix )
 {
    int d;
    auto parser = argument_parser{};
-   parser.add_argument( d, "number" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( d, "number" ).nargs( 1 );
 
    auto res = parser.parse_args( { "0d12" } );
    EXPECT_TRUE( static_cast<bool>( res ) );
@@ -25,7 +26,8 @@ TEST( NumberTest, shouldParseLongWithDecimalPrefix )
 {
    long d;
    auto parser = argument_parser{};
-   parser.add_argument( d, "number" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( d, "number" ).nargs( 1 );
 
    auto res = parser.parse_args( { "0d12" } );
    EXPECT_TRUE( static_cast<bool>( res ) );

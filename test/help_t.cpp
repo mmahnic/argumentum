@@ -18,8 +18,9 @@ TEST( ArgumentParserHelpTest, shouldAcceptArgumentHelpStrings )
    std::vector<std::string> args;
 
    auto parser = argument_parser{};
-   parser.add_argument( str, "-s" ).nargs( 1 ).help( "some value" );
-   parser.add_argument( args, "args" ).minargs( 0 ).help( "some arguments" );
+   auto params = parser.params();
+   params.add_parameter( str, "-s" ).nargs( 1 ).help( "some value" );
+   params.add_parameter( args, "args" ).minargs( 0 ).help( "some arguments" );
 
    auto res = parser.describe_argument( "-s" );
    EXPECT_EQ( "-s", res.short_name );
@@ -39,6 +40,7 @@ TEST( ArgumentParserHelpTest, shouldAcceptArgumentHelpStrings )
 TEST( ArgumentParserHelpTest, shouldSetProgramName )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "testing-testing" );
 
    auto& config = parser.getConfig();
@@ -48,6 +50,7 @@ TEST( ArgumentParserHelpTest, shouldSetProgramName )
 TEST( ArgumentParserHelpTest, shouldSetProgramDescription )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().description( "An example." );
 
    auto& config = parser.getConfig();
@@ -57,6 +60,7 @@ TEST( ArgumentParserHelpTest, shouldSetProgramDescription )
 TEST( ArgumentParserHelpTest, shouldSetProgramUsage )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().usage( "example [options] [arguments]" );
 
    auto& config = parser.getConfig();
@@ -70,9 +74,10 @@ TEST( ArgumentParserHelpTest, shouldReturnDescriptionsOfAllArguments )
    std::vector<std::string> args;
 
    auto parser = argument_parser{};
-   parser.add_argument( str, "-s" ).nargs( 1 ).help( "some string" );
-   parser.add_argument( depth, "-d", "--depth" ).nargs( 1 ).help( "some depth" );
-   parser.add_argument( args, "args" ).minargs( 0 ).help( "some arguments" );
+   auto params = parser.params();
+   params.add_parameter( str, "-s" ).nargs( 1 ).help( "some string" );
+   params.add_parameter( depth, "-d", "--depth" ).nargs( 1 ).help( "some depth" );
+   params.add_parameter( args, "args" ).minargs( 0 ).help( "some arguments" );
 
    auto descrs = parser.describe_arguments();
    EXPECT_EQ( 3, descrs.size() );
@@ -92,26 +97,28 @@ public:
    std::vector<std::string> args;
 
 public:
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
-      parser.config()
-            .program( "testing-format" )
-            .description( "Format testing." )
-            .usage( "testing-format [options]" )
-            .epilog( "More about testing." );
-
-      parser.add_argument( str, "-s" ).nargs( 1 ).help( "some string" );
-      parser.add_argument( depth, "-d", "--depth" ).nargs( 1 ).help( "some depth" );
-      parser.add_argument( width, "", "--width" ).nargs( 1 ).help( "some width" );
-      parser.add_argument( args, "args" ).minargs( 0 ).help( "some arguments" );
+      params.add_parameter( str, "-s" ).nargs( 1 ).help( "some string" );
+      params.add_parameter( depth, "-d", "--depth" ).nargs( 1 ).help( "some depth" );
+      params.add_parameter( width, "", "--width" ).nargs( 1 ).help( "some width" );
+      params.add_parameter( args, "args" ).minargs( 0 ).help( "some arguments" );
    }
 };
+}   // namespace
 
 TEST( ArgumentParserHelpTest, shouldOutputHelpToStream )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
+   parser.config()
+         .program( "testing-format" )
+         .description( "Format testing." )
+         .usage( "testing-format [options]" )
+         .epilog( "More about testing." );
+
    auto pOpt = std::make_shared<TestOptions>();
-   parser.add_arguments( pOpt );
+   params.add_parameters( pOpt );
    auto help = getTestHelp( parser, HelpFormatter() );
 
    auto parts = std::vector<std::string>{ "testing-format", "Format testing.",
@@ -126,10 +133,11 @@ TEST( ArgumentParserHelpTest, shouldFormatDescriptionsToTheSameColumn )
 {
    int dummy;
    auto parser = argument_parser{};
-   parser.add_argument( dummy, "-s", "--parameter" ).nargs( 0 ).help( "some string" );
-   parser.add_argument( dummy, "-x", "--parameterX" ).nargs( 0 ).help( "some depth" );
-   parser.add_argument( dummy, "-y", "--parameterXX" ).nargs( 0 ).help( "some width" );
-   parser.add_argument( dummy, "args" ).nargs( 0 ).help( "some arguments" );
+   auto params = parser.params();
+   params.add_parameter( dummy, "-s", "--parameter" ).nargs( 0 ).help( "some string" );
+   params.add_parameter( dummy, "-x", "--parameterX" ).nargs( 0 ).help( "some depth" );
+   params.add_parameter( dummy, "-y", "--parameterXX" ).nargs( 0 ).help( "some width" );
+   params.add_parameter( dummy, "args" ).nargs( 0 ).help( "some arguments" );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help );
@@ -151,11 +159,11 @@ TEST( ArgumentParserHelpTest, shouldFormatDescriptionsToTheSameColumn )
    for ( auto& p : parts )
       EXPECT_EQ( column, findColumn( p ) ) << "Not aligned: " << p;
 }
-}   // namespace
 
 TEST( ArgumentParserHelpTest, shouldSetHelpEpilog )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().epilog( "This comes after help." );
 
    auto& config = parser.getConfig();
@@ -166,7 +174,8 @@ TEST( ArgumentParserHelpTest, shouldReformatLongDescriptions )
 {
    std::string loremipsum;
    auto parser = argument_parser{};
-   parser.add_argument( loremipsum, "--lorem-ipsum" )
+   auto params = parser.params();
+   params.add_parameter( loremipsum, "--lorem-ipsum" )
          .nargs( 1 )
          .help( "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
                 "sed do eiusmod tempor incididunt ut labore et dolore magna "
@@ -186,7 +195,8 @@ TEST( ArgumentParserHelpTest, shouldLimitTheWidthOfReformattedDescriptions )
 {
    std::string loremipsum;
    auto parser = argument_parser{};
-   parser.add_argument( loremipsum, "--lorem-ipsum-x-with-a-longer-name" )
+   auto params = parser.params();
+   params.add_parameter( loremipsum, "--lorem-ipsum-x-with-a-longer-name" )
          .nargs( 1 )
          .help( "xxxxx xxxxx xxxxx xxx xxxx, xxxxxxxxxxx xxxxxxxxxx xxxx, "
                 "xxx xx xxxxxxx xxxxxx xxxxxxxxxx xx xxxxxx xx xxxxxx xxxxx "
@@ -213,7 +223,8 @@ TEST( ArgumentParserHelpTest, shouldKeepSourceParagraphsInDescriptions )
 {
    std::string loremipsum;
    auto parser = argument_parser{};
-   parser.add_argument( loremipsum, "--paragraph" ).nargs( 1 ).help( "xxxxx.\n\nyyyy" );
+   auto params = parser.params();
+   params.add_parameter( loremipsum, "--paragraph" ).nargs( 1 ).help( "xxxxx.\n\nyyyy" );
 
    auto formatter = HelpFormatter();
    formatter.setTextWidth( 60 );
@@ -239,12 +250,13 @@ TEST( ArgumentParserHelpTest, shouldDescribeOptionArguments )
 {
    std::string str;
    auto parser = argument_parser{};
-   parser.add_argument( str, "-a" ).nargs( 2 );
-   parser.add_argument( str, "--bees" ).minargs( 1 );
-   parser.add_argument( str, "-c" ).minargs( 0 );
-   parser.add_argument( str, "-d" ).minargs( 2 );
-   parser.add_argument( str, "-e" ).maxargs( 3 );
-   parser.add_argument( str, "-f" ).maxargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( str, "-a" ).nargs( 2 );
+   params.add_parameter( str, "--bees" ).minargs( 1 );
+   params.add_parameter( str, "-c" ).minargs( 0 );
+   params.add_parameter( str, "-d" ).minargs( 2 );
+   params.add_parameter( str, "-e" ).maxargs( 3 );
+   params.add_parameter( str, "-f" ).maxargs( 1 );
 
    auto res = parser.describe_argument( "-a" );
    EXPECT_EQ( "A A", res.arguments );
@@ -269,7 +281,8 @@ TEST( ArgumentParserHelpTest, shouldOutputOptionArguments )
 {
    std::string str;
    auto parser = argument_parser{};
-   parser.add_argument( str, "--bees" ).minargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( str, "--bees" ).minargs( 1 );
 
    auto formatter = HelpFormatter();
    formatter.setTextWidth( 60 );
@@ -292,7 +305,8 @@ TEST( ArgumentParserHelpTest, shouldChangeOptionMetavarName )
 {
    std::string str;
    auto parser = argument_parser{};
-   parser.add_argument( str, "--bees" ).minargs( 1 ).metavar( "WORK" );
+   auto params = parser.params();
+   params.add_parameter( str, "--bees" ).minargs( 1 ).metavar( "WORK" );
 
    auto formatter = HelpFormatter();
    formatter.setTextWidth( 60 );
@@ -315,12 +329,13 @@ TEST( ArgumentParserHelpTest, shouldDescribePositionalArguments )
 {
    std::string str;
    auto parser = argument_parser{};
-   parser.add_argument( str, "a" ).nargs( 2 );
-   parser.add_argument( str, "bees" ).minargs( 1 );
-   parser.add_argument( str, "c" ).minargs( 0 );
-   parser.add_argument( str, "d" ).minargs( 2 );
-   parser.add_argument( str, "e" ).maxargs( 3 );
-   parser.add_argument( str, "f" ).maxargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( str, "a" ).nargs( 2 );
+   params.add_parameter( str, "bees" ).minargs( 1 );
+   params.add_parameter( str, "c" ).minargs( 0 );
+   params.add_parameter( str, "d" ).minargs( 2 );
+   params.add_parameter( str, "e" ).maxargs( 3 );
+   params.add_parameter( str, "f" ).maxargs( 1 );
 
    auto res = parser.describe_argument( "a" );
    EXPECT_EQ( "a a", res.arguments );
@@ -345,7 +360,8 @@ TEST( ArgumentParserHelpTest, shouldOutputPositionalArguments )
 {
    std::string str;
    auto parser = argument_parser{};
-   parser.add_argument( str, "aaa" ).nargs( 3 ).help( "Triple a." );
+   auto params = parser.params();
+   params.add_parameter( str, "aaa" ).nargs( 3 ).help( "Triple a." );
    parser.config().usage( "test" );
 
    auto formatter = HelpFormatter();
@@ -376,8 +392,9 @@ TEST( ArgumentParserHelpTest, shouldSplitOptionalAndMandatoryArguments )
 {
    int dummy;
    auto parser = argument_parser{};
-   parser.add_argument( dummy, "--yes" ).nargs( 0 ).required( true ).help( "req:true" );
-   parser.add_argument( dummy, "--no" ).nargs( 0 ).required( false ).help( "req:false" );
+   auto params = parser.params();
+   params.add_parameter( dummy, "--yes" ).nargs( 0 ).required( true ).help( "req:true" );
+   params.add_parameter( dummy, "--no" ).nargs( 0 ).required( false ).help( "req:false" );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help );
@@ -413,22 +430,23 @@ TEST( ArgumentParserHelpTest, shouldSortParametersByGroups )
 {
    int dummy;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().usage( "test" );
 
-   parser.add_argument( dummy, "--no" ).nargs( 0 ).required( false ).help( "default:no" );
-   parser.add_argument( dummy, "--yes" ).nargs( 0 ).required( true ).help( "default:yes" );
-   parser.add_argument( dummy, "positional" ).nargs( 0 ).help( "default:positional" );
-   parser.add_group( "simple" );
-   parser.add_argument( dummy, "--first" ).nargs( 0 ).help( "simple:first" );
-   parser.add_argument( dummy, "--second" ).nargs( 0 ).help( "simple:second" );
-   parser.add_argument( dummy, "simplicity" ).help( "simple:simplicity" );
-   parser.add_exclusive_group( "exclusive" );
-   parser.add_argument( dummy, "--on" ).nargs( 0 ).help( "exclusive:on" );
-   parser.add_argument( dummy, "--off" ).nargs( 0 ).help( "exclusive:off" );
-   parser.add_group( "last" );
-   parser.add_argument( dummy, "--last" ).nargs( 0 ).help( "last:last" );
-   parser.end_group();
-   parser.add_argument( dummy, "--maybe" ).nargs( 0 ).required( false ).help( "default:maybe" );
+   params.add_parameter( dummy, "--no" ).nargs( 0 ).required( false ).help( "default:no" );
+   params.add_parameter( dummy, "--yes" ).nargs( 0 ).required( true ).help( "default:yes" );
+   params.add_parameter( dummy, "positional" ).nargs( 0 ).help( "default:positional" );
+   params.add_group( "simple" );
+   params.add_parameter( dummy, "--first" ).nargs( 0 ).help( "simple:first" );
+   params.add_parameter( dummy, "--second" ).nargs( 0 ).help( "simple:second" );
+   params.add_parameter( dummy, "simplicity" ).help( "simple:simplicity" );
+   params.add_exclusive_group( "exclusive" );
+   params.add_parameter( dummy, "--on" ).nargs( 0 ).help( "exclusive:on" );
+   params.add_parameter( dummy, "--off" ).nargs( 0 ).help( "exclusive:off" );
+   params.add_group( "last" );
+   params.add_parameter( dummy, "--last" ).nargs( 0 ).help( "last:last" );
+   params.end_group();
+   params.add_parameter( dummy, "--maybe" ).nargs( 0 ).required( false ).help( "default:maybe" );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help );
@@ -469,13 +487,14 @@ TEST( ArgumentParserHelpTest, shouldOutputGroupTitle )
 {
    int dummy;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().description( "Should output group title." );
-   parser.add_argument( dummy, "--default" ).nargs( 0 ).help( "default:default" );
-   parser.add_group( "simple" ).title( "Simple group" );
-   parser.add_argument( dummy, "--first" ).nargs( 0 ).help( "simple:first" );
-   parser.add_argument( dummy, "--second" ).nargs( 0 ).help( "simple:second" );
-   parser.add_exclusive_group( "exclusive" ).title( "Exclusive group" );
-   parser.add_argument( dummy, "--third" ).nargs( 0 ).help( "exclusive:third" );
+   params.add_parameter( dummy, "--default" ).nargs( 0 ).help( "default:default" );
+   params.add_group( "simple" ).title( "Simple group" );
+   params.add_parameter( dummy, "--first" ).nargs( 0 ).help( "simple:first" );
+   params.add_parameter( dummy, "--second" ).nargs( 0 ).help( "simple:second" );
+   params.add_exclusive_group( "exclusive" ).title( "Exclusive group" );
+   params.add_parameter( dummy, "--third" ).nargs( 0 ).help( "exclusive:third" );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help, KEEPEMPTY );
@@ -496,13 +515,14 @@ TEST( ArgumentParserHelpTest, shouldOutputGroupDescription )
 {
    int dummy;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().description( "Should output group description." );
-   parser.add_argument( dummy, "--default" ).nargs( 0 ).help( "default:default" );
-   parser.add_group( "simple" ).description( "Simple group." );
-   parser.add_argument( dummy, "--first" ).nargs( 0 ).help( "simple:first" );
-   parser.add_argument( dummy, "--second" ).nargs( 0 ).help( "simple:second" );
-   parser.add_exclusive_group( "exclusive" ).description( "Exclusive group." );
-   parser.add_argument( dummy, "--third" ).nargs( 0 ).help( "exclusive:third" );
+   params.add_parameter( dummy, "--default" ).nargs( 0 ).help( "default:default" );
+   params.add_group( "simple" ).description( "Simple group." );
+   params.add_parameter( dummy, "--first" ).nargs( 0 ).help( "simple:first" );
+   params.add_parameter( dummy, "--second" ).nargs( 0 ).help( "simple:second" );
+   params.add_exclusive_group( "exclusive" ).description( "Exclusive group." );
+   params.add_parameter( dummy, "--third" ).nargs( 0 ).help( "exclusive:third" );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help, KEEPEMPTY );
@@ -523,8 +543,9 @@ TEST( ArgumentParserHelpTest, shouldBuildDefaultUsage )
 {
    int dummy;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "testing" );
-   parser.add_argument( dummy, "--default" ).nargs( 0 );
+   params.add_parameter( dummy, "--default" ).nargs( 0 );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help, KEEPEMPTY );
@@ -544,9 +565,10 @@ TEST( ArgumentParserHelpTest, shouldPutOptionsBeforePositionalInUsage )
 {
    int dummy;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "testing" );
-   parser.add_argument( dummy, "positional" ).nargs( 1 );
-   parser.add_argument( dummy, "--option" ).nargs( 0 );
+   params.add_parameter( dummy, "positional" ).nargs( 1 );
+   params.add_parameter( dummy, "--option" ).nargs( 0 );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help, KEEPEMPTY );
@@ -566,11 +588,12 @@ TEST( ArgumentParserHelpTest, shouldDisplayArgumentCountInUsage )
 {
    int dummy;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "testing" );
-   parser.add_argument( dummy, "p" ).nargs( 1 );
-   parser.add_argument( dummy, "-o" ).nargs( 0 );
-   parser.add_argument( dummy, "-i" ).minargs( 1 );
-   parser.add_argument( dummy, "-a" ).maxargs( 2 );
+   params.add_parameter( dummy, "p" ).nargs( 1 );
+   params.add_parameter( dummy, "-o" ).nargs( 0 );
+   params.add_parameter( dummy, "-i" ).minargs( 1 );
+   params.add_parameter( dummy, "-a" ).maxargs( 2 );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help, KEEPEMPTY );
@@ -591,10 +614,11 @@ TEST( ArgumentParserHelpTest, shouldDistinguishRequierdOptionsInUsage )
 {
    int dummy;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "testing" );
-   parser.add_argument( dummy, "-o" ).nargs( 0 ).required( true );
-   parser.add_argument( dummy, "-a" ).maxargs( 2 ).required( false );
-   parser.add_argument( dummy, "-n" ).nargs( 0 ).required( false );
+   params.add_parameter( dummy, "-o" ).nargs( 0 ).required( true );
+   params.add_parameter( dummy, "-a" ).maxargs( 2 ).required( false );
+   params.add_parameter( dummy, "-n" ).nargs( 0 ).required( false );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help, KEEPEMPTY );
@@ -617,10 +641,11 @@ TEST( ArgumentParserHelpTest, shouldDistinguishRequriedPositionalsInUsage )
 {
    int dummy;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "testing" );
-   parser.add_argument( dummy, "r" ).nargs( 1 ).required( true );
-   parser.add_argument( dummy, "o" ).nargs( 1 ).required( false );
-   parser.add_argument( dummy, "x" ).maxargs( 1 ).required( false );
+   params.add_parameter( dummy, "r" ).nargs( 1 ).required( true );
+   params.add_parameter( dummy, "o" ).nargs( 1 ).required( false );
+   params.add_parameter( dummy, "x" ).maxargs( 1 ).required( false );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help, KEEPEMPTY );
@@ -644,9 +669,10 @@ TEST( ArgumentParserHelpTest, shouldUseSamePositionalMetavarNameInUsageAndHelp )
 {
    int dummy;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "testing" );
-   parser.add_argument( dummy, "xpos" ).nargs( 1 ).required( true );
-   parser.add_argument( dummy, "xmetapos" ).metavar( "MPOS" ).nargs( 1 ).required( true );
+   params.add_parameter( dummy, "xpos" ).nargs( 1 ).required( true );
+   params.add_parameter( dummy, "xmetapos" ).metavar( "MPOS" ).nargs( 1 ).required( true );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help, KEEPEMPTY );

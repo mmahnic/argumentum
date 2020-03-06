@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+// Copyright (c) 2018, 2019, 2020 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
@@ -11,6 +11,7 @@
 #include "optionconfig.h"
 #include "optionfactory.h"
 #include "optionpack.h"
+#include "parameterconfig.h"
 #include "parserconfig.h"
 #include "parserdefinition.h"
 #include "parseresult.h"
@@ -23,7 +24,6 @@
 #include <map>
 #include <memory>
 #include <optional>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -32,14 +32,11 @@ namespace argumentum {
 class argument_parser
 {
    friend class Parser;
+   friend class ParameterConfig;
 
 private:
    bool mTopLevel = true;
    ParserDefinition mParserDef;
-   std::set<std::string> mHelpOptionNames;
-   std::vector<std::shared_ptr<Options>> mTargets;
-   std::map<std::string, std::shared_ptr<OptionGroup>> mGroups;
-   std::shared_ptr<OptionGroup> mpActiveGroup;
    std::unique_ptr<OptionFactory> mpOptionFactory;
 
 public:
@@ -50,91 +47,102 @@ public:
    ParserConfig& config();
 
    /**
+    * Get an instance of the parameter configuration through which parameter can
+    * be defined.
+    */
+   ParameterConfig params()
+   {
+      return ParameterConfig( *this );
+   }
+
+   /**
     * Get a reference to the parser configuration for inspection.
     */
    const ParserConfig::Data& getConfig() const;
+
    /**
     * Get a reference to the definition of the parser for inspection.
     */
    const ParserDefinition& getDefinition() const;
 
-   // Define a command.  The options from @p pOptions will be registered only
-   // when the command is activated with an input argument.
-   CommandConfig add_command( std::shared_ptr<CommandOptions> pOptions );
+// Attributes are not handled well by clang-format so we use a macro.
+#define ARGUMENTUM_DEPRECATED( x ) [[deprecated( x )]]
 
-   // Define a command.  The CommandOptions (@p TOptions) will be instantiated
-   // when the command is activated with an input argument.
+   // Deprecated. Use args = parser.params(); args.add_command(...);
+   ARGUMENTUM_DEPRECATED( "Use parser.params()" )
+   CommandConfig add_command( std::shared_ptr<CommandOptions> pOptions )
+   {
+      return params().add_command( pOptions );
+   };
+
+   // Deprecated. Use args = parser.params(); args.add_command(...);
    template<typename TOptions>
+   ARGUMENTUM_DEPRECATED( "Use parser.params()" )
    CommandConfig add_command( const std::string& name )
    {
-      auto factory = []( std::string_view name ) { return std::make_shared<TOptions>( name ); };
-      auto command = Command( name, factory );
-      return tryAddCommand( command );
-   }
+      return params().add_command<TOptions>( name );
+   };
 
-   // Define a command. The @p factory will create an instance of CommandOptions
-   // when the command is activated with an input argument.
-   CommandConfig add_command( const std::string& name, Command::options_factory_t factory );
-
-   template<typename TTarget, typename = std::enable_if_t<std::is_base_of<Value, TTarget>::value>>
-   OptionConfigA<TTarget> add_argument(
-         TTarget target, const std::string& name = "", const std::string& altName = "" )
+   // Deprecated. Use args = parser.params(); args.add_command(...);
+   ARGUMENTUM_DEPRECATED( "Use parser.params()" )
+   CommandConfig add_command( const std::string& name, Command::options_factory_t factory )
    {
-      auto option = getOptionFactory().createOption( target );
-      return OptionConfigA<TTarget>( tryAddArgument( option, { name, altName } ) );
+      return params().add_command( name, factory );
    }
 
-   /**
-    * Add an argument with names @p name and @p altName and store the reference
-    * to @p target value that will receive the parsed parameter(s).
-    */
-   template<typename TTarget, typename = std::enable_if_t<!std::is_base_of<Value, TTarget>::value>>
+   // Deprecated. Use args = parser.params(); args.add_parameter(...);
+   template<typename TTarget>
+   ARGUMENTUM_DEPRECATED( "Use parser.params()" )
    OptionConfigA<TTarget> add_argument(
          TTarget& target, const std::string& name = "", const std::string& altName = "" )
    {
-      auto option = getOptionFactory().createOption( target );
-      return OptionConfigA<TTarget>( tryAddArgument( option, { name, altName } ) );
+      return params().add_parameter( target, name, altName );
+      // return params().add_argument( std::forward<TTarget>( target ), name, altName );
    }
 
-   /**
-    * Add the @p pOptions structure and call its add_arguments method to add
-    * the arguments to the parser.  The pointer to @p pOptions is stored in the
-    * parser so that the structure outlives the parser.
-    */
-   void add_arguments( std::shared_ptr<Options> pOptions );
+   // Deprecated. Use args = parser.params(); args.add_parameters(...);
+   ARGUMENTUM_DEPRECATED( "Use parser.params()" )
+   void add_arguments( std::shared_ptr<Options> pOptions )
+   {
+      return params().add_parameters( pOptions );
+   }
 
-   /**
-    * Add default help options --help and -h that will display the help and
-    * terminate the parser.
-    *
-    * The method will throw an invalid_argument exception if none of the option
-    * names --help and -h can be used.
-    *
-    * This method will be called from parse_args if neither it nor the method
-    * add_help_option were called before parse_args.
-    */
-   VoidOptionConfig add_default_help_option();
+   // Deprecated. Use args = parser.params(); args.add_default_help_option(...);
+   ARGUMENTUM_DEPRECATED( "Use parser.params()" )
+   VoidOptionConfig add_default_help_option()
+   {
+      return params().add_default_help_option();
+   }
 
-   /**
-    * Add a special option that will display the help and terminate the parser.
-    *
-    * If neither this method nor add_default_help_option is called, the default
-    * help options --help and -h will be used as long as they are not used for
-    * other purposes.
-    */
-   VoidOptionConfig add_help_option( const std::string& name, const std::string& altName = "" );
+   // Deprecated. Use args = parser.params(); args.add_help_option(...);
+   ARGUMENTUM_DEPRECATED( "Use parser.params()" )
+   VoidOptionConfig add_help_option( const std::string& name, const std::string& altName = "" )
+   {
+      return params().add_help_option( name, altName );
+   }
 
-   // Begin a group of options named @p name. The group definition ends at
-   // end_group().
-   GroupConfig add_group( const std::string& name );
+   // Deprecated. Use args = parser.params(); args.add_group(...);
+   ARGUMENTUM_DEPRECATED( "Use parser.params()" )
+   GroupConfig add_group( const std::string& name )
+   {
+      return params().add_group( name );
+   }
 
-   // Begin an exclusive group of options named @p name.  At most one of the
-   // options from an exclusive group can be used in input arguments.  The group
-   // definition ends at end_group().
-   GroupConfig add_exclusive_group( const std::string& name );
+   // Deprecated. Use args = parser.params(); args.add_exclusive_group(...);
+   ARGUMENTUM_DEPRECATED( "Use parser.params()" )
+   GroupConfig add_exclusive_group( const std::string& name )
+   {
+      return params().add_exclusive_group( name );
+   }
 
-   // End a group.
-   void end_group();
+   // Deprecated. Use args = parser.params(); args.end_group(...);
+   ARGUMENTUM_DEPRECATED( "Use parser.params()" )
+   void end_group()
+   {
+      params().end_group();
+   }
+
+#undef ARGUMENTUM_DEPRECATED
 
    // Parse input arguments and return commands and errors in a ParseResult.
    ParseResult parse_args( int argc, char** argv, int skip_args = 1 );
@@ -162,17 +170,9 @@ private:
    bool hasRequiredArguments() const;
    void reportExclusiveViolations( ParseResultBuilder& result );
    void reportMissingGroups( ParseResultBuilder& result );
-   OptionConfig tryAddArgument( Option& newOption, std::vector<std::string_view> names );
-   OptionConfig addPositional( Option&& newOption, const std::vector<std::string_view>& names );
-   OptionConfig addOption( Option&& newOption, const std::vector<std::string_view>& names );
-   void trySetNames( Option& option, const std::vector<std::string_view>& names ) const;
-   void ensureIsNewOption( const std::string& name );
-   CommandConfig tryAddCommand( Command& command );
-   void ensureIsNewCommand( const std::string& name );
-   std::shared_ptr<OptionGroup> addGroup( std::string name, bool isExclusive );
-   std::shared_ptr<OptionGroup> findGroup( std::string name ) const;
    void generate_help();
    void describe_errors( ParseResult& result );
+   // TODO (mmahnic): remove, moved to ParameterConfig
    OptionFactory& getOptionFactory();
 };
 

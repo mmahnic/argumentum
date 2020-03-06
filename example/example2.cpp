@@ -18,8 +18,9 @@ struct OptionsA : public argumentum::Options
    vector<long> intValues;
    void add_arguments( argument_parser& parser ) override
    {
-      parser.add_argument( stringValue, "-s", "--string" ).nargs( 1 );
-      parser.add_argument( intValues, "-i", "--int" ).minargs( 0 );
+      auto params = parser.params();
+      params.add_parameter( stringValue, "-s", "--string" ).nargs( 1 );
+      params.add_parameter( intValues, "-i", "--int" ).minargs( 0 );
    }
 };
 
@@ -27,13 +28,14 @@ struct OptionsB : public argumentum::Options
 {
    optional<double> floatValue;
    long flag = 0;
-   vector<string> params;
+   vector<string> strings;
 
    void add_arguments( argument_parser& parser ) override
    {
-      parser.add_argument( floatValue, "-f", "--float" ).nargs( 1 );
-      parser.add_argument( flag, "-g", "--flag" );
-      parser.add_argument( params, "params" );
+      auto params = parser.params();
+      params.add_parameter( floatValue, "-f", "--float" ).nargs( 1 );
+      params.add_parameter( flag, "-g", "--flag" );
+      params.add_parameter( strings, "params" );
    }
 };
 
@@ -41,10 +43,11 @@ int main( int argc, char** argv )
 {
    auto parser = argument_parser{};
    parser.config().program( argv[0] );
+   auto params = parser.params();
    auto pOptionsA = std::make_shared<OptionsA>();
-   parser.add_arguments( pOptionsA );
+   params.add_parameters( pOptionsA );
    auto pOptionsB = std::make_shared<OptionsB>();
-   parser.add_arguments( pOptionsB );
+   params.add_parameters( pOptionsB );
 
    vector<string> args;
    for ( int i = 1; i < argc; ++i )
@@ -62,7 +65,7 @@ int main( int argc, char** argv )
    cout << "B flag:        " << pOptionsB->flag << "\n";
 
    cout << "B Positional parameters: ";
-   for ( auto& param : pOptionsB->params )
+   for ( auto& param : pOptionsB->strings )
       cout << "'" << param << "' ";
    cout << "\n";
 

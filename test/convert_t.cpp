@@ -19,7 +19,8 @@ TEST( ArgumentParserConvertTest, shouldParseIntegerValues )
    long value = 0;
 
    auto parser = argument_parser{};
-   parser.add_argument( value, "-v", "--value" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( value, "-v", "--value" ).nargs( 1 );
    parser.parse_args( { "--value", "2314" } );
 
    EXPECT_EQ( 2314, value );
@@ -31,8 +32,9 @@ TEST( ArgumentParserConvertTest, shouldParseOptionalIntegerValues )
    std::optional<long> missing;
 
    auto parser = argument_parser{};
-   parser.add_argument( value, "-v", "--value" ).nargs( 1 );
-   parser.add_argument( missing, "-m", "--missing" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( value, "-v", "--value" ).nargs( 1 );
+   params.add_parameter( missing, "-m", "--missing" ).nargs( 1 );
    parser.parse_args( { "--value", "2314" } );
 
    EXPECT_FALSE( static_cast<bool>( missing ) );
@@ -47,9 +49,10 @@ TEST( ArgumentParserConvertTest, shouldSupportRawValueTypes )
    double floatvalue = 2.0;
 
    auto parser = argument_parser{};
-   parser.add_argument( strvalue, "--str" ).nargs( 1 );
-   parser.add_argument( intvalue, "--int" ).nargs( 1 );
-   parser.add_argument( floatvalue, "--float" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( strvalue, "--str" ).nargs( 1 );
+   params.add_parameter( intvalue, "--int" ).nargs( 1 );
+   params.add_parameter( floatvalue, "--float" ).nargs( 1 );
 
    auto res = parser.parse_args( { "--str", "string", "--int", "2134", "--float", "32.4" } );
    EXPECT_EQ( "string", strvalue );
@@ -62,8 +65,9 @@ TEST( ArgumentParserConvertTest, shouldSupportFlagValues )
    std::optional<std::string> flag;
 
    auto parser = argument_parser{};
-   parser.add_argument( flag, "-a" ).flagValue( "from-a" );
-   parser.add_argument( flag, "-b" ).flagValue( "from-b" );
+   auto params = parser.params();
+   params.add_parameter( flag, "-a" ).flagValue( "from-a" );
+   params.add_parameter( flag, "-b" ).flagValue( "from-b" );
 
    auto res = parser.parse_args( { "-a", "-b" } );
    EXPECT_EQ( "from-b", flag.value() );
@@ -78,7 +82,8 @@ TEST( ArgumentParserConvertTest, shouldSupportFloatingPointValues )
    std::optional<double> value;
 
    auto parser = argument_parser{};
-   parser.add_argument( value, "-a" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( value, "-a" ).nargs( 1 );
 
    auto res = parser.parse_args( { "-a", "23.5" } );
    EXPECT_NEAR( 23.5, value.value(), 1e-9 );
@@ -89,7 +94,8 @@ TEST( ArgumentParserConvertTest, shouldReportBadConversionError )
    std::optional<long> flagA;
 
    auto parser = argument_parser{};
-   parser.add_argument( flagA, "-a" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( flagA, "-a" ).nargs( 1 );
 
    auto res = parser.parse_args( { "-a", "wrong" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -126,7 +132,8 @@ TEST( ArgumentParserConvertTest, shouldSupportCustomOptionTypesWith_from_string 
    CustomType_fromstring_test custom;
 
    auto parser = argument_parser{};
-   parser.add_argument( custom, "-c" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( custom, "-c" ).nargs( 1 );
 
    auto res = parser.parse_args( { "-c", "value" } );
    EXPECT_EQ( "value", custom.value );
@@ -139,8 +146,9 @@ TEST( ArgumentParserConvertTest, shouldSupportOptionalCustomOptionTypesWith_from
    std::optional<CustomType_fromstring_test> ignored;
 
    auto parser = argument_parser{};
-   parser.add_argument( custom, "-c" ).nargs( 1 );
-   parser.add_argument( ignored, "-d" ).maxargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( custom, "-c" ).nargs( 1 );
+   params.add_parameter( ignored, "-d" ).maxargs( 1 );
 
    auto res = parser.parse_args( { "-c", "value" } );
    ASSERT_TRUE( static_cast<bool>( custom ) );
@@ -155,7 +163,8 @@ TEST( ArgumentParserConvertTest, shouldSupportVectorOfCustomTypesWith_from_strin
    std::vector<CustomType_fromstring_test> custom;
 
    auto parser = argument_parser{};
-   parser.add_argument( custom, "-c" ).minargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( custom, "-c" ).minargs( 1 );
 
    auto res = parser.parse_args( { "-c", "value", "sator" } );
    ASSERT_EQ( 2, custom.size() );
@@ -172,9 +181,10 @@ TEST( ArgumentParserConvertTest, shouldSupportVectorOptions )
    std::vector<double> floats;
 
    auto parser = argument_parser{};
-   parser.add_argument( strings, "-s" ).nargs( 1 );
-   parser.add_argument( longs, "-l" ).nargs( 1 );
-   parser.add_argument( floats, "-f" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( strings, "-s" ).nargs( 1 );
+   params.add_parameter( longs, "-l" ).nargs( 1 );
+   params.add_parameter( floats, "-f" ).nargs( 1 );
 
    auto res = parser.parse_args( { "-s", "string", "-f", "12.43", "-l", "576", "-l", "981" } );
    EXPECT_TRUE( vector_eq( { "string" }, strings ) );
@@ -201,10 +211,11 @@ ETypeError testType( const std::string& example, const TValue result,
    std::optional<TValue> maybeValue;
    std::vector<TValue> vectorValue;
    auto parser = argument_parser{};
+   auto params = parser.params();
 
-   parser.add_argument( value, "--value" ).nargs( 1 );
-   parser.add_argument( maybeValue, "--maybe" ).nargs( 1 );
-   parser.add_argument( vectorValue, "--vector" ).nargs( 1 );
+   params.add_parameter( value, "--value" ).nargs( 1 );
+   params.add_parameter( maybeValue, "--maybe" ).nargs( 1 );
+   params.add_parameter( vectorValue, "--vector" ).nargs( 1 );
 
    auto res =
          parser.parse_args( { "--value=" + example, "--maybe=" + example, "--vector=" + example } );
@@ -313,7 +324,8 @@ TEST( ArgumentParserConvertTest, shouldConvertValuesWithStringAssignmentOp )
    StringAssignable assign;
 
    auto parser = argument_parser{};
-   parser.add_argument( assign, "--assign" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( assign, "--assign" ).nargs( 1 );
    auto res = parser.parse_args( { "--assign", "Assign" } );
 
    EXPECT_EQ( "Assign", assign.value );
@@ -324,7 +336,8 @@ TEST( ArgumentParserConvertTest, shouldConvertValuesWithStringConstructor )
    StringConstructible construct;
 
    auto parser = argument_parser{};
-   parser.add_argument( construct, "--construct" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( construct, "--construct" ).nargs( 1 );
    auto res = parser.parse_args( { "--construct", "Construct" } );
 
    EXPECT_EQ( "Construct", construct.value );

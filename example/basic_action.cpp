@@ -16,8 +16,9 @@ int main( int argc, char** argv )
 
    auto parser = argument_parser{};
    parser.config().program( argv[0] ).description( "Accumulator" );
-   parser.add_argument( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
-   parser.add_argument( operation, "--sum", "-s" )
+   auto params = parser.params();
+   params.add_parameter( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
+   params.add_parameter( operation, "--sum", "-s" )
          .nargs( 0 )
          .absent( std::make_pair( max, INT_MIN ) )
          .action( [&]( auto& target, const std::string& value ) {
