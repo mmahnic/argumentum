@@ -169,15 +169,6 @@ private:
    bool hasRequiredArguments() const;
    void reportExclusiveViolations( ParseResultBuilder& result );
    void reportMissingGroups( ParseResultBuilder& result );
-   OptionConfig tryAddArgument( Option& newOption, std::vector<std::string_view> names );
-   OptionConfig addPositional( Option&& newOption, const std::vector<std::string_view>& names );
-   OptionConfig addOption( Option&& newOption, const std::vector<std::string_view>& names );
-   void trySetNames( Option& option, const std::vector<std::string_view>& names ) const;
-   void ensureIsNewOption( const std::string& name );
-   CommandConfig tryAddCommand( Command& command );
-   void ensureIsNewCommand( const std::string& name );
-   std::shared_ptr<OptionGroup> addGroup( std::string name, bool isExclusive );
-   std::shared_ptr<OptionGroup> findGroup( std::string name ) const;
    void generate_help();
    void describe_errors( ParseResult& result );
    // TODO (mmahnic): remove, moved to ArgumentConfig
