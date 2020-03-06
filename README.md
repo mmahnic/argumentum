@@ -3,7 +3,7 @@
 
 # Argumentum / Argparse
 
-Argumentum is a C++ library for writing command-line program interfaces. The arguments that a
+Argumentum is a C++ library for writing command-line program interfaces. The parameters that a
 program supports are registered in an instance of `arument_parser`, the main library class.
 `argument_parser` processes the input arguments, checks that they are valid and converts them to C++
 variables. It also generates help and usage messages when requested.
@@ -41,9 +41,10 @@ int main( int argc, char** argv )
    bool isSum = false;
 
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( argv[0] ).description( "Accumulator" );
-   parser.add_argument( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
-   parser.add_argument( isSum, "--sum", "-s" )
+   params.add_parameter( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
+   params.add_parameter( isSum, "--sum", "-s" )
          .nargs( 0 )
          .help( "Sum the integers (default: find the max)" );
 
@@ -77,7 +78,7 @@ If information about whether a value was set or not is needed, `std::optional` c
 
 ```c++
    std::optional<std::string> str;
-   parser.add_argument( str, "-s" ).maxargs( 1 );
+   params.add_parameter( str, "-s" ).maxargs( 1 );
 
    // ... parser.parse_args ...
 
@@ -111,9 +112,10 @@ int main( int argc, char** argv )
    std::pair<std::function<int( int, int )>, int> operation;
 
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( argv[0] ).description( "Accumulator" );
-   parser.add_argument( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
-   parser.add_argument( operation, "--sum", "-s" )
+   params.add_parameter( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
+   params.add_parameter( operation, "--sum", "-s" )
          .nargs( 0 )
          .absent( std::make_pair( max, INT_MIN ) )
          .action( [&]( auto& target, const std::string& value ) {
@@ -130,9 +132,9 @@ int main( int argc, char** argv )
 }
 ```
 
-In simple programs target variables can be declared in the function where the arguments are defined
-and parsed. In larger programs it is more convenient to store variables in one or more structures.
-This is the same example rewritten so that it stores options in a structure:
+In simple programs target variables can be declared in the function where parameters are defined and
+arguments parsed.  In larger programs it is more convenient to store target variables in one or more
+structures.  This is the same example rewritten so that it stores options in a structure:
 
 ```c++
 #include <climits>
@@ -150,13 +152,13 @@ public:
    std::pair<std::function<int( int, int )>, int> operation;
 
 protected:
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
       auto max = []( int a, int b ) { return std::max( a, b ); };
       auto sum = []( int a, int b ) { return a + b; };
 
-      parser.add_argument( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
-      parser.add_argument( operation, "--sum", "-s" )
+      params.add_parameter( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
+      params.add_parameter( operation, "--sum", "-s" )
             .nargs( 0 )
             .absent( std::make_pair( max, INT_MIN ) )
             .action( [&]( auto& target, const std::string& value ) {
@@ -176,10 +178,11 @@ void execute( AccumulatorOptions& opt )
 int main( int argc, char** argv )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( argv[0] ).description( "Accumulator" );
 
    auto pOptions = std::make_shared<AccumulatorOptions>();
-   parser.add_arguments( pOptions );
+   params.add_parameters( pOptions );
 
    if ( !parser.parse_args( argc, argv, 1 ) )
       return 1;
@@ -193,9 +196,6 @@ When a program becomes even more complex it can be subdivided into commands that
 independent programs.  We can rewrite the above example with commands.  The main change is that the
 class `AccumulatorOptions` is now derived from `CommandOptions` which has the method `execute` that
 we use to execute the selected command.  
-
-Note: the interface for defining and executing commands is not stable and will change in the
-future.  
 
 ```C++
 #include <climits>
@@ -220,7 +220,7 @@ public:
    }
 
 protected:
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
      // ... same as above
    }
@@ -240,9 +240,9 @@ public:
    }
 
 protected:
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
-      parser.add_argument( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
+      params.add_parameter( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
    };
 };
 
@@ -250,9 +250,10 @@ protected:
 int main( int argc, char** argv )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( argv[0] ).description( "Accumulator" );
-   parser.add_command<CmdAccumulatorOptions>( "fold" ).help( "Accumulate integer values." );
-   parser.add_command<CmdEchoOptions>( "echo" ).help( "Echo integers from the command line." );
+   params.add_command<CmdAccumulatorOptions>( "fold" ).help( "Accumulate integer values." );
+   params.add_command<CmdEchoOptions>( "echo" ).help( "Echo integers from the command line." );
 
    auto res = parser.parse_args( argc, argv, 1 );
    if ( !res )
@@ -274,17 +275,21 @@ subcommand.
 
 If a program has global options that we want to access from a command, we have to instantiate
 command options in advance and set a link in command options to global options.  In this case it is
-most convenient to store global options in an Options structure.  In the following example
-AccumulatorOptions need access to global options.  Only the added and modified methods are shown:
+most convenient to store global options in an Options structure.  Even though we add an instance of
+command options to the parser, the actual options will be registered with the parser only when the
+command is activated by the arguments.
+
+In the following example AccumulatorOptions need access to global options.  Only the added and
+modified methods are shown:
 
 ```C++
 class GlobalOptions : public argumentum::Options
 {
 public:
    int logLevel = 0;
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
-      parser.add_argument( logLevel, "--loglevel" ).nargs( 1 );
+      params.add_parameter( logLevel, "--loglevel" ).nargs( 1 );
    }
 };
 
@@ -311,14 +316,15 @@ public:
 int main( int argc, char** argv )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( argv[0] ).description( "Accumulator" );
 
    auto pGlobal = std::make_shared<GlobalOptions>();
    auto pAccumulator = std::make_shared<CmdAccumulatorOptions>( "fold", pGlobal );
 
-   parser.add_arguments( pGlobal );
-   parser.add_command( pAccumulator ).help( "Accumulate integer values." );
-   parser.add_command<CmdEchoOptions>( "echo" ).help( "Echo integers from the command line." );
+   params.add_parameters( pGlobal );
+   params.add_command( pAccumulator ).help( "Accumulate integer values." );
+   params.add_command<CmdEchoOptions>( "echo" ).help( "Echo integers from the command line." );
 
    auto res = parser.parse_args( argc, argv, 1 );
    if ( !res )
