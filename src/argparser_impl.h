@@ -150,9 +150,9 @@ ARGUMENTUM_INLINE void argument_parser::verifyDefinedOptions()
 {
    // Check if any help options are defined and add the default if not.
    if ( mParserDef.mHelpOptionNames.empty() ) {
-      arguments().end_group();
+      params().end_group();
       try {
-         arguments().add_default_help_option();
+         params().add_default_help_option();
       }
       catch ( const std::invalid_argument& ) {
          Notifier::warn( "Failed to add default help options." );

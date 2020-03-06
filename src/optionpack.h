@@ -10,21 +10,21 @@ namespace argumentum {
 
 class ParseResult;
 class argument_parser;
-class ArgumentConfig;
+class ParameterConfig;
 
 class Options
 {
 public:
-   virtual void add_arguments( ArgumentConfig& args )
+   virtual void add_parameters( ParameterConfig& args )
    {
-      // TODO (mmahnic): make method add_arguments( ArgumentConfig) abstract.
+      // TODO (mmahnic): make method add_parameters( ParameterConfig) abstract.
    }
 
 // Attributes are not handled well by clang-format so we use a macro.
 #define ARGUMENTUM_DEPRECATED( x ) [[deprecated( x )]]
 
-   // Deprecated. Use add_arguments( ArgumentConfig ).
-   ARGUMENTUM_DEPRECATED( "Use add_arguments( ArgumentConfig )" )
+   // Deprecated. Use add_arguments( ParameterConfig ).
+   ARGUMENTUM_DEPRECATED( "Use add_parameters( ParameterConfig )" )
    virtual void add_arguments( argument_parser& parser );
 
 #undef ARGUMENTUM_DEPRECATED

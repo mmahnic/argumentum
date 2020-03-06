@@ -18,7 +18,7 @@ namespace argumentum {
 class argument_parser;
 class ParserDefinition;
 
-class ArgumentConfig
+class ParameterConfig
 {
    friend class argument_parser;
    // TODO (mmahnic): this should be ParserDefinition mParserDef.
@@ -49,11 +49,11 @@ public:
     * to @p target value that will receive the parsed parameter(s).
     */
    template<typename TTarget>
-   OptionConfigA<TTarget> add_argument(
+   OptionConfigA<TTarget> add_parameter(
          TTarget& target, const std::string& name = "", const std::string& altName = "" )
    {
       auto option = getOptionFactory().createOption( target );
-      return OptionConfigA<TTarget>( tryAddArgument( option, { name, altName } ) );
+      return OptionConfigA<TTarget>( tryAddParameter( option, { name, altName } ) );
    }
 
    /**
@@ -61,7 +61,7 @@ public:
     * the arguments to the parser.  The pointer to @p pOptions is stored in the
     * parser so that the structure outlives the parser.
     */
-   void add_arguments( std::shared_ptr<Options> pOptions );
+   void add_parameters( std::shared_ptr<Options> pOptions );
 
    /**
     * Add default help options --help and -h that will display the help and
@@ -97,10 +97,10 @@ public:
    void end_group();
 
 private:
-   ArgumentConfig( argument_parser& parser );
+   ParameterConfig( argument_parser& parser );
 
 private:
-   OptionConfig tryAddArgument( Option& newOption, std::vector<std::string_view> names );
+   OptionConfig tryAddParameter( Option& newOption, std::vector<std::string_view> names );
    OptionConfig addPositional( Option&& newOption, const std::vector<std::string_view>& names );
    OptionConfig addOption( Option&& newOption, const std::vector<std::string_view>& names );
    void trySetNames( Option& option, const std::vector<std::string_view>& names ) const;

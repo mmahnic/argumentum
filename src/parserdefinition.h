@@ -19,7 +19,7 @@ class Command;
 
 class ParserDefinition
 {
-   friend class ArgumentConfig;
+   friend class ParameterConfig;
 
 private:
    // TODO (mmahnic): mpActiveGroup should be removed, ParserDefinition should

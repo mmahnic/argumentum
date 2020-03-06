@@ -11,8 +11,8 @@ namespace argumentum {
 
 void Options::add_arguments( argument_parser& parser )
 {
-   auto args = parser.arguments();
-   add_arguments( args );
+   auto params = parser.params();
+   add_parameters( params );
 }
 
 ARGUMENTUM_INLINE CommandOptions::CommandOptions( std::string_view name )

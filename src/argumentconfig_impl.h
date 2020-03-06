@@ -12,19 +12,19 @@
 
 namespace argumentum {
 
-ARGUMENTUM_INLINE ArgumentConfig::ArgumentConfig( argument_parser& parser )
+ARGUMENTUM_INLINE ParameterConfig::ParameterConfig( argument_parser& parser )
    : mParser( parser )
    , mParserDef( parser.mParserDef )
 {}
 
-ARGUMENTUM_INLINE OptionFactory& ArgumentConfig::getOptionFactory()
+ARGUMENTUM_INLINE OptionFactory& ParameterConfig::getOptionFactory()
 {
    // TODO (mmahnic): We need a single instance or the factory during argument
    // definition.  Afterwards, we do not need it any more.
    return mParser.getOptionFactory();
 }
 
-ARGUMENTUM_INLINE CommandConfig ArgumentConfig::add_command(
+ARGUMENTUM_INLINE CommandConfig ParameterConfig::add_command(
       std::shared_ptr<CommandOptions> pOptions )
 {
    if ( !pOptions )
@@ -34,14 +34,15 @@ ARGUMENTUM_INLINE CommandConfig ArgumentConfig::add_command(
    return tryAddCommand( command );
 }
 
-ARGUMENTUM_INLINE void ArgumentConfig::add_arguments( std::shared_ptr<Options> pOptions )
+ARGUMENTUM_INLINE void ParameterConfig::add_parameters( std::shared_ptr<Options> pOptions )
 {
    if ( pOptions )
-      // TODO (mmahnic): the argument should be *this instead of mParser
+      // TODO (mmahnic): use add_parameters; the argument should be *this
+      // instead of mParser
       pOptions->add_arguments( mParser );
 }
 
-ARGUMENTUM_INLINE VoidOptionConfig ArgumentConfig::add_default_help_option()
+ARGUMENTUM_INLINE VoidOptionConfig ParameterConfig::add_default_help_option()
 {
    const auto shortName = "-h";
    const auto longName = "--help";
@@ -58,7 +59,7 @@ ARGUMENTUM_INLINE VoidOptionConfig ArgumentConfig::add_default_help_option()
    throw std::invalid_argument( "The default help options are hidden by other options." );
 }
 
-ARGUMENTUM_INLINE VoidOptionConfig ArgumentConfig::add_help_option(
+ARGUMENTUM_INLINE VoidOptionConfig ParameterConfig::add_help_option(
       const std::string& name, const std::string& altName )
 {
    if ( !name.empty() && name[0] != '-' || !altName.empty() && altName[0] != '-' )
@@ -68,7 +69,7 @@ ARGUMENTUM_INLINE VoidOptionConfig ArgumentConfig::add_help_option(
    auto option = getOptionFactory().createOption( value );
    auto* pParser = &mParser;
    auto optionConfig =   // (clf)
-         VoidOptionConfig( tryAddArgument( option, { name, altName } ) )
+         VoidOptionConfig( tryAddParameter( option, { name, altName } ) )
                .help( "Display this help message and exit." )
                .action( [pParser]( const std::string&, Environment& env ) {
                   pParser->generate_help();
@@ -85,7 +86,7 @@ ARGUMENTUM_INLINE VoidOptionConfig ArgumentConfig::add_help_option(
    return optionConfig;
 }
 
-ARGUMENTUM_INLINE GroupConfig ArgumentConfig::add_group( const std::string& name )
+ARGUMENTUM_INLINE GroupConfig ParameterConfig::add_group( const std::string& name )
 {
    auto pGroup = mParserDef.findGroup( name );
    if ( pGroup ) {
@@ -99,7 +100,7 @@ ARGUMENTUM_INLINE GroupConfig ArgumentConfig::add_group( const std::string& name
    return GroupConfig( mParserDef.mpActiveGroup );
 }
 
-ARGUMENTUM_INLINE GroupConfig ArgumentConfig::add_exclusive_group( const std::string& name )
+ARGUMENTUM_INLINE GroupConfig ParameterConfig::add_exclusive_group( const std::string& name )
 {
    auto pGroup = mParserDef.findGroup( name );
    if ( pGroup ) {
@@ -113,12 +114,12 @@ ARGUMENTUM_INLINE GroupConfig ArgumentConfig::add_exclusive_group( const std::st
    return GroupConfig( mParserDef.mpActiveGroup );
 }
 
-ARGUMENTUM_INLINE void ArgumentConfig::end_group()
+ARGUMENTUM_INLINE void ParameterConfig::end_group()
 {
    mParserDef.mpActiveGroup = nullptr;
 }
 
-ARGUMENTUM_INLINE OptionConfig ArgumentConfig::tryAddArgument(
+ARGUMENTUM_INLINE OptionConfig ParameterConfig::tryAddParameter(
       Option& newOption, std::vector<std::string_view> names )
 {
    // Remove empty names
@@ -151,7 +152,7 @@ ARGUMENTUM_INLINE OptionConfig ArgumentConfig::tryAddArgument(
    throw std::invalid_argument( "The argument must be either positional or an option." );
 }
 
-ARGUMENTUM_INLINE OptionConfig ArgumentConfig::addPositional(
+ARGUMENTUM_INLINE OptionConfig ParameterConfig::addPositional(
       Option&& newOption, const std::vector<std::string_view>& names )
 {
    auto pOption = std::make_shared<Option>( std::move( newOption ) );
@@ -174,7 +175,7 @@ ARGUMENTUM_INLINE OptionConfig ArgumentConfig::addPositional(
    return { pOption };
 }
 
-ARGUMENTUM_INLINE OptionConfig ArgumentConfig::addOption(
+ARGUMENTUM_INLINE OptionConfig ParameterConfig::addOption(
       Option&& newOption, const std::vector<std::string_view>& names )
 {
    trySetNames( newOption, names );
@@ -190,7 +191,7 @@ ARGUMENTUM_INLINE OptionConfig ArgumentConfig::addOption(
    return { pOption };
 }
 
-ARGUMENTUM_INLINE void ArgumentConfig::trySetNames(
+ARGUMENTUM_INLINE void ParameterConfig::trySetNames(
       Option& option, const std::vector<std::string_view>& names ) const
 {
    for ( auto name : names ) {
@@ -210,7 +211,7 @@ ARGUMENTUM_INLINE void ArgumentConfig::trySetNames(
       throw std::invalid_argument( "An option must have a name." );
 }
 
-ARGUMENTUM_INLINE void ArgumentConfig::ensureIsNewOption( const std::string& name )
+ARGUMENTUM_INLINE void ParameterConfig::ensureIsNewOption( const std::string& name )
 {
    if ( name.empty() )
       return;
@@ -222,7 +223,7 @@ ARGUMENTUM_INLINE void ArgumentConfig::ensureIsNewOption( const std::string& nam
    }
 }
 
-ARGUMENTUM_INLINE CommandConfig ArgumentConfig::tryAddCommand( Command& command )
+ARGUMENTUM_INLINE CommandConfig ParameterConfig::tryAddCommand( Command& command )
 {
    if ( command.getName().empty() )
       throw std::invalid_argument( "A command must have a name." );
@@ -238,14 +239,14 @@ ARGUMENTUM_INLINE CommandConfig ArgumentConfig::tryAddCommand( Command& command 
    return { pCommand };
 }
 
-ARGUMENTUM_INLINE void ArgumentConfig::ensureIsNewCommand( const std::string& name )
+ARGUMENTUM_INLINE void ParameterConfig::ensureIsNewCommand( const std::string& name )
 {
    auto pCommand = mParserDef.findCommand( name );
    if ( pCommand )
       throw DuplicateCommand( name );
 }
 
-ARGUMENTUM_INLINE std::shared_ptr<OptionGroup> ArgumentConfig::addGroup(
+ARGUMENTUM_INLINE std::shared_ptr<OptionGroup> ParameterConfig::addGroup(
       std::string name, bool isExclusive )
 {
    if ( name.empty() )
