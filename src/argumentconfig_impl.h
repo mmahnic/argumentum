@@ -19,10 +19,9 @@ ARGUMENTUM_INLINE ArgumentConfig::ArgumentConfig( argument_parser& parser )
 
 ARGUMENTUM_INLINE OptionFactory& ArgumentConfig::getOptionFactory()
 {
-   if ( !mpOptionFactory )
-      mpOptionFactory = std::make_unique<OptionFactory>();
-
-   return *mpOptionFactory;
+   // TODO (mmahnic): We need a single instance or the factory during argument
+   // definition.  Afterwards, we do not need it any more.
+   return mParser.getOptionFactory();
 }
 
 ARGUMENTUM_INLINE CommandConfig ArgumentConfig::add_command(
@@ -67,20 +66,21 @@ ARGUMENTUM_INLINE VoidOptionConfig ArgumentConfig::add_help_option(
 
    auto value = VoidValue{};
    auto option = getOptionFactory().createOption( value );
+   auto* pParser = &mParser;
    auto optionConfig =   // (clf)
          VoidOptionConfig( tryAddArgument( option, { name, altName } ) )
                .help( "Display this help message and exit." )
-               .action( [this]( const std::string&, Environment& env ) {
-                  mParser.generate_help();
+               .action( [pParser]( const std::string&, Environment& env ) {
+                  pParser->generate_help();
                   env.notify_help_was_shown();
                   env.exit_parser();
                } );
 
    if ( !name.empty() )
-      mParser.mHelpOptionNames.insert( name );
+      mParserDef.mHelpOptionNames.insert( name );
 
    if ( !altName.empty() )
-      mParser.mHelpOptionNames.insert( altName );
+      mParserDef.mHelpOptionNames.insert( altName );
 
    return optionConfig;
 }

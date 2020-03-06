@@ -6,6 +6,7 @@
 #include "parserconfig.h"
 
 #include <map>
+#include <set>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -32,6 +33,7 @@ public:
    std::vector<std::shared_ptr<Option>> mOptions;
    std::vector<std::shared_ptr<Option>> mPositional;
    std::map<std::string, std::shared_ptr<OptionGroup>> mGroups;
+   std::set<std::string> mHelpOptionNames;
 
 public:
    Option* findOption( std::string_view optionName ) const;
