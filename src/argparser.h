@@ -27,9 +27,6 @@
 #include <string>
 #include <vector>
 
-// Attributes are not handled well by clang-format so we use a macro.
-#define ARGUMENTUM_DEPRECATED( x ) [[deprecated( x )]]
-
 namespace argumentum {
 
 class argument_parser
@@ -40,7 +37,6 @@ class argument_parser
 private:
    bool mTopLevel = true;
    ParserDefinition mParserDef;
-   std::shared_ptr<OptionGroup> mpActiveGroup;
    std::unique_ptr<OptionFactory> mpOptionFactory;
 
 public:
@@ -68,6 +64,9 @@ public:
     * Get a reference to the definition of the parser for inspection.
     */
    const ParserDefinition& getDefinition() const;
+
+// Attributes are not handled well by clang-format so we use a macro.
+#define ARGUMENTUM_DEPRECATED( x ) [[deprecated( x )]]
 
    // Deprecated. Use args = parser.arguments(); args.add_command(...);
    ARGUMENTUM_DEPRECATED( "Use parser.arguments()" )
@@ -142,6 +141,8 @@ public:
    {
       arguments().end_group();
    }
+
+#undef ARGUMENTUM_DEPRECATED
 
    // Parse input arguments and return commands and errors in a ParseResult.
    ParseResult parse_args( int argc, char** argv, int skip_args = 1 );

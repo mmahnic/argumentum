@@ -287,7 +287,7 @@ ARGUMENTUM_INLINE void Parser::parseCommandArguments(
 
    auto pCmdOptions = command.getOptions();
    if ( pCmdOptions ) {
-      parser.add_arguments( pCmdOptions );
+      parser.arguments().add_arguments( pCmdOptions );
       result.addCommand( pCmdOptions );
    }
    result.addResult( parser.parse_args( argStream ) );

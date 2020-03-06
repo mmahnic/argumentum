@@ -14,6 +14,7 @@
 #include "helpformatter_impl.h"
 #include "option_impl.h"
 #include "optionconfig_impl.h"
+#include "optionpack_impl.h"
 #include "optionsorter_impl.h"
 #include "parser_impl.h"
 #include "parserconfig_impl.h"

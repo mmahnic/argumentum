@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+// Copyright (c) 2018, 2019, 2020 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
@@ -7,18 +7,6 @@
 #include "optionpack.h"
 
 namespace argumentum {
-
-ARGUMENTUM_INLINE CommandOptions::CommandOptions( std::string_view name )
-   : mName( name )
-{}
-
-ARGUMENTUM_INLINE const std::string& CommandOptions::getName() const
-{
-   return mName;
-}
-
-ARGUMENTUM_INLINE void CommandOptions::execute( const ParseResult& result )
-{}
 
 ARGUMENTUM_INLINE Command::Command( std::string_view name, options_factory_t factory )
    : mName( name )
