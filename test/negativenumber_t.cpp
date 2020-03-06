@@ -20,8 +20,9 @@ using namespace testing;
 TEST( NegativeNumberTest, shouldDistinguishNegativeNumbersFromOptions )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
    int i;
-   parser.add_argument( i, "--num" ).nargs( 1 );
+   params.add_parameter( i, "--num" ).nargs( 1 );
 
    auto res = parser.parse_args( { "--num", "-5" } );
    EXPECT_TRUE( static_cast<bool>( res ) );
@@ -31,10 +32,11 @@ TEST( NegativeNumberTest, shouldDistinguishNegativeNumbersFromOptions )
 TEST( NegativeNumberTest, shouldGivePrecedenceToOptionValueOverDigitOption )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
    int i;
    int d;
-   parser.add_argument( i, "--num" ).nargs( 1 );
-   parser.add_argument( d, "-5" ).nargs( 0 ).absent( 100 );
+   params.add_parameter( i, "--num" ).nargs( 1 );
+   params.add_parameter( d, "-5" ).nargs( 0 ).absent( 100 );
 
    auto res = parser.parse_args( { "--num", "-5" } );
    EXPECT_TRUE( static_cast<bool>( res ) );
@@ -45,10 +47,11 @@ TEST( NegativeNumberTest, shouldGivePrecedenceToOptionValueOverDigitOption )
 TEST( NegativeNumberTest, shouldDistinguishNegativeNumbersFromOptionsInPositionalParams )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
    int i;
    int j;
-   parser.add_argument( i, "--num" ).nargs( 1 );
-   parser.add_argument( j, "number" ).nargs( 1 );
+   params.add_parameter( i, "--num" ).nargs( 1 );
+   params.add_parameter( j, "number" ).nargs( 1 );
 
    auto res = parser.parse_args( { "--num", "-5", "-6" } );
    EXPECT_TRUE( static_cast<bool>( res ) );
@@ -59,12 +62,13 @@ TEST( NegativeNumberTest, shouldDistinguishNegativeNumbersFromOptionsInPositiona
 TEST( NegativeNumberTest, shouldGivePrecedenceToDigitOptionOverPositionalParam )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
    int i;
    int j;
    int d;
-   parser.add_argument( i, "--num" ).nargs( 1 );
-   parser.add_argument( j, "number" ).nargs( 1 );
-   parser.add_argument( d, "-6" ).nargs( 0 ).absent( 100 ).flagValue( "60" );
+   params.add_parameter( i, "--num" ).nargs( 1 );
+   params.add_parameter( j, "number" ).nargs( 1 );
+   params.add_parameter( d, "-6" ).nargs( 0 ).absent( 100 ).flagValue( "60" );
 
    auto res = parser.parse_args( { "--num", "-5", "-6" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -76,12 +80,13 @@ TEST( NegativeNumberTest, shouldGivePrecedenceToDigitOptionOverPositionalParam )
 TEST( NegativeNumberTest, shouldMakePositionalParamAfterDashDash )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
    int i;
    int j;
    int d;
-   parser.add_argument( i, "--num" ).nargs( 1 );
-   parser.add_argument( j, "number" ).nargs( 1 );
-   parser.add_argument( d, "-6" ).nargs( 0 ).absent( 100 ).flagValue( "60" );
+   params.add_parameter( i, "--num" ).nargs( 1 );
+   params.add_parameter( j, "number" ).nargs( 1 );
+   params.add_parameter( d, "-6" ).nargs( 0 ).absent( 100 ).flagValue( "60" );
 
    auto res = parser.parse_args( { "--num", "-5", "--", "-6" } );
    EXPECT_TRUE( static_cast<bool>( res ) );

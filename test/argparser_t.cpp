@@ -18,7 +18,8 @@ TEST( ArgumentParserTest, shouldParseShortOptions )
    std::optional<std::string> value;
 
    auto parser = argument_parser{};
-   parser.add_argument( value, "-v" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( value, "-v" ).nargs( 1 );
    parser.parse_args( { "-v", "success" } );
 
    EXPECT_EQ( "success", value.value() );
@@ -29,7 +30,8 @@ TEST( ArgumentParserTest, shouldParseLongOptions )
    std::optional<std::string> value;
 
    auto parser = argument_parser{};
-   parser.add_argument( value, "--value", "-v" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( value, "--value", "-v" ).nargs( 1 );
    parser.parse_args( { "--value", "success" } );
 
    EXPECT_EQ( "success", value.value() );
@@ -41,8 +43,9 @@ TEST( ArgumentParserTest, shouldNotSetOptionValuesWithoutArguments )
    std::optional<std::string> unused;
 
    auto parser = argument_parser{};
-   parser.add_argument( value, "-v", "--value" ).nargs( 1 );
-   parser.add_argument( unused, "--unused" );
+   auto params = parser.params();
+   params.add_parameter( value, "-v", "--value" ).nargs( 1 );
+   params.add_parameter( unused, "--unused" );
    parser.parse_args( { "--value", "2314" } );
 
    EXPECT_EQ( 2314, value.value() );
@@ -55,8 +58,9 @@ TEST( ArgumentParserTest, shouldOnlyAddOptionValueIfRequired )
    std::optional<std::string> flag;
 
    auto parser = argument_parser{};
-   parser.add_argument( value, "-v", "--value" ).nargs( 1 );
-   parser.add_argument( flag, "--flag" );
+   auto params = parser.params();
+   params.add_parameter( value, "-v", "--value" ).nargs( 1 );
+   params.add_parameter( flag, "--flag" );
 
    parser.parse_args( { "--value", "2314", "--flag", "notused" } );
 
@@ -73,8 +77,9 @@ TEST( ArgumentParserTest, shouldSkipParsingOptionsAfterDashDash )
    std::optional<std::string> flag;
 
    auto parser = argument_parser{};
-   parser.add_argument( value, "-v", "--value" ).nargs( 1 );
-   parser.add_argument( flag, "--skipped" );
+   auto params = parser.params();
+   params.add_parameter( value, "-v", "--value" ).nargs( 1 );
+   params.add_parameter( flag, "--skipped" );
 
    parser.parse_args( { "--value", "2314", "--", "--skipped" } );
 
@@ -90,10 +95,11 @@ TEST( ArgumentParserTest, shouldSupportShortOptionGroups )
    std::optional<long> flagD;
 
    auto parser = argument_parser{};
-   parser.add_argument( flagA, "-a" );
-   parser.add_argument( flagB, "-b" );
-   parser.add_argument( flagC, "-c" );
-   parser.add_argument( flagD, "-d" );
+   auto params = parser.params();
+   params.add_parameter( flagA, "-a" );
+   params.add_parameter( flagB, "-b" );
+   params.add_parameter( flagC, "-c" );
+   params.add_parameter( flagD, "-d" );
 
    parser.parse_args( { "-abd" } );
 
@@ -111,10 +117,11 @@ TEST( ArgumentParserTest, shouldReadArgumentForLastOptionInGroup )
    std::optional<long> flagD;
 
    auto parser = argument_parser{};
-   parser.add_argument( flagA, "-a" );
-   parser.add_argument( flagB, "-b" );
-   parser.add_argument( flagC, "-c" );
-   parser.add_argument( flagD, "-d" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( flagA, "-a" );
+   params.add_parameter( flagB, "-b" );
+   params.add_parameter( flagC, "-c" );
+   params.add_parameter( flagD, "-d" ).nargs( 1 );
 
    parser.parse_args( { "-abd", "4213" } );
 
@@ -130,8 +137,9 @@ TEST( ArgumentParserTest, shouldReportErrorForMissingArgument )
    std::optional<std::string> flagB;
 
    auto parser = argument_parser{};
-   parser.add_argument( flagA, "-a" ).nargs( 1 );
-   parser.add_argument( flagB, "-b" );
+   auto params = parser.params();
+   params.add_parameter( flagA, "-a" ).nargs( 1 );
+   params.add_parameter( flagB, "-b" );
 
    auto res = parser.parse_args( { "-a", "-b", "freearg" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -147,7 +155,8 @@ TEST( ArgumentParserTest, shouldReportUnknownOptionError )
    std::optional<long> flagA;
 
    auto parser = argument_parser{};
-   parser.add_argument( flagA, "-a" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( flagA, "-a" ).nargs( 1 );
 
    auto res = parser.parse_args( { "-a", "2135", "--unknown" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -162,8 +171,9 @@ TEST( ArgumentParserTest, shouldReportMissingRequiredOptionError )
    std::optional<long> flagB;
 
    auto parser = argument_parser{};
-   parser.add_argument( flagA, "-a" ).nargs( 1 );
-   parser.add_argument( flagB, "-b" ).required();
+   auto params = parser.params();
+   params.add_parameter( flagA, "-a" ).nargs( 1 );
+   params.add_parameter( flagB, "-b" ).required();
 
    auto res = parser.parse_args( { "-a", "2135" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -177,7 +187,8 @@ TEST( ArgumentParserTest, shouldAcceptOptionNamesInConstructor )
    std::string strvalue;
 
    auto parser = argument_parser{};
-   parser.add_argument( strvalue, "-s", "--string" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( strvalue, "-s", "--string" ).nargs( 1 );
 
    auto res = parser.parse_args( { "-s", "short" } );
    EXPECT_EQ( 0, res.errors.size() );
@@ -193,10 +204,11 @@ TEST( ArgumentParserTest, shouldNotAcceptInvalidShortOptions )
    std::string strvalue;
 
    auto parser = argument_parser{};
-   parser.add_argument( strvalue, "-s", "--string" ).nargs( 1 );
-   parser.add_argument( strvalue, "--l" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( strvalue, "-s", "--string" ).nargs( 1 );
+   params.add_parameter( strvalue, "--l" ).nargs( 1 );
 
-   EXPECT_THROW( parser.add_argument( strvalue, "-long" ).nargs( 1 ), std::invalid_argument );
+   EXPECT_THROW( params.add_parameter( strvalue, "-long" ).nargs( 1 ), std::invalid_argument );
 
    auto res = parser.parse_args( { "-s", "short" } );
    EXPECT_EQ( 0, res.errors.size() );
@@ -216,9 +228,10 @@ TEST( ArgumentParserTest, shouldNotAcceptOptionsWithoutName )
    std::string strvalue;
 
    auto parser = argument_parser{};
-   EXPECT_THROW( parser.add_argument( strvalue, "-" ), std::invalid_argument );
-   EXPECT_THROW( parser.add_argument( strvalue, "--" ), std::invalid_argument );
-   EXPECT_THROW( parser.add_argument( strvalue, "" ), std::invalid_argument );
+   auto params = parser.params();
+   EXPECT_THROW( params.add_parameter( strvalue, "-" ), std::invalid_argument );
+   EXPECT_THROW( params.add_parameter( strvalue, "--" ), std::invalid_argument );
+   EXPECT_THROW( params.add_parameter( strvalue, "" ), std::invalid_argument );
 }
 
 TEST( ArgumentParserTest, shouldStorePositionalArgumentsInValues )
@@ -226,7 +239,8 @@ TEST( ArgumentParserTest, shouldStorePositionalArgumentsInValues )
    std::vector<std::string> strings;
 
    auto parser = argument_parser{};
-   parser.add_argument( strings, "text" ).minargs( 0 );
+   auto params = parser.params();
+   params.add_parameter( strings, "text" ).minargs( 0 );
 
    auto res = parser.parse_args( { "one", "two", "three" } );
 
@@ -241,10 +255,11 @@ TEST( ArgumentParserTest, shouldGroupPositionalArguments )
 
    auto makeParser = [&]() {
       auto parser = argument_parser{};
-      parser.add_argument( strvalue, "-s", "--string" ).nargs( 1 );
-      parser.add_argument( strvalue, "--l" ).nargs( 1 );
-      parser.add_argument( firstArgument, "text" ).nargs( 1 );
-      parser.add_argument( otherArguments, "args" ).minargs( 0 );
+      auto params = parser.params();
+      params.add_parameter( strvalue, "-s", "--string" ).nargs( 1 );
+      params.add_parameter( strvalue, "--l" ).nargs( 1 );
+      params.add_parameter( firstArgument, "text" ).nargs( 1 );
+      params.add_parameter( otherArguments, "args" ).minargs( 0 );
       return parser;
    };
 
@@ -268,9 +283,10 @@ TEST( ArgumentParserTest, shouldSupportOptionArgumentCounts )
    std::vector<std::string> files;
 
    auto parser = argument_parser{};
-   parser.add_argument( strvalue, "-s" ).nargs( 1 );
-   parser.add_argument( texts, "-t" ).nargs( 2 );
-   parser.add_argument( files, "-f" ).minargs( 0 );
+   auto params = parser.params();
+   params.add_parameter( strvalue, "-s" ).nargs( 1 );
+   params.add_parameter( texts, "-t" ).nargs( 2 );
+   params.add_parameter( files, "-f" ).minargs( 0 );
 
    parser.parse_args( { "-t", "the", "text", "-f", "file1", "file2", "file3", "-s", "string" } );
    EXPECT_EQ( "string", strvalue );
@@ -285,9 +301,10 @@ TEST( ArgumentParserTest, shouldFailWhenOptionArgumentCountsAreWrong )
    std::vector<std::string> files;
 
    auto parser = argument_parser{};
-   parser.add_argument( strvalue, "-s" ).nargs( 1 );
-   parser.add_argument( texts, "-t" ).nargs( 2 );
-   parser.add_argument( files, "-f" ).nargs( 2 );
+   auto params = parser.params();
+   params.add_parameter( strvalue, "-s" ).nargs( 1 );
+   params.add_parameter( texts, "-t" ).nargs( 2 );
+   params.add_parameter( files, "-f" ).nargs( 2 );
 
    auto res =
          parser.parse_args( { "-t", "the", "-f", "file1", "file2", "not-file3", "-s", "string" } );
@@ -310,9 +327,10 @@ TEST( ArgumentParserTest, shouldSupportPositionalArgumentCounts )
    std::vector<std::string> files;
 
    auto parser = argument_parser{};
-   parser.add_argument( strvalue, "-s" ).nargs( 1 );
-   parser.add_argument( texts, "text" ).nargs( 2 );
-   parser.add_argument( files, "file" ).nargs( 2 );
+   auto params = parser.params();
+   params.add_parameter( strvalue, "-s" ).nargs( 1 );
+   params.add_parameter( texts, "text" ).nargs( 2 );
+   params.add_parameter( files, "file" ).nargs( 2 );
    auto res = parser.parse_args(
          { "the", "-s", "string1", "text", "file1", "file2", "not-file3", "-s", "string2" } );
 
@@ -326,11 +344,12 @@ TEST( ArgumentParserTest, shouldSupportExactNumberOfOptionArguments )
 {
    std::vector<std::string> texts;
 
-   auto testWithNargs = [&]( int nargs, const std::vector<std::string>& params ) {
+   auto testWithNargs = [&]( int nargs, const std::vector<std::string>& args ) {
       texts.clear();
       auto parser = argument_parser{};
-      parser.add_argument( texts, "-t" ).nargs( nargs );
-      return parser.parse_args( params );
+      auto params = parser.params();
+      params.add_parameter( texts, "-t" ).nargs( nargs );
+      return parser.parse_args( args );
    };
    auto params = std::vector<std::string>{ "-t", "read", "the", "text" };
 
@@ -372,11 +391,12 @@ TEST( ArgumentParserTest, shouldSupportExactNumberOfPositionalArguments )
 {
    std::vector<std::string> texts;
 
-   auto testWithNargs = [&]( int nargs, const std::vector<std::string>& params ) {
+   auto testWithNargs = [&]( int nargs, const std::vector<std::string>& args ) {
       texts.clear();
       auto parser = argument_parser{};
-      parser.add_argument( texts, "text" ).nargs( nargs );
-      return parser.parse_args( params );
+      auto params = parser.params();
+      params.add_parameter( texts, "text" ).nargs( nargs );
+      return parser.parse_args( args );
    };
    auto params = std::vector<std::string>{ "read", "the", "text" };
 
@@ -417,11 +437,12 @@ TEST( ArgumentParserTest, shouldSupportMinNumberOfOptionArguments )
 {
    std::vector<std::string> texts;
 
-   auto testWithMinArgs = [&]( int nargs, const std::vector<std::string>& params ) {
+   auto testWithMinArgs = [&]( int nargs, const std::vector<std::string>& args ) {
       texts.clear();
       auto parser = argument_parser{};
-      parser.add_argument( texts, "-t" ).minargs( nargs );
-      return parser.parse_args( params );
+      auto params = parser.params();
+      params.add_parameter( texts, "-t" ).minargs( nargs );
+      return parser.parse_args( args );
    };
    auto params = std::vector<std::string>{ "-t", "read", "the", "text" };
 
@@ -445,11 +466,12 @@ TEST( ArgumentParserTest, shouldSupportMaxNumberOfOptionArguments )
 {
    std::vector<std::string> texts;
 
-   auto testWithMaxArgs = [&]( int nargs, const std::vector<std::string>& params ) {
+   auto testWithMaxArgs = [&]( int nargs, const std::vector<std::string>& args ) {
       texts.clear();
       auto parser = argument_parser{};
-      parser.add_argument( texts, "-t" ).maxargs( nargs );
-      return parser.parse_args( params );
+      auto params = parser.params();
+      params.add_parameter( texts, "-t" ).maxargs( nargs );
+      return parser.parse_args( args );
    };
    auto params = std::vector<std::string>{ "-t", "read", "the", "text" };
 
@@ -481,11 +503,12 @@ TEST( ArgumentParserTest, shouldSupportMinNumberOfPositionalArguments )
 {
    std::vector<std::string> texts;
 
-   auto testWithMinArgs = [&]( int nargs, const std::vector<std::string>& params ) {
+   auto testWithMinArgs = [&]( int nargs, const std::vector<std::string>& args ) {
       texts.clear();
       auto parser = argument_parser{};
-      parser.add_argument( texts, "text" ).minargs( nargs );
-      return parser.parse_args( params );
+      auto params = parser.params();
+      params.add_parameter( texts, "text" ).minargs( nargs );
+      return parser.parse_args( args );
    };
    auto params = std::vector<std::string>{ "read", "the", "text" };
 
@@ -509,11 +532,12 @@ TEST( ArgumentParserTest, shouldSupportMaxNumberOfPositionalArguments )
 {
    std::vector<std::string> texts;
 
-   auto testWithMaxArgs = [&]( int nargs, const std::vector<std::string>& params ) {
+   auto testWithMaxArgs = [&]( int nargs, const std::vector<std::string>& args ) {
       texts.clear();
       auto parser = argument_parser{};
-      parser.add_argument( texts, "text" ).maxargs( nargs );
-      return parser.parse_args( params );
+      auto params = parser.params();
+      params.add_parameter( texts, "text" ).maxargs( nargs );
+      return parser.parse_args( args );
    };
    auto params = std::vector<std::string>{ "read", "the", "text" };
 
@@ -543,13 +567,14 @@ TEST( ArgumentParserTest, shouldSupportMaxNumberOfPositionalArguments )
 TEST( ArgumentParserTest, shouldSetDefaultCountForPositionalArgumentsWithVectorValues )
 {
    std::vector<std::string> texts;
-   auto params = std::vector<std::string>{ "read", "the", "text" };
+   auto args = std::vector<std::string>{ "read", "the", "text" };
 
    auto parser = argument_parser{};
    // If the value variable is a vector, the default is minargs(0)
-   parser.add_argument( texts, "text" );
+   auto params = parser.params();
+   params.add_parameter( texts, "text" );
 
-   auto res = parser.parse_args( params );
+   auto res = parser.parse_args( args );
    EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) );
    EXPECT_EQ( 0, res.ignoredArguments.size() );
    EXPECT_EQ( 0, res.errors.size() );
@@ -558,13 +583,14 @@ TEST( ArgumentParserTest, shouldSetDefaultCountForPositionalArgumentsWithVectorV
 TEST( ArgumentParserTest, shouldSetDefaultCountForPositionalArgumentsWithScalarValues )
 {
    std::string strvalue;
-   auto params = std::vector<std::string>{ "read", "the", "text" };
+   auto args = std::vector<std::string>{ "read", "the", "text" };
 
    auto parser = argument_parser{};
    // If the value variable is a scalar, the default is nargs(1)
-   parser.add_argument( strvalue, "text" );
+   auto params = parser.params();
+   params.add_parameter( strvalue, "text" );
 
-   auto res = parser.parse_args( params );
+   auto res = parser.parse_args( args );
    EXPECT_EQ( "read", strvalue );
    EXPECT_TRUE( vector_eq( { "the", "text" }, res.ignoredArguments ) );
    EXPECT_EQ( 0, res.errors.size() );
@@ -574,7 +600,8 @@ TEST( ArgumentParserTest, shouldSetFlagValueWhenZeroOrMoreArgumentsRequiredAndNo
 {
    std::vector<std::string> texts;
    auto parser = argument_parser{};
-   parser.add_argument( texts, "-t" ).maxargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( texts, "-t" ).maxargs( 1 );
 
    auto res = parser.parse_args( { "-t" } );
    EXPECT_TRUE( vector_eq( { "1" }, texts ) );
@@ -584,31 +611,33 @@ TEST( ArgumentParserTest, shouldSetArgumentCountAtMostOnce )
 {
    std::vector<std::string> texts;
    auto parser = argument_parser{};
+   auto params = parser.params();
 
-   EXPECT_NO_THROW( parser.add_argument( texts, "-a" ).nargs( 1 ) );
-   EXPECT_NO_THROW( parser.add_argument( texts, "-b" ).minargs( 1 ) );
-   EXPECT_NO_THROW( parser.add_argument( texts, "-c" ).maxargs( 1 ) );
+   EXPECT_NO_THROW( params.add_parameter( texts, "-a" ).nargs( 1 ) );
+   EXPECT_NO_THROW( params.add_parameter( texts, "-b" ).minargs( 1 ) );
+   EXPECT_NO_THROW( params.add_parameter( texts, "-c" ).maxargs( 1 ) );
 
    EXPECT_THROW(
-         parser.add_argument( texts, "-d" ).nargs( 1 ).minargs( 1 ), std::invalid_argument );
+         params.add_parameter( texts, "-d" ).nargs( 1 ).minargs( 1 ), std::invalid_argument );
    EXPECT_THROW(
-         parser.add_argument( texts, "-e" ).nargs( 1 ).maxargs( 1 ), std::invalid_argument );
+         params.add_parameter( texts, "-e" ).nargs( 1 ).maxargs( 1 ), std::invalid_argument );
    EXPECT_THROW(
-         parser.add_argument( texts, "-f" ).minargs( 1 ).nargs( 1 ), std::invalid_argument );
+         params.add_parameter( texts, "-f" ).minargs( 1 ).nargs( 1 ), std::invalid_argument );
    EXPECT_THROW(
-         parser.add_argument( texts, "-g" ).minargs( 1 ).maxargs( 1 ), std::invalid_argument );
+         params.add_parameter( texts, "-g" ).minargs( 1 ).maxargs( 1 ), std::invalid_argument );
    EXPECT_THROW(
-         parser.add_argument( texts, "-h" ).maxargs( 1 ).nargs( 1 ), std::invalid_argument );
+         params.add_parameter( texts, "-h" ).maxargs( 1 ).nargs( 1 ), std::invalid_argument );
    EXPECT_THROW(
-         parser.add_argument( texts, "-i" ).maxargs( 1 ).minargs( 1 ), std::invalid_argument );
+         params.add_parameter( texts, "-i" ).maxargs( 1 ).minargs( 1 ), std::invalid_argument );
 }
 
 TEST( ArgumentParserTest, shouldSetOptionChoices )
 {
    std::string strvalue;
    auto parser = argument_parser{};
+   auto params = parser.params();
 
-   parser.add_argument( strvalue, "-s" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
+   params.add_parameter( strvalue, "-s" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
    auto res = parser.parse_args( { "-s", "beta" } );
    EXPECT_EQ( "beta", strvalue );
    EXPECT_EQ( 0, res.errors.size() );
@@ -618,8 +647,9 @@ TEST( ArgumentParserTest, shouldFailIfArgumentIsNotInChoices )
 {
    std::string strvalue;
    auto parser = argument_parser{};
+   auto params = parser.params();
 
-   parser.add_argument( strvalue, "-s" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
+   params.add_parameter( strvalue, "-s" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
    auto res = parser.parse_args( { "-s", "phi" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_TRUE( strvalue.empty() );
@@ -632,8 +662,9 @@ TEST( ArgumentParserTest, shouldFailIfPositionalArgumentIsNotInChoices )
 {
    std::string strvalue;
    auto parser = argument_parser{};
+   auto params = parser.params();
 
-   parser.add_argument( strvalue, "string" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
+   params.add_parameter( strvalue, "string" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
    auto res = parser.parse_args( { "phi" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
    EXPECT_TRUE( strvalue.empty() );
@@ -649,9 +680,10 @@ TEST( ArgumentParserTest, shouldDistinguishLongAndShortAndPositionalNames )
    std::string strArg;
 
    auto parser = argument_parser{};
-   parser.add_argument( strShort, "-s" ).nargs( 1 );
-   parser.add_argument( strLong, "--s" ).nargs( 1 );
-   parser.add_argument( strArg, "s" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( strShort, "-s" ).nargs( 1 );
+   params.add_parameter( strLong, "--s" ).nargs( 1 );
+   params.add_parameter( strArg, "s" ).nargs( 1 );
 
    auto res = parser.parse_args( { "-s", "short", "--s", "long", "string" } );
    EXPECT_EQ( "short", strShort );
@@ -664,16 +696,17 @@ TEST( ArgumentParserTest, shouldNotAcceptOptionsWithWhitespace )
 {
    std::string strvalue;
    auto parser = argument_parser{};
+   auto params = parser.params();
 
-   EXPECT_THROW( parser.add_argument( strvalue, "a string" ), std::invalid_argument );
-   EXPECT_THROW( parser.add_argument( strvalue, " string" ), std::invalid_argument );
-   EXPECT_THROW( parser.add_argument( strvalue, "string " ), std::invalid_argument );
-   EXPECT_THROW( parser.add_argument( strvalue, "-string " ), std::invalid_argument );
-   EXPECT_THROW( parser.add_argument( strvalue, "--string " ), std::invalid_argument );
-   EXPECT_THROW( parser.add_argument( strvalue, "-a string" ), std::invalid_argument );
-   EXPECT_THROW( parser.add_argument( strvalue, "--a string" ), std::invalid_argument );
-   EXPECT_THROW( parser.add_argument( strvalue, "- string" ), std::invalid_argument );
-   EXPECT_THROW( parser.add_argument( strvalue, "-- string" ), std::invalid_argument );
+   EXPECT_THROW( params.add_parameter( strvalue, "a string" ), std::invalid_argument );
+   EXPECT_THROW( params.add_parameter( strvalue, " string" ), std::invalid_argument );
+   EXPECT_THROW( params.add_parameter( strvalue, "string " ), std::invalid_argument );
+   EXPECT_THROW( params.add_parameter( strvalue, "-string " ), std::invalid_argument );
+   EXPECT_THROW( params.add_parameter( strvalue, "--string " ), std::invalid_argument );
+   EXPECT_THROW( params.add_parameter( strvalue, "-a string" ), std::invalid_argument );
+   EXPECT_THROW( params.add_parameter( strvalue, "--a string" ), std::invalid_argument );
+   EXPECT_THROW( params.add_parameter( strvalue, "- string" ), std::invalid_argument );
+   EXPECT_THROW( params.add_parameter( strvalue, "-- string" ), std::invalid_argument );
 }
 
 TEST( ArgumentParserTest, shouldAcceptSharedOptionStructure )
@@ -683,16 +716,17 @@ TEST( ArgumentParserTest, shouldAcceptSharedOptionStructure )
       std::string str;
       long count;
 
-      void add_arguments( argument_parser& parser ) override
+      void add_parameters( ParameterConfig& params ) override
       {
-         parser.add_argument( str, "-s" ).nargs( 1 );
-         parser.add_argument( count, "-n" ).nargs( 1 );
+         params.add_parameter( str, "-s" ).nargs( 1 );
+         params.add_parameter( count, "-n" ).nargs( 1 );
       }
    };
 
    auto parser = argument_parser{};
+   auto params = parser.params();
    auto pOpt = std::make_shared<Options>();
-   parser.add_arguments( pOpt );
+   params.add_parameters( pOpt );
    auto res = parser.parse_args( { "-s", "str", "-n", "3274" } );
    EXPECT_EQ( "str", pOpt->str );
    EXPECT_EQ( 3274, pOpt->count );
@@ -705,10 +739,10 @@ TEST( ArgumentParserTest, shouldAcceptMultipleSharedOptionStructures )
       std::string str;
       long count;
 
-      void add_arguments( argument_parser& parser ) override
+      void add_parameters( ParameterConfig& params ) override
       {
-         parser.add_argument( str, "-s" ).nargs( 1 );
-         parser.add_argument( count, "-n" ).nargs( 1 );
+         params.add_parameter( str, "-s" ).nargs( 1 );
+         params.add_parameter( count, "-n" ).nargs( 1 );
       }
    };
 
@@ -717,18 +751,19 @@ TEST( ArgumentParserTest, shouldAcceptMultipleSharedOptionStructures )
       std::string str;
       long count;
 
-      void add_arguments( argument_parser& parser ) override
+      void add_parameters( ParameterConfig& params ) override
       {
-         parser.add_argument( str, "-S" ).nargs( 1 );
-         parser.add_argument( count, "-N" ).nargs( 1 );
+         params.add_parameter( str, "-S" ).nargs( 1 );
+         params.add_parameter( count, "-N" ).nargs( 1 );
       }
    };
 
    auto parser = argument_parser{};
+   auto params = parser.params();
    auto pOpt = std::make_shared<Options>();
    auto pMoreOpt = std::make_shared<MoreOptions>();
-   parser.add_arguments( pOpt );
-   parser.add_arguments( pMoreOpt );
+   params.add_parameters( pOpt );
+   params.add_parameters( pMoreOpt );
 
    auto res = parser.parse_args( { "-s", "str", "-n", "3274", "-S", "Str", "-N", "4723" } );
    EXPECT_EQ( "str", pOpt->str );
@@ -743,9 +778,10 @@ TEST( ArgumentParserTest, shouldTakeLongOptionArgumentsWithEquals )
    long longvalue = 0;
    std::string strvalue;
    auto parser = argument_parser{};
-   parser.add_argument( strvalue, "--string" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
-   parser.add_argument( longvalue, "--long" ).nargs( 1 );
-   parser.add_argument( floatvalue, "--float" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( strvalue, "--string" ).nargs( 1 ).choices( { "alpha", "beta", "gamma" } );
+   params.add_parameter( longvalue, "--long" ).nargs( 1 );
+   params.add_parameter( floatvalue, "--float" ).nargs( 1 );
 
    auto res = parser.parse_args( { "--string=alpha", "--long=124", "--float=3.5" } );
    EXPECT_EQ( "alpha", strvalue );
@@ -758,7 +794,8 @@ TEST( ArgumentParserTest, shouldFailIfArgumentFollowsFlagWithEquals )
 {
    std::string strvalue;
    auto parser = argument_parser{};
-   parser.add_argument( strvalue, "--string" );
+   auto params = parser.params();
+   params.add_parameter( strvalue, "--string" );
 
    auto res = parser.parse_args( { "--string=alpha" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -776,9 +813,10 @@ TEST( ArgumentParserTest, shouldNotSetProgramNameFromParameter0 )
    double floatvalue = 2.0;
 
    auto parser = argument_parser{};
-   parser.add_argument( intvalue, "--int" ).nargs( 1 );
-   parser.add_argument( floatvalue, "--float" ).nargs( 1 );
-   parser.add_argument( strvalue, "params" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( intvalue, "--int" ).nargs( 1 );
+   params.add_parameter( floatvalue, "--float" ).nargs( 1 );
+   params.add_parameter( strvalue, "params" ).nargs( 1 );
 
    auto res = parser.parse_args( { "testName", "--int", "2134", "--float", "32.4" } );
 
@@ -794,7 +832,8 @@ TEST( ArgumentParserTest, shouldSignalErrorsShownWhenErrorsPresent )
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout );
-   parser.add_argument( maybeInt, "--maybe" ).nargs( 1 );
+   auto params = parser.params();
+   params.add_parameter( maybeInt, "--maybe" ).nargs( 1 );
 
    auto res = parser.parse_args( { "--wrong", "123" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -805,9 +844,10 @@ TEST( ArgumentParserTest, shouldSignalHelpWasShownWhenHelpRequested )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
 
-   parser.add_help_option( "--help" );
+   params.add_help_option( "--help" );
 
    auto res = parser.parse_args( { "--help" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -818,10 +858,11 @@ TEST( ArgumentParserTest, shouldNotSignalHelpWasShownWhenAllIsOk )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
 
    bool ok = false;
-   parser.add_argument( ok, "--ok" ).nargs( 0 );
+   params.add_parameter( ok, "--ok" ).nargs( 0 );
 
    auto res = parser.parse_args( { "--ok" } );
    EXPECT_TRUE( static_cast<bool>( res ) );
@@ -854,9 +895,10 @@ TEST( ArgumentParserTest, shouldNotAddDefaultHelpWhenDefined )
    std::optional<int> hide;
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
-   parser.add_argument( hide, "-h" );
-   parser.add_default_help_option();
+   params.add_parameter( hide, "-h" );
+   params.add_default_help_option();
 
    // -- WHEN
    auto res = parser.parse_args( { "-h" } );
@@ -879,10 +921,11 @@ TEST( ArgumentParserTest, shouldSetCustomHelpOptions )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
 
    // -- WHEN
-   parser.add_help_option( "-a", "--asistado" );
+   params.add_help_option( "-a", "--asistado" );
 
    // -- THEN
    auto res = parser.parse_args( { "-a" } );
@@ -908,12 +951,13 @@ TEST( ArgumentParserTest, shouldSupportMultipleHelpOptions )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
 
    // -- WHEN
-   parser.add_default_help_option();
-   parser.add_help_option( "-a", "--asistado" );
-   parser.add_help_option( "--advice" );
+   params.add_default_help_option();
+   params.add_help_option( "-a", "--asistado" );
+   params.add_help_option( "--advice" );
 
    // -- THEN
    auto res = parser.parse_args( { "-a" } );
@@ -942,13 +986,14 @@ TEST( ArgumentParserTest, shouldThrowIfDefaultHelpOptionsCanNotBeSet )
    std::stringstream strout;
    int hide;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
 
    // -- WHEN
-   parser.add_argument( hide, "-h", "--help" );
+   params.add_parameter( hide, "-h", "--help" );
 
    // -- THEN
-   EXPECT_THROW( parser.add_default_help_option(), std::invalid_argument );
+   EXPECT_THROW( params.add_default_help_option(), std::invalid_argument );
 }
 
 TEST( ArgumentParserTest, shouldSetParserOutputToStream )
@@ -970,10 +1015,11 @@ TEST( ArgumentParserTest, shouldWriteHelpAndExitWhenHelpOptionIsFound )
 
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
-   parser.add_argument( maybeBefore, "--before" ).nargs( 1 );
-   parser.add_argument( maybeAfter, "--after" ).nargs( 1 );
-   parser.add_default_help_option().help( "Print this test help message and exit!" );
+   params.add_parameter( maybeBefore, "--before" ).nargs( 1 );
+   params.add_parameter( maybeAfter, "--after" ).nargs( 1 );
+   params.add_default_help_option().help( "Print this test help message and exit!" );
 
    auto res = parser.parse_args( { "--before", "123", "-h", "--after", "342" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -990,8 +1036,9 @@ TEST( ArgumentParserTest, shouldResetValuesWhenCalledMultipleTimes )
    std::string first;
    std::string second;
    auto parser = argument_parser{};
-   parser.add_argument( first, "--first" );
-   parser.add_argument( second, "--second" );
+   auto params = parser.params();
+   params.add_parameter( first, "--first" );
+   params.add_parameter( second, "--second" );
 
    auto res = parser.parse_args( { "--first" } );
    EXPECT_NE( "", first );
@@ -1007,24 +1054,27 @@ TEST( ArgumentParserTest, shouldForbidDuplicateOptions )
    std::string first;
    std::string second;
    auto parser = argument_parser{};
-   parser.add_argument( first, "--first" );
-   EXPECT_THROW( parser.add_argument( second, "--first" ), argumentum::DuplicateOption );
+   auto params = parser.params();
+   params.add_parameter( first, "--first" );
+   EXPECT_THROW( params.add_parameter( second, "--first" ), argumentum::DuplicateOption );
 }
 
 TEST( ArgumentParserTest, shouldForbidDuplicateHelpOptions )
 {
    std::string first;
    auto parser = argument_parser{};
-   parser.add_argument( first, "--aiuto" );
-   EXPECT_THROW( parser.add_help_option( "--aiuto" ), argumentum::DuplicateOption );
+   auto params = parser.params();
+   params.add_parameter( first, "--aiuto" );
+   EXPECT_THROW( params.add_help_option( "--aiuto" ), argumentum::DuplicateOption );
 }
 
 TEST( ArgumentParserTest, shouldForbidDuplicateHelpOptions2 )
 {
    std::string first;
    auto parser = argument_parser{};
-   parser.add_help_option( "--aiuto" );
-   EXPECT_THROW( parser.add_argument( first, "--aiuto" ), argumentum::DuplicateOption );
+   auto params = parser.params();
+   params.add_help_option( "--aiuto" );
+   EXPECT_THROW( params.add_parameter( first, "--aiuto" ), argumentum::DuplicateOption );
 }
 
 TEST( ArgumentParserTest, shouldSkipInitialArguments )
@@ -1032,8 +1082,9 @@ TEST( ArgumentParserTest, shouldSkipInitialArguments )
    std::optional<int> first;
    std::optional<int> second;
    auto parser = argument_parser{};
-   parser.add_argument( first, "--first" );
-   parser.add_argument( second, "--second" );
+   auto params = parser.params();
+   params.add_parameter( first, "--first" );
+   params.add_parameter( second, "--second" );
 
    parser.parse_args( { "--first", "--second" }, 0 );
    EXPECT_TRUE( first.has_value() );
@@ -1052,10 +1103,11 @@ TEST( ArgumentParserTest, shouldShowHelpWhenHasRequiredArgumentsAndNoneAreGiven 
 {
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
 
    int num = 0;
-   parser.add_argument( num, "--num" ).nargs( 1 ).required( true );
+   params.add_parameter( num, "--num" ).nargs( 1 ).required( true );
    EXPECT_TRUE( strout.str().empty() );
 
    auto res = parser.parse_args( {} );
@@ -1069,10 +1121,11 @@ TEST( ArgumentParserTest, shouldReturnDefaultValueIfOptionMissing )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
 
    int num = 5;
-   parser.add_argument( num, "--num" ).nargs( 1 ).required( false ).absent( 3 );
+   params.add_parameter( num, "--num" ).nargs( 1 ).required( false ).absent( 3 );
 
    auto res = parser.parse_args( {} );
    EXPECT_TRUE( static_cast<bool>( res ) );
@@ -1083,10 +1136,11 @@ TEST( ArgumentParserTest, shouldAssignDefaultValueWithAction )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
 
    int num = 5;
-   parser.add_argument( num, "--num" ).nargs( 1 ).required( false ).absent( []( int& target ) {
+   params.add_parameter( num, "--num" ).nargs( 1 ).required( false ).absent( []( int& target ) {
       target = 3;
    } );
 
@@ -1102,11 +1156,12 @@ TEST( ArgumentParserTest, shouldDetectOptionsWithSameTarget )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
 
    int shared = 0;
-   parser.add_argument( shared, "--num" ).nargs( 1 );
-   parser.add_argument( shared, "--relax" ).absent( -1 );
+   params.add_parameter( shared, "--num" ).nargs( 1 );
+   params.add_parameter( shared, "--relax" ).absent( -1 );
 
    auto res = parser.parse_args( { "--num", "5" } );
    EXPECT_TRUE( static_cast<bool>( res ) );

@@ -18,9 +18,9 @@ public:
    vector<int> numbers;
 
 public:
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
-      parser.add_argument( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
+      params.add_parameter( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
    }
 };
 
@@ -41,15 +41,15 @@ public:
    }
 
 protected:
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
       common = std::make_shared<SharedOptions>();
-      parser.add_arguments( common );
+      params.add_parameters( common );
 
       auto max = []( int a, int b ) { return std::max( a, b ); };
       auto sum = []( int a, int b ) { return a + b; };
 
-      parser.add_argument( operation, "--sum", "-s" )
+      params.add_parameter( operation, "--sum", "-s" )
             .nargs( 0 )
             .absent( std::make_pair( max, INT_MIN ) )
             .action( [&]( auto& target, const std::string& value ) {
@@ -67,10 +67,10 @@ public:
 public:
    using CommandOptions::CommandOptions;
 
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
       common = std::make_shared<SharedOptions>();
-      parser.add_arguments( common );
+      params.add_parameters( common );
    };
 
    void execute( const ParseResult& res ) override
@@ -84,9 +84,10 @@ public:
 TEST( StaticLibrary, shouldAddNumbers )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "staticlib" ).description( "Accumulator" );
-   parser.add_command<CmdAccumulatorOptions>( "fold" ).help( "Accumulate integer values." );
-   parser.add_command<CmdEchoOptions>( "echo" ).help( "Echo integers from the command line." );
+   params.add_command<CmdAccumulatorOptions>( "fold" ).help( "Accumulate integer values." );
+   params.add_command<CmdEchoOptions>( "echo" ).help( "Echo integers from the command line." );
 
    auto res = parser.parse_args( { "fold", "1", "2", "3", "--sum" } );
    ASSERT_TRUE( !!res );
@@ -98,9 +99,10 @@ TEST( StaticLibrary, shouldAddNumbers )
 TEST( StaticLibrary, shouldEchoNumbers )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "staticlib" ).description( "Accumulator" );
-   parser.add_command<CmdAccumulatorOptions>( "fold" ).help( "Accumulate integer values." );
-   parser.add_command<CmdEchoOptions>( "echo" ).help( "Echo integers from the command line." );
+   params.add_command<CmdAccumulatorOptions>( "fold" ).help( "Accumulate integer values." );
+   params.add_command<CmdEchoOptions>( "echo" ).help( "Echo integers from the command line." );
 
    auto res = parser.parse_args( { "echo", "1", "2", "3" } );
    ASSERT_TRUE( !!res );

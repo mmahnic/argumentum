@@ -19,10 +19,10 @@ struct CmdOneOptions : public argumentum::CommandOptions
 
    using CommandOptions::CommandOptions;
 
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
-      parser.add_argument( str, "-s" ).nargs( 1 );
-      parser.add_argument( count, "-n" ).nargs( 1 );
+      params.add_parameter( str, "-s" ).nargs( 1 );
+      params.add_parameter( count, "-n" ).nargs( 1 );
    }
 };
 
@@ -33,10 +33,10 @@ struct CmdTwoOptions : public argumentum::CommandOptions
 
    using CommandOptions::CommandOptions;
 
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
-      parser.add_argument( str, "--string" ).nargs( 1 );
-      parser.add_argument( count, "--count" ).nargs( 1 );
+      params.add_parameter( str, "--string" ).nargs( 1 );
+      params.add_parameter( count, "--count" ).nargs( 1 );
    }
 };
 }   // namespace
@@ -46,9 +46,10 @@ TEST( ArgumentParserCommand, shouldHandleCommandsWithSubparsers )
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout );
+   auto params = parser.params();
 
-   parser.add_command<CmdOneOptions>( "one" );
-   parser.add_command<CmdTwoOptions>( "two" );
+   params.add_command<CmdOneOptions>( "one" );
+   params.add_command<CmdTwoOptions>( "two" );
 
    // -- WHEN
    auto res = parser.parse_args( { "one", "-s", "works" } );
@@ -95,10 +96,11 @@ TEST( ArgumentParserCommand, shouldHandleGlobalOptionsWhenCommandsPresent )
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout );
+   auto params = parser.params();
 
    std::optional<std::string> global;
-   parser.add_argument( global, "-s" ).nargs( 1 );
-   parser.add_command<CmdOneOptions>( "one" );
+   params.add_parameter( global, "-s" ).nargs( 1 );
+   params.add_command<CmdOneOptions>( "one" );
 
    auto res = parser.parse_args( { "-s", "global-works", "one", "-s", "command-works" } );
    EXPECT_TRUE( res.errors.empty() );
@@ -117,20 +119,21 @@ TEST( ArgumentParserCommand, shouldHandleGlobalOptionsWhenCommandsPresent2 )
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout );
+   auto params = parser.params();
 
    struct GlobalOptions : public argumentum::Options
    {
       std::optional<std::string> global;
-      void add_arguments( argument_parser& parser ) override
+      void add_parameters( ParameterConfig& params ) override
       {
-         parser.add_argument( global, "-s" ).nargs( 1 );
+         params.add_parameter( global, "-s" ).nargs( 1 );
       }
    };
 
    auto pGlobal = std::make_shared<GlobalOptions>();
    ASSERT_NE( nullptr, pGlobal );
-   parser.add_arguments( pGlobal );
-   parser.add_command<CmdOneOptions>( "one" );
+   params.add_parameters( pGlobal );
+   params.add_command<CmdOneOptions>( "one" );
 
    auto res = parser.parse_args( { "-s", "global-works", "one", "-s", "command-works" } );
    EXPECT_TRUE( res.errors.empty() );
@@ -148,20 +151,21 @@ TEST( ArgumentParserCommand, shouldRequireParentsRequiredOptionsWhenCommandPrese
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout );
+   auto params = parser.params();
 
    struct GlobalOptions : public argumentum::Options
    {
       std::optional<std::string> global;
-      void add_arguments( argument_parser& parser ) override
+      void add_parameters( ParameterConfig& params ) override
       {
-         parser.add_argument( global, "-s" ).nargs( 1 ).required( true );
+         params.add_parameter( global, "-s" ).nargs( 1 ).required( true );
       }
    };
 
    auto pGlobal = std::make_shared<GlobalOptions>();
    ASSERT_NE( nullptr, pGlobal );
-   parser.add_arguments( pGlobal );
-   parser.add_command<CmdOneOptions>( "one" );
+   params.add_parameters( pGlobal );
+   params.add_command<CmdOneOptions>( "one" );
 
    auto res = parser.parse_args( { "one", "-s", "command-works" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -181,20 +185,21 @@ TEST( ArgumentParserCommand, shouldRequireParentsRequiredPositionalWhenCommandPr
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout );
+   auto params = parser.params();
 
    struct GlobalOptions : public argumentum::Options
    {
       std::optional<std::string> global;
-      void add_arguments( argument_parser& parser ) override
+      void add_parameters( ParameterConfig& params ) override
       {
-         parser.add_argument( global, "str" ).nargs( 1 ).required( true );
+         params.add_parameter( global, "str" ).nargs( 1 ).required( true );
       }
    };
 
    auto pGlobal = std::make_shared<GlobalOptions>();
    ASSERT_NE( nullptr, pGlobal );
-   parser.add_arguments( pGlobal );
-   parser.add_command<CmdOneOptions>( "one" );
+   params.add_parameters( pGlobal );
+   params.add_command<CmdOneOptions>( "one" );
 
    auto res = parser.parse_args( { "one", "-s", "command-works" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -211,9 +216,10 @@ TEST( ArgumentParserCommand, shouldStoreInstantiatedCommandsInParseResults )
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout );
+   auto params = parser.params();
 
-   parser.add_command<CmdOneOptions>( "one" );
-   parser.add_command<CmdTwoOptions>( "two" );
+   params.add_command<CmdOneOptions>( "one" );
+   params.add_command<CmdTwoOptions>( "two" );
 
    // -- WHEN
    auto res = parser.parse_args( { "one", "-s", "works" } );
@@ -247,8 +253,9 @@ TEST( ArgumentParserCommand, shouldReportErrorsOnlyInTopLevelParser )
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout );
+   auto params = parser.params();
 
-   parser.add_command<CmdOneOptions>( "one" );
+   params.add_command<CmdOneOptions>( "one" );
 
    // -- WHEN
    auto res = parser.parse_args( { "one", "--bad-option" } );
@@ -270,9 +277,10 @@ TEST( ArgumentParserCommand, shouldAcceptInstantiatedOptions )
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout );
+   auto params = parser.params();
 
    auto pCmdOne = std::make_shared<CmdOneOptions>( "one" );
-   parser.add_command( pCmdOne );
+   params.add_command( pCmdOne );
 
    // -- WHEN
    auto res = parser.parse_args( { "one", "-s", "works" } );
@@ -292,9 +300,9 @@ TEST( ArgumentParserCommand, shouldAccessParentOptionsFromCommand )
    {
    public:
       int global = 0;
-      void add_arguments( argument_parser& parser ) override
+      void add_parameters( ParameterConfig& params ) override
       {
-         parser.add_argument( global, "--global" ).nargs( 1 );
+         params.add_parameter( global, "--global" ).nargs( 1 );
       }
    };
 
@@ -313,11 +321,12 @@ TEST( ArgumentParserCommand, shouldAccessParentOptionsFromCommand )
    std::stringstream strout;
    auto parser = argument_parser{};
    parser.config().cout( strout );
+   auto params = parser.params();
 
    auto pGlobal = std::make_shared<Global>();
    auto pCmdOne = std::make_shared<CmdOneWithGlobal>( "one", pGlobal );
-   parser.add_arguments( pGlobal );
-   parser.add_command( pCmdOne );
+   params.add_parameters( pGlobal );
+   params.add_command( pCmdOne );
 
    // -- WHEN
    auto res = parser.parse_args( { "--global", "5", "one", "-s", "works" } );

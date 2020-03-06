@@ -15,11 +15,12 @@ public:
 protected:
    void add_arguments( argument_parser& parser ) override
    {
+      auto params = parser.params();
       auto max = []( int a, int b ) { return std::max( a, b ); };
       auto sum = []( int a, int b ) { return a + b; };
 
-      parser.add_argument( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
-      parser.add_argument( operation, "--sum", "-s" )
+      params.add_parameter( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
+      params.add_parameter( operation, "--sum", "-s" )
             .nargs( 0 )
             .absent( std::make_pair( max, INT_MIN ) )
             .action( [&]( auto& target, const std::string& value ) {
@@ -42,7 +43,8 @@ int main( int argc, char** argv )
    parser.config().program( argv[0] ).description( "Accumulator" );
 
    auto pOptions = std::make_shared<AccumulatorOptions>();
-   parser.add_arguments( pOptions );
+   auto params = parser.params();
+   params.add_parameters( pOptions );
 
    if ( !parser.parse_args( argc, argv, 1 ) )
       return 1;

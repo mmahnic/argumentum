@@ -57,7 +57,7 @@ public:
    }
 
    /**
-    * Add the @p pOptions structure and call its add_arguments method to add
+    * Add the @p pOptions structure and call its add_parameters method to add
     * the arguments to the parser.  The pointer to @p pOptions is stored in the
     * parser so that the structure outlives the parser.
     */

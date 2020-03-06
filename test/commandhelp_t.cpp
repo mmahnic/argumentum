@@ -20,10 +20,10 @@ struct CmdOneOptions : public argumentum::CommandOptions
 
    using CommandOptions::CommandOptions;
 
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
-      parser.add_argument( str, "-s" ).nargs( 1 );
-      parser.add_argument( count, "-n" ).nargs( 1 );
+      params.add_parameter( str, "-s" ).nargs( 1 );
+      params.add_parameter( count, "-n" ).nargs( 1 );
    }
 };
 
@@ -34,19 +34,19 @@ struct CmdTwoOptions : public argumentum::CommandOptions
 
    using CommandOptions::CommandOptions;
 
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
-      parser.add_argument( str, "--string" ).nargs( 1 );
-      parser.add_argument( count, "--count" ).nargs( 1 );
+      params.add_parameter( str, "--string" ).nargs( 1 );
+      params.add_parameter( count, "--count" ).nargs( 1 );
    }
 };
 
 struct GlobalOptions : public argumentum::Options
 {
    std::optional<std::string> global;
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
-      parser.add_argument( global, "str" ).nargs( 1 ).required( true );
+      params.add_parameter( global, "str" ).nargs( 1 ).required( true );
    }
 };
 
@@ -54,13 +54,13 @@ struct TestCommandOptions : public argumentum::Options
 {
    std::shared_ptr<GlobalOptions> pGlobal;
 
-   void add_arguments( argument_parser& parser ) override
+   void add_parameters( ParameterConfig& params ) override
    {
       auto pGlobal = std::make_shared<GlobalOptions>();
-      parser.add_arguments( pGlobal );
+      params.add_parameters( pGlobal );
 
-      parser.add_command<CmdOneOptions>( "cmdone" ).help( "Command One description." );
-      parser.add_command<CmdTwoOptions>( "cmdtwo" ).help( "Command Two description." );
+      params.add_command<CmdOneOptions>( "cmdone" ).help( "Command One description." );
+      params.add_command<CmdTwoOptions>( "cmdtwo" ).help( "Command Two description." );
    }
 };
 
@@ -70,8 +70,9 @@ TEST( ArgumentParserCommandHelpTest, shouldOutputCommandSummary )
 {
    int dummy;
    auto parser = argument_parser{};
+   auto params = parser.params();
 
-   parser.add_arguments( std::make_shared<TestCommandOptions>() );
+   params.add_parameters( std::make_shared<TestCommandOptions>() );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help, KEEPEMPTY );
@@ -92,8 +93,9 @@ TEST( ArgumentParserCommandHelpTest, shouldPutUngroupedCommandsUnderCommandsTitl
 {
    int dummy;
    auto parser = argument_parser{};
+   auto params = parser.params();
 
-   parser.add_arguments( std::make_shared<TestCommandOptions>() );
+   params.add_parameters( std::make_shared<TestCommandOptions>() );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help, KEEPEMPTY );
@@ -128,8 +130,9 @@ TEST( ArgumentParserCommandHelpTest, shouldPutUngroupedCommandsUnderCommandsTitl
 TEST( ArgumentParserCommandHelpTest, shouldShowCommandPlaceholderInUsage )
 {
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "testing" );
-   parser.add_command<CmdOneOptions>( "one" );
+   params.add_command<CmdOneOptions>( "one" );
 
    auto help = getTestHelp( parser, HelpFormatter() );
    auto helpLines = splitLines( help, KEEPEMPTY );
@@ -157,9 +160,10 @@ TEST( ArgumentParserCommandHelpTest, shouldNotDisplayCommandHelpIfCommandNotGive
 {
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "testing" ).cout( strout );
-   parser.add_command<CmdOneOptions>( "one" );
-   parser.add_command<CmdTwoOptions>( "two" );
+   params.add_command<CmdOneOptions>( "one" );
+   params.add_command<CmdTwoOptions>( "two" );
 
    auto res = parser.parse_args( { "--help" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -175,9 +179,10 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpIfCommandGivenBefor
 {
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "testing" ).cout( strout );
-   parser.add_command<CmdOneOptions>( "one" );
-   parser.add_command<CmdTwoOptions>( "two" );
+   params.add_command<CmdOneOptions>( "one" );
+   params.add_command<CmdTwoOptions>( "two" );
 
    // -- WHEN
    auto res = parser.parse_args( { "one", "--help" } );
@@ -207,8 +212,9 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandNameInCommandHelp )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "testing" ).cout( strout );
-   parser.add_command<CmdOneOptions>( "one" );
+   params.add_command<CmdOneOptions>( "one" );
 
    // -- WHEN
    auto res = parser.parse_args( { "one", "--help" } );
@@ -229,8 +235,9 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandDescriptionInCommandHel
 {
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "testing" ).cout( strout );
-   parser.add_command<CmdOneOptions>( "one" ).help( "Command One description." );
+   params.add_command<CmdOneOptions>( "one" ).help( "Command One description." );
 
    // -- WHEN
    auto res = parser.parse_args( { "one", "--help" } );
@@ -251,8 +258,9 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpForDeepestCommandOn
 {
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "testing" ).cout( strout ).description( "Tester." );
-   parser.add_command<CmdOneOptions>( "one" ).help( "Command One description." );
+   params.add_command<CmdOneOptions>( "one" ).help( "Command One description." );
 
    // -- WHEN
    auto res = parser.parse_args( { "one", "--help" } );
@@ -291,8 +299,9 @@ TEST( ArgumentParserCommandHelpTest, shouldDisplayCommandHelpIfCommandGivenAfter
 {
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().program( "testing" ).cout( strout );
-   parser.add_command<CmdOneOptions>( "one" );
+   params.add_command<CmdOneOptions>( "one" );
 
    // -- WHEN
    auto res = parser.parse_args( { "--help", "one" } );

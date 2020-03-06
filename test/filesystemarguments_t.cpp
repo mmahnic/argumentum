@@ -57,15 +57,16 @@ TEST( FilesystemArguments, shouldReadArgumentsFromFilesystem )
    pfs->addFile( "b.opt", { "--three", "--four" } );
 
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().filesystem( pfs );
 
    std::array<bool, 6> v{ false, false, false, false, false, false };
-   parser.add_argument( v[0], "--alpha" ).nargs( 0 );
-   parser.add_argument( v[1], "--beta" ).nargs( 0 );
-   parser.add_argument( v[2], "--three" ).nargs( 0 );
-   parser.add_argument( v[3], "--four" ).nargs( 0 );
-   parser.add_argument( v[4], "--alice" ).nargs( 0 );
-   parser.add_argument( v[5], "--bob" ).nargs( 0 );
+   params.add_parameter( v[0], "--alpha" ).nargs( 0 );
+   params.add_parameter( v[1], "--beta" ).nargs( 0 );
+   params.add_parameter( v[2], "--three" ).nargs( 0 );
+   params.add_parameter( v[3], "--four" ).nargs( 0 );
+   params.add_parameter( v[4], "--alice" ).nargs( 0 );
+   params.add_parameter( v[5], "--bob" ).nargs( 0 );
 
    auto res = parser.parse_args( { "--alice", "@a.opt", "@b.opt", "--bob" } );
 
@@ -82,15 +83,16 @@ TEST( FilesystemArguments, shouldReadArgumentsFromFilesystemRecursively )
    pfs->addFile( "b.opt", { "--three", "--four" } );
 
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().filesystem( pfs );
 
    std::array<bool, 6> v{ false, false, false, false, false, false };
-   parser.add_argument( v[0], "--alpha" ).nargs( 0 );
-   parser.add_argument( v[1], "--beta" ).nargs( 0 );
-   parser.add_argument( v[2], "--three" ).nargs( 0 );
-   parser.add_argument( v[3], "--four" ).nargs( 0 );
-   parser.add_argument( v[4], "--alice" ).nargs( 0 );
-   parser.add_argument( v[5], "--bob" ).nargs( 0 );
+   params.add_parameter( v[0], "--alpha" ).nargs( 0 );
+   params.add_parameter( v[1], "--beta" ).nargs( 0 );
+   params.add_parameter( v[2], "--three" ).nargs( 0 );
+   params.add_parameter( v[3], "--four" ).nargs( 0 );
+   params.add_parameter( v[4], "--alice" ).nargs( 0 );
+   params.add_parameter( v[5], "--bob" ).nargs( 0 );
 
    auto res = parser.parse_args( { "--alice", "@a.opt", "--bob" } );
 
@@ -106,13 +108,14 @@ TEST( FilesystemArguments, shouldFailWhenStreamsRecursedTooDeep )
    pfs->addFile( "a.opt", { "--alpha", "--beta", "@a.opt" } );
 
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().filesystem( pfs );
 
    std::array<bool, 6> v{ false, false, false, false, false, false };
-   parser.add_argument( v[0], "--alpha" ).nargs( 0 );
-   parser.add_argument( v[1], "--beta" ).nargs( 0 );
-   parser.add_argument( v[4], "--alice" ).nargs( 0 );
-   parser.add_argument( v[5], "--bob" ).nargs( 0 );
+   params.add_parameter( v[0], "--alpha" ).nargs( 0 );
+   params.add_parameter( v[1], "--beta" ).nargs( 0 );
+   params.add_parameter( v[4], "--alice" ).nargs( 0 );
+   params.add_parameter( v[5], "--bob" ).nargs( 0 );
 
    auto res = parser.parse_args( { "--alice", "@a.opt", "--bob" } );
 
@@ -133,8 +136,9 @@ TEST( FilesystemArguments, shouldUseDefaultFilesystemWhenNoneIsDefined )
    f.close();
 
    auto parser = argument_parser{};
+   auto params = parser.params();
    std::string alpha;
-   parser.add_argument( alpha, "--alpha" ).nargs( 1 );
+   params.add_parameter( alpha, "--alpha" ).nargs( 1 );
 
    auto res = parser.parse_args( { "@" + tmpfile.generic_string() } );
 

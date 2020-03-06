@@ -18,7 +18,8 @@ TEST( ArgumentParserActionTest, shouldSetValueOnTargetWithAction )
 
    std::string result;
    auto parser = argument_parser{};
-   parser.add_argument( result, "-v" ).maxargs( 1 ).action( testAction );
+   auto params = parser.params();
+   params.add_parameter( result, "-v" ).maxargs( 1 ).action( testAction );
 
    auto res = parser.parse_args( { "-v", "31" } );
    EXPECT_TRUE( res.errors.empty() );
@@ -57,7 +58,8 @@ TEST( ArgumentParserActionTest, shouldSetNewTypesThroughActionWithoutFromStringC
 
    NewType result;
    auto parser = argument_parser{};
-   parser.add_argument( result, "-v" ).maxargs( 1 ).action( testAction );
+   auto params = parser.params();
+   params.add_parameter( result, "-v" ).maxargs( 1 ).action( testAction );
 
    auto res = parser.parse_args( { "-v", "assign" } );
    EXPECT_TRUE( res.errors.empty() );
@@ -75,7 +77,8 @@ TEST( ArgumentParserActionTest, shouldSetOptionalNewTypesThroughActionWithoutFro
 
    std::optional<NewType> result;
    auto parser = argument_parser{};
-   parser.add_argument( result, "-v" ).maxargs( 1 ).action( testAction );
+   auto params = parser.params();
+   params.add_parameter( result, "-v" ).maxargs( 1 ).action( testAction );
 
    auto res = parser.parse_args( { "-v", "assign" } );
    EXPECT_TRUE( res.errors.empty() );
@@ -94,7 +97,8 @@ TEST( ArgumentParserActionTest, shouldSetVectorNewTypesThroughAction )
 
    std::vector<NewType> result;
    auto parser = argument_parser{};
-   parser.add_argument( result, "-v" ).maxargs( 2 ).action( testAction );
+   auto params = parser.params();
+   params.add_parameter( result, "-v" ).maxargs( 2 ).action( testAction );
 
    auto res = parser.parse_args( { "-v", "assign", "vector" } );
    EXPECT_TRUE( res.errors.empty() );
@@ -119,7 +123,8 @@ TEST( ArgumentParserActionTest, shouldSetVectorOptionalNewTypesThroughAction )
 
    std::vector<std::optional<NewType>> result;
    auto parser = argument_parser{};
-   parser.add_argument( result, "-v" ).maxargs( 1 ).action( testAction );
+   auto params = parser.params();
+   params.add_parameter( result, "-v" ).maxargs( 1 ).action( testAction );
 
    auto res = parser.parse_args( { "-v", "assign" } );
    EXPECT_TRUE( res.errors.empty() );
@@ -148,8 +153,9 @@ TEST( ArgumentParserActionTest, shouldSetSameVariableThroughMultipleActions )
 
    std::vector<std::string> result;
    auto parser = argument_parser{};
-   parser.add_argument( result, "-n" ).maxargs( 1 ).action( actionNormal );
-   parser.add_argument( result, "-r" ).maxargs( 1 ).action( actionReversed );
+   auto params = parser.params();
+   params.add_parameter( result, "-n" ).maxargs( 1 ).action( actionNormal );
+   params.add_parameter( result, "-r" ).maxargs( 1 ).action( actionReversed );
 
    auto res = parser.parse_args( { "-n", "assign", "-r", "vector" } );
    EXPECT_TRUE( res.errors.empty() );
@@ -169,8 +175,9 @@ TEST( ArgumentParserActionTest, shouldTerminateParserThroughEnvironmentInAction 
 
    std::string result;
    auto parser = argument_parser{};
-   parser.add_argument( result, "-n" ).maxargs( 1 ).action( actionNormal );
-   parser.add_argument( result, "-r" ).maxargs( 1 ).action( actionEnv );
+   auto params = parser.params();
+   params.add_parameter( result, "-n" ).maxargs( 1 ).action( actionNormal );
+   params.add_parameter( result, "-r" ).maxargs( 1 ).action( actionEnv );
 
    auto res = parser.parse_args( { "-n", "normal", "-r", "environment" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -187,7 +194,8 @@ TEST( ArgumentParserActionTest, shouldThrowWhenExitRequestIsUnchecked )
 
    std::string result;
    auto parser = argument_parser{};
-   parser.add_argument( result, "-x" ).maxargs( 1 ).action( actionEnv );
+   auto params = parser.params();
+   params.add_parameter( result, "-x" ).maxargs( 1 ).action( actionEnv );
 
    bool caught = false;
    try {
@@ -207,7 +215,8 @@ TEST( ArgumentParserActionTest, shouldReadOptionNameFromActionEvnironment )
 
    std::string result;
    auto parser = argument_parser{};
-   parser.add_argument( result, "--hide" ).maxargs( 1 ).action( actionEnv );
+   auto params = parser.params();
+   params.add_parameter( result, "--hide" ).maxargs( 1 ).action( actionEnv );
 
    auto res = parser.parse_args( { "--hide", "hidden-secret" } );
    EXPECT_TRUE( res.errors.empty() );
@@ -223,7 +232,8 @@ TEST( ArgumentParserActionTest, shouldReportErrorsThroughActionEvnironment )
 
    std::string result;
    auto parser = argument_parser{};
-   parser.add_argument( result, "--wrong" ).maxargs( 1 ).action( actionEnv );
+   auto params = parser.params();
+   params.add_parameter( result, "--wrong" ).maxargs( 1 ).action( actionEnv );
 
    auto res = parser.parse_args( { "--wrong", "wrong" } );
    EXPECT_FALSE( static_cast<bool>( res ) );

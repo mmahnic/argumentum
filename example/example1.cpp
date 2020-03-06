@@ -18,23 +18,24 @@ int main( int argc, char** argv )
    optional<long> intValue;
    optional<double> floatValue;
    long flag = 0;
-   vector<string> params;
+   vector<string> stringParams;
 
    auto parser = argument_parser{};
    parser.config().program( argv[0] );
-   parser.add_argument( stringValue, "-s", "--string" )
+   auto params = parser.params();
+   params.add_parameter( stringValue, "-s", "--string" )
          .help( "Set the value of a string option." )
          .nargs( 1 );
-   parser.add_argument( intValue, "-i", "--int" )
+   params.add_parameter( intValue, "-i", "--int" )
          .help( "Set the value of an integer option." )
          .nargs( 1 );
-   parser.add_argument( floatValue, "-f", "--float" )
+   params.add_parameter( floatValue, "-f", "--float" )
          .help( "Set the value of a float option." )
          .nargs( 1 );
-   parser.add_argument( flag, "-g", "--flag" ).help( "Set the flag." );
-   parser.add_argument( params, "params" ).help( "Free parameters." );
-   parser.add_default_help_option();
-   parser.add_help_option( "--extra-help" ).help( "Another way to print help and exit." );
+   params.add_parameter( flag, "-g", "--flag" ).help( "Set the flag." );
+   params.add_parameter( stringParams, "params" ).help( "Free parameters." );
+   params.add_default_help_option();
+   params.add_help_option( "--extra-help" ).help( "Another way to print help and exit." );
 
    vector<string> args;
    for ( int i = 1; i < argc; ++i )
@@ -48,7 +49,7 @@ int main( int argc, char** argv )
    cout << "flag:        " << flag << "\n";
 
    cout << "Positional parameters: ";
-   for ( auto& param : params )
+   for ( auto& param : stringParams )
       cout << "'" << param << "' ";
    cout << "\n";
 

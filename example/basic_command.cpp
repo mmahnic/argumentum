@@ -16,7 +16,8 @@ public:
 public:
    void add_arguments( argument_parser& parser ) override
    {
-      parser.add_argument( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
+      auto params = parser.params();
+      params.add_parameter( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
    }
 };
 
@@ -39,13 +40,14 @@ public:
 protected:
    void add_arguments( argument_parser& parser ) override
    {
+      auto params = parser.params();
       common = std::make_shared<SharedOptions>();
-      parser.add_arguments( common );
+      params.add_parameters( common );
 
       auto max = []( int a, int b ) { return std::max( a, b ); };
       auto sum = []( int a, int b ) { return a + b; };
 
-      parser.add_argument( operation, "--sum", "-s" )
+      params.add_parameter( operation, "--sum", "-s" )
             .nargs( 0 )
             .absent( std::make_pair( max, INT_MIN ) )
             .action( [&]( auto& target, const std::string& value ) {
@@ -65,8 +67,9 @@ public:
 
    void add_arguments( argument_parser& parser ) override
    {
+      auto params = parser.params();
       common = std::make_shared<SharedOptions>();
-      parser.add_arguments( common );
+      params.add_parameters( common );
    };
 
    void execute( const ParseResult& res ) override
@@ -81,8 +84,9 @@ int main( int argc, char** argv )
 {
    auto parser = argument_parser{};
    parser.config().program( argv[0] ).description( "Accumulator" );
-   parser.add_command<CmdAccumulatorOptions>( "fold" ).help( "Accumulate integer values." );
-   parser.add_command<CmdEchoOptions>( "echo" ).help( "Echo integers from the command line." );
+   auto params = parser.params();
+   params.add_command<CmdAccumulatorOptions>( "fold" ).help( "Accumulate integer values." );
+   params.add_command<CmdEchoOptions>( "echo" ).help( "Echo integers from the command line." );
 
    auto res = parser.parse_args( argc, argv, 1 );
    if ( !res )

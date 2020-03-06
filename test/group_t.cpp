@@ -15,13 +15,14 @@ TEST( ArgumentParserGroupsTest, shouldDefineExclusiveGroups )
 
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
-   parser.add_exclusive_group( "maybies" );
-   parser.add_argument( maybeInt, "--maybe" );
-   parser.add_argument( maybeInt, "--possibly" );
-   parser.add_argument( maybeInt, "--optional" );
-   parser.end_group();
-   parser.add_argument( otherInt, "--other" );
+   params.add_exclusive_group( "maybies" );
+   params.add_parameter( maybeInt, "--maybe" );
+   params.add_parameter( maybeInt, "--possibly" );
+   params.add_parameter( maybeInt, "--optional" );
+   params.end_group();
+   params.add_parameter( otherInt, "--other" );
 
    // -- WHEN there are more than one options from the exclusive group
    auto res = parser.parse_args( { "--maybe", "--optional" } );
@@ -63,15 +64,16 @@ TEST( ArgumentParserGroupsTest, shouldStartSameGroupMultipleTimes )
 
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
-   parser.add_exclusive_group( "maybies" );
-   parser.add_argument( maybeInt, "--maybe" );
-   parser.add_argument( maybeInt, "--optional" );
-   parser.end_group();
-   parser.add_argument( otherInt, "--other" );
-   parser.add_exclusive_group( "maybies" );
-   parser.add_argument( maybeInt, "--possibly" );
-   parser.end_group();
+   params.add_exclusive_group( "maybies" );
+   params.add_parameter( maybeInt, "--maybe" );
+   params.add_parameter( maybeInt, "--optional" );
+   params.end_group();
+   params.add_parameter( otherInt, "--other" );
+   params.add_exclusive_group( "maybies" );
+   params.add_parameter( maybeInt, "--possibly" );
+   params.end_group();
 
    // -- WHEN there are more than one options from the exclusive group
    auto res = parser.parse_args( { "--maybe", "--optional" } );
@@ -97,12 +99,13 @@ TEST( ArgumentParserGroupsTest, shouldAddGroupsForHelpFormatting )
 
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
-   parser.add_group( "ints" );
-   parser.add_argument( first, "--first" );
-   parser.add_argument( second, "--second" );
-   parser.end_group();
-   parser.add_argument( third, "--third" );
+   params.add_group( "ints" );
+   params.add_parameter( first, "--first" );
+   params.add_parameter( second, "--second" );
+   params.end_group();
+   params.add_parameter( third, "--third" );
 
    auto res = parser.parse_args( { "--first", "--second", "--third" } );
    EXPECT_EQ( 0, res.errors.size() );
@@ -114,12 +117,13 @@ TEST( ArgumentParserGroupsTest, shouldNotMixSimpleAndExclusiveGroups )
 
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
-   parser.add_group( "ints" );
-   parser.add_argument( first, "--first" );
-   parser.add_argument( second, "--second" );
-   parser.end_group();
-   EXPECT_THROW( parser.add_exclusive_group( "ints" ), argumentum::MixingGroupTypes );
+   params.add_group( "ints" );
+   params.add_parameter( first, "--first" );
+   params.add_parameter( second, "--second" );
+   params.end_group();
+   EXPECT_THROW( params.add_exclusive_group( "ints" ), argumentum::MixingGroupTypes );
 }
 
 TEST( ArgumentParserGroupsTest, shouldNotMixExclusiveAndSimpleGroups )
@@ -128,12 +132,13 @@ TEST( ArgumentParserGroupsTest, shouldNotMixExclusiveAndSimpleGroups )
 
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
-   parser.add_exclusive_group( "ints" );
-   parser.add_argument( first, "--first" );
-   parser.add_argument( second, "--second" );
-   parser.end_group();
-   EXPECT_THROW( parser.add_group( "ints" ), argumentum::MixingGroupTypes );
+   params.add_exclusive_group( "ints" );
+   params.add_parameter( first, "--first" );
+   params.add_parameter( second, "--second" );
+   params.end_group();
+   EXPECT_THROW( params.add_group( "ints" ), argumentum::MixingGroupTypes );
 }
 
 TEST( ArgumentParserGroupsTest, shouldRequireOptionsFromRequiredExclusiveGroups )
@@ -142,12 +147,13 @@ TEST( ArgumentParserGroupsTest, shouldRequireOptionsFromRequiredExclusiveGroups 
 
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
-   parser.add_exclusive_group( "ints" ).required( true );
-   parser.add_argument( first, "--first" );
-   parser.add_argument( second, "--second" );
-   parser.end_group();
-   parser.add_argument( third, "--third" );
+   params.add_exclusive_group( "ints" ).required( true );
+   params.add_parameter( first, "--first" );
+   params.add_parameter( second, "--second" );
+   params.end_group();
+   params.add_parameter( third, "--third" );
 
    auto res = parser.parse_args( { "--third" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -161,12 +167,13 @@ TEST( ArgumentParserGroupsTest, shouldRequireOptionsFromRequiredSimpleGroups )
 
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
-   parser.add_group( "ints" ).required( true );
-   parser.add_argument( first, "--first" );
-   parser.add_argument( second, "--second" );
-   parser.end_group();
-   parser.add_argument( third, "--third" );
+   params.add_group( "ints" ).required( true );
+   params.add_parameter( first, "--first" );
+   params.add_parameter( second, "--second" );
+   params.end_group();
+   params.add_parameter( third, "--third" );
 
    auto res = parser.parse_args( { "--third" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
@@ -180,10 +187,11 @@ TEST( ArgumentParserGroupsTest, shouldForbidRequiredOptionsInExclusiveGroup )
 
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
-   parser.add_exclusive_group( "ints" );
-   parser.add_argument( first, "--first" );
-   parser.add_argument( second, "--second" ).required( true );
+   params.add_exclusive_group( "ints" );
+   params.add_parameter( first, "--first" );
+   params.add_parameter( second, "--second" ).required( true );
 
    // The combination of exclusive groups with required options can be verified
    // only after the options are configured.  We make such checks in parse_args
@@ -195,8 +203,9 @@ TEST( ArgumentParserGroupsTest, shouldNotAddDefaultHelpToGroupWhenHelpNotDefined
 {
    std::stringstream strout;
    auto parser = argument_parser{};
+   auto params = parser.params();
    parser.config().cout( strout );
-   parser.add_group( "simple" );
+   params.add_group( "simple" );
    try {
       parser.parse_args( {} );
    }
