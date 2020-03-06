@@ -77,10 +77,17 @@ ARGUMENTUM_INLINE ParseResult argument_parser::parse_args(
    if ( ibegin == iend ) {
       verifyDefinedOptions();
       if ( hasRequiredArguments() ) {
-         generate_help();
          ParseResultBuilder result;
+
+         auto config = getConfig();
+         auto pFormatter = config.get_help_formatter( "" );
+         auto pStream = config.get_output_stream();
+         assert( pFormatter && pStream );
+
+         pFormatter->format( mParserDef, *pStream );
          result.signalHelpShown();
          result.requestExit();
+
          return std::move( result.getResult() );
       }
    }
@@ -226,17 +233,6 @@ ARGUMENTUM_INLINE void argument_parser::reportMissingGroups( ParseResultBuilder&
    for ( auto& c : counts )
       if ( c.second < 1 )
          result.addError( c.first, MISSING_OPTION_GROUP );
-}
-
-ARGUMENTUM_INLINE void argument_parser::generate_help()
-{
-   // TODO: The formatter should be configurable
-   auto formatter = HelpFormatter();
-   auto pStream = mParserDef.getConfig().pOutStream;
-   if ( !pStream )
-      pStream = &std::cout;
-
-   formatter.format( mParserDef, *pStream );
 }
 
 ARGUMENTUM_INLINE void argument_parser::describe_errors( ParseResult& result )

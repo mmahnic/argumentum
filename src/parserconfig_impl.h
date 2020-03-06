@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "helpformatter.h"
 #include "parserconfig.h"
 
 #include <ostream>
@@ -52,6 +53,17 @@ ARGUMENTUM_INLINE ParserConfig& ParserConfig::filesystem(
    if ( pFilesystem )
       mData.pFilesystem = pFilesystem;
    return *this;
+}
+
+std::unique_ptr<HelpFormatter> ParserConfig::Data::get_help_formatter(
+      const std::string& helpOption ) const
+{
+   return std::make_unique<HelpFormatter>();
+}
+
+std::ostream* ParserConfig::Data::get_output_stream() const
+{
+   return pOutStream ? pOutStream : &std::cout;
 }
 
 }   // namespace argumentum

@@ -1,15 +1,18 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+// Copyright (c) 2018, 2019, 2020 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
 
 #include "filesystem.h"
 
+#include <memory>
 #include <ostream>
 #include <string>
 #include <string_view>
 
 namespace argumentum {
+
+class HelpFormatter;
 
 class ParserConfig
 {
@@ -23,6 +26,8 @@ public:
       std::ostream* pOutStream = nullptr;
       std::shared_ptr<Filesystem> pFilesystem = std::make_shared<DefaultFilesystem>();
       unsigned maxIncludeDepth = 8;
+      std::unique_ptr<HelpFormatter> get_help_formatter( const std::string& helpOption ) const;
+      std::ostream* get_output_stream() const;
    };
 
 private:
