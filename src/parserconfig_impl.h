@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "helpformatter.h"
 #include "parserconfig.h"
 
 #include <ostream>
@@ -46,12 +47,29 @@ ARGUMENTUM_INLINE ParserConfig& ParserConfig::cout( std::ostream& stream )
    return *this;
 }
 
-ARGUMENTUM_INLINE ParserConfig& ParserConfig::filesystem(
-      const std::shared_ptr<Filesystem> pFilesystem )
+ARGUMENTUM_INLINE ParserConfig& ParserConfig::filesystem( std::shared_ptr<Filesystem> pFilesystem )
 {
    if ( pFilesystem )
-      mData.pFilesystem = pFilesystem;
+      mData.pFilesystem = std::move( pFilesystem );
    return *this;
+}
+
+ARGUMENTUM_INLINE ParserConfig& ParserConfig::help_formatter(
+      std::shared_ptr<IFormatHelp> pFormatter )
+{
+   mData.mpHelpFormatter = std::move( pFormatter );
+   return *this;
+}
+
+ARGUMENTUM_INLINE std::shared_ptr<IFormatHelp> ParserConfig::Data::get_help_formatter(
+      const std::string& helpOption ) const
+{
+   return mpHelpFormatter ? mpHelpFormatter : std::make_shared<HelpFormatter>();
+}
+
+ARGUMENTUM_INLINE std::ostream* ParserConfig::Data::get_output_stream() const
+{
+   return pOutStream ? pOutStream : &std::cout;
 }
 
 }   // namespace argumentum

@@ -67,12 +67,15 @@ ARGUMENTUM_INLINE VoidOptionConfig ParameterConfig::add_help_option(
 
    auto value = VoidValue{};
    auto option = getOptionFactory().createOption( value );
-   auto* pParser = &mParser;
    auto optionConfig =   // (clf)
          VoidOptionConfig( tryAddParameter( option, { name, altName } ) )
                .help( "Display this help message and exit." )
-               .action( [pParser]( const std::string&, Environment& env ) {
-                  pParser->generate_help();
+               .action( []( const std::string& optionName, Environment& env ) {
+                  auto pFormatter = env.get_help_formatter( optionName );
+                  auto pStream = env.get_output_stream();
+                  const auto& parserDef = env.get_parser_def();
+
+                  pFormatter->format( parserDef, *pStream );
                   env.notify_help_was_shown();
                   env.exit_parser();
                } );

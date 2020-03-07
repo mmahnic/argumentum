@@ -170,7 +170,6 @@ private:
    bool hasRequiredArguments() const;
    void reportExclusiveViolations( ParseResultBuilder& result );
    void reportMissingGroups( ParseResultBuilder& result );
-   void generate_help();
    void describe_errors( ParseResult& result );
    // TODO (mmahnic): remove, moved to ParameterConfig
    OptionFactory& getOptionFactory();

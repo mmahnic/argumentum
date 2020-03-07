@@ -1,21 +1,30 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+// Copyright (c) 2018, 2019, 2020 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
 
 #include "filesystem.h"
 
+#include <memory>
 #include <ostream>
 #include <string>
 #include <string_view>
 
 namespace argumentum {
 
+class IFormatHelp;
+
 class ParserConfig
 {
 public:
-   struct Data
+   class Data
    {
+      friend class ::argumentum::ParserConfig;
+
+   private:
+      std::shared_ptr<IFormatHelp> mpHelpFormatter;
+
+   public:
       std::string program;
       std::string usage;
       std::string description;
@@ -23,6 +32,10 @@ public:
       std::ostream* pOutStream = nullptr;
       std::shared_ptr<Filesystem> pFilesystem = std::make_shared<DefaultFilesystem>();
       unsigned maxIncludeDepth = 8;
+
+   public:
+      std::shared_ptr<IFormatHelp> get_help_formatter( const std::string& helpOption ) const;
+      std::ostream* get_output_stream() const;
    };
 
 private:
@@ -52,7 +65,10 @@ public:
    // Set the filesystem implementation that will be used to open files with
    // additional parameters parameters.  If the filesystem is not set the parser
    // will use the default filesystem implementation.
-   ParserConfig& filesystem( const std::shared_ptr<Filesystem> pFilesystem );
+   ParserConfig& filesystem( std::shared_ptr<Filesystem> pFilesystem );
+
+   // Set the help formatter that will format and display help.
+   ParserConfig& help_formatter( std::shared_ptr<IFormatHelp> pFormatter );
 };
 
 }   // namespace argumentum

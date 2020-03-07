@@ -258,7 +258,7 @@ ARGUMENTUM_INLINE void Parser::addError( std::string_view optionName, int errorC
 ARGUMENTUM_INLINE void Parser::setValue( Option& option, std::string_view value )
 {
    try {
-      auto env = Environment{ option, mResult };
+      auto env = Environment{ option, mResult, mParserDef };
       option.setValue( value, env );
    }
    catch ( const InvalidChoiceError& ) {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2018, 2019 Marko Mahnič
+﻿// Copyright (c) 2018, 2019, 2020 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
@@ -92,24 +92,6 @@ ARGUMENTUM_INLINE void HelpFormatter::formatUsage(
             writer.write( oss.str() );
          }
       }
-   }
-}
-
-ARGUMENTUM_INLINE void HelpFormatter::format( const ParserDefinition& parserDef,
-      const std::vector<ParserDefinition>& subparsers, std::ostream& out )
-{
-   if ( subparsers.empty() )
-      format( parserDef, out );
-   else {
-      std::stringstream sspath;
-      sspath << parserDef.getConfig().program;
-      for ( auto& subDef : subparsers )
-         sspath << " " << subDef.getConfig().program;
-
-      // Set the command path for the displayed command
-      auto lastParserDef = subparsers.back();
-      lastParserDef.mConfig.program( sspath.str() );
-      format( lastParserDef, out );
    }
 }
 

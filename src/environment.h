@@ -3,20 +3,29 @@
 
 #pragma once
 
+#include "parserconfig.h"
+
+#include <memory>
 #include <string_view>
 
 namespace argumentum {
 
 class Option;
 class ParseResultBuilder;
+class ParserDefinition;
 
 class Environment
 {
-   Option& mOption;
+   const Option& mOption;
    ParseResultBuilder& mResult;
+   const ParserDefinition& mParserDef;
 
 public:
-   Environment( Option& option, ParseResultBuilder& result );
+   Environment( Option& option, ParseResultBuilder& result, const ParserDefinition& parserDef );
+   const ParserConfig::Data& get_config() const;
+   const ParserDefinition& get_parser_def() const;
+   std::shared_ptr<IFormatHelp> get_help_formatter( const std::string& optionName ) const;
+   std::ostream* get_output_stream() const;
    void exit_parser();
    std::string get_option_name() const;
    void add_error( std::string_view error );

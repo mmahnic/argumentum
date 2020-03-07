@@ -11,6 +11,7 @@ add_executable( runUnitTests
    argparser_t.cpp
    # argparser_depr_t.cpp
    parameterconfig_t.cpp
+   parserconfig_t.cpp
    number_t.cpp
    negativenumber_t.cpp
    convert_t.cpp
