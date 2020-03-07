@@ -283,6 +283,7 @@ ARGUMENTUM_INLINE void Parser::parseCommandArguments(
 
    auto pcout = mParserDef.getConfig().output_stream();
    assert( pcout );
+   parser.config().cout( *pcout );
 
    auto pCmdOptions = command.getOptions();
    if ( pCmdOptions ) {
