@@ -46,7 +46,7 @@ struct ArgumentHelpResult
 
 class HelpFormatter
 {
-   // The number of spaces before the argument names.
+   // The number of spaces before argument names.
    size_t mArgumentIndent = 2;
 
    // The width of the formatted text in bytes.
@@ -58,8 +58,6 @@ class HelpFormatter
 
 public:
    void format( const ParserDefinition& parserDef, std::ostream& out );
-   void format( const ParserDefinition& parserDef, const std::vector<ParserDefinition>& subparsers,
-         std::ostream& out );
 
    void setTextWidth( size_t widthBytes )
    {
