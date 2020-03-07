@@ -17,12 +17,12 @@ TEST( ParserConfig, shouldSetParserOutputToStream )
 {
    std::stringstream strout;
    auto parser = argument_parser{};
-   EXPECT_EQ( nullptr, parser.getConfig().pOutStream );
+   EXPECT_EQ( nullptr, parser.getConfig().output_stream() );
 
    parser.config().cout( strout );
 
    // NOTE: EXPECT_NE fails to compile with MSVC 2017, 15.9.16
-   EXPECT_TRUE( nullptr != parser.getConfig().pOutStream );
+   EXPECT_TRUE( nullptr != parser.getConfig().output_stream() );
 }
 
 TEST( ParserConfig, shouldChangeHelpFormatter )
