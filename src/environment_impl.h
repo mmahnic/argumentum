@@ -27,12 +27,13 @@ ARGUMENTUM_INLINE const ParserDefinition& Environment::get_parser_def() const
    return mParserDef;
 }
 
-std::unique_ptr<IFormatHelp> Environment::get_help_formatter( const std::string& helpOption ) const
+ARGUMENTUM_INLINE std::shared_ptr<IFormatHelp> Environment::get_help_formatter(
+      const std::string& helpOption ) const
 {
    return get_config().get_help_formatter( helpOption );
 }
 
-std::ostream* Environment::get_output_stream() const
+ARGUMENTUM_INLINE std::ostream* Environment::get_output_stream() const
 {
    return get_config().get_output_stream();
 }

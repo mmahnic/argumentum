@@ -29,7 +29,7 @@ TEST( ParserConfig, shouldChangeHelpFormatter )
 {
    namespace t = ::testing;
 
-   // NOTE: Could not make MOCK_METHOD work on gcc 7.4, this is an
+   // NOTE: Could not make MOCK_METHOD work on gcc 7.4/Ubuntu 18.04; this is an
    // approximation.
    class MockFormatter : public IFormatHelp
    {
@@ -45,7 +45,7 @@ TEST( ParserConfig, shouldChangeHelpFormatter )
 
    auto pFormatter = std::make_shared<MockFormatter>();
    auto parser = argument_parser{};
-   // parser.config().help_formatter( pFormatter );
+   parser.config().help_formatter( pFormatter );
 
    auto res = parser.parse_args( { "--help" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
