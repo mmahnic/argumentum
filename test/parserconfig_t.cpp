@@ -13,16 +13,21 @@ using namespace argumentum;
 using namespace testing;
 using namespace testutil;
 
+// The configuration should always return a stream. If a stream is not
+// explicitly configured, std::cout is returned.
 TEST( ParserConfig, shouldSetParserOutputToStream )
 {
-   std::stringstream strout;
    auto parser = argument_parser{};
-   EXPECT_EQ( nullptr, parser.getConfig().output_stream() );
+   auto pDefaultStream = parser.getConfig().output_stream();
+   EXPECT_NE( nullptr, pDefaultStream );
+   EXPECT_EQ( &std::cout, pDefaultStream );
 
+   std::stringstream strout;
    parser.config().cout( strout );
 
-   // NOTE: EXPECT_NE fails to compile with MSVC 2017, 15.9.16
-   EXPECT_TRUE( nullptr != parser.getConfig().output_stream() );
+   auto pConfiguredStream = parser.getConfig().output_stream();
+   EXPECT_NE( nullptr, pConfiguredStream );
+   EXPECT_EQ( &strout, pConfiguredStream );
 }
 
 TEST( ParserConfig, shouldChangeHelpFormatter )
