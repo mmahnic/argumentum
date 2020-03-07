@@ -23,7 +23,7 @@ public:
    Environment( Option& option, ParseResultBuilder& result, const ParserDefinition& parserDef );
    const ParserConfig::Data& get_config() const;
    const ParserDefinition& get_parser_def() const;
-   std::unique_ptr<HelpFormatter> get_help_formatter( const std::string& optionName ) const;
+   std::unique_ptr<IFormatHelp> get_help_formatter( const std::string& optionName ) const;
    std::ostream* get_output_stream() const;
    void exit_parser();
    std::string get_option_name() const;

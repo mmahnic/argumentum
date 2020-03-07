@@ -27,8 +27,7 @@ ARGUMENTUM_INLINE const ParserDefinition& Environment::get_parser_def() const
    return mParserDef;
 }
 
-std::unique_ptr<HelpFormatter> Environment::get_help_formatter(
-      const std::string& helpOption ) const
+std::unique_ptr<IFormatHelp> Environment::get_help_formatter( const std::string& helpOption ) const
 {
    return get_config().get_help_formatter( helpOption );
 }

@@ -55,7 +55,7 @@ ARGUMENTUM_INLINE ParserConfig& ParserConfig::filesystem(
    return *this;
 }
 
-std::unique_ptr<HelpFormatter> ParserConfig::Data::get_help_formatter(
+std::unique_ptr<IFormatHelp> ParserConfig::Data::get_help_formatter(
       const std::string& helpOption ) const
 {
    return std::make_unique<HelpFormatter>();

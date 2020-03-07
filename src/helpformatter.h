@@ -1,7 +1,9 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+// Copyright (c) 2018, 2019, 2020 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
+
+#include "iformathelp.h"
 
 #include <algorithm>
 #include <iomanip>
@@ -11,40 +13,9 @@
 
 namespace argumentum {
 
-class ParserDefinition;
 class Writer;
 
-struct ArgumentHelpResult
-{
-   std::string help_name;
-   std::string short_name;
-   std::string long_name;
-   std::string metavar;
-   std::string arguments;
-   std::string help;
-   bool isRequired = false;
-   bool isCommand = false;
-   struct
-   {
-      std::string name;
-      std::string title;
-      std::string description;
-      bool isExclusive = false;
-      bool isRequired = false;
-   } group;
-
-   bool is_positional() const
-   {
-      return short_name.substr( 0, 1 ) != "-" && long_name.substr( 0, 1 ) != "-";
-   }
-
-   bool is_required() const
-   {
-      return isRequired || is_positional();
-   }
-};
-
-class HelpFormatter
+class HelpFormatter : public IFormatHelp
 {
    // The number of spaces before argument names.
    size_t mArgumentIndent = 2;
@@ -57,7 +28,7 @@ class HelpFormatter
    size_t mMaxDescriptionIndent = 30;
 
 public:
-   void format( const ParserDefinition& parserDef, std::ostream& out );
+   void format( const ParserDefinition& parserDef, std::ostream& out ) override;
 
    void setTextWidth( size_t widthBytes )
    {

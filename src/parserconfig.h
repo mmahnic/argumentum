@@ -12,13 +12,14 @@
 
 namespace argumentum {
 
-class HelpFormatter;
+class IFormatHelp;
 
 class ParserConfig
 {
 public:
-   struct Data
+   class Data
    {
+   public:
       std::string program;
       std::string usage;
       std::string description;
@@ -26,7 +27,9 @@ public:
       std::ostream* pOutStream = nullptr;
       std::shared_ptr<Filesystem> pFilesystem = std::make_shared<DefaultFilesystem>();
       unsigned maxIncludeDepth = 8;
-      std::unique_ptr<HelpFormatter> get_help_formatter( const std::string& helpOption ) const;
+
+   public:
+      std::unique_ptr<IFormatHelp> get_help_formatter( const std::string& helpOption ) const;
       std::ostream* get_output_stream() const;
    };
 
