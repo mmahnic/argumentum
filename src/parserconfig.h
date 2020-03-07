@@ -22,20 +22,24 @@ public:
       friend class ::argumentum::ParserConfig;
 
    private:
+      std::string mProgram;
+      std::string mUsage;
+      std::string mDescription;
+      std::string mEpilog;
+      unsigned mMaxIncludeDepth = 8;
+      std::ostream* mpOutStream = nullptr;
       std::shared_ptr<IFormatHelp> mpHelpFormatter;
+      std::shared_ptr<Filesystem> mpFilesystem;
 
    public:
-      std::string program;
-      std::string usage;
-      std::string description;
-      std::string epilog;
-      std::ostream* pOutStream = nullptr;
-      std::shared_ptr<Filesystem> pFilesystem = std::make_shared<DefaultFilesystem>();
-      unsigned maxIncludeDepth = 8;
-
-   public:
-      std::shared_ptr<IFormatHelp> get_help_formatter( const std::string& helpOption ) const;
-      std::ostream* get_output_stream() const;
+      const std::string& program() const;
+      const std::string& usage() const;
+      const std::string& description() const;
+      const std::string& epilog() const;
+      unsigned max_include_depth() const;
+      std::ostream* output_stream() const;
+      std::shared_ptr<IFormatHelp> help_formatter( const std::string& helpOption ) const;
+      std::shared_ptr<Filesystem> filesystem() const;
    };
 
 private:

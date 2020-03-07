@@ -80,8 +80,8 @@ ARGUMENTUM_INLINE ParseResult argument_parser::parse_args(
          ParseResultBuilder result;
 
          auto config = getConfig();
-         auto pFormatter = config.get_help_formatter( "" );
-         auto pStream = config.get_output_stream();
+         auto pFormatter = config.help_formatter( "" );
+         auto pStream = config.output_stream();
          assert( pFormatter && pStream );
 
          pFormatter->format( mParserDef, *pStream );
@@ -237,9 +237,8 @@ ARGUMENTUM_INLINE void argument_parser::reportMissingGroups( ParseResultBuilder&
 
 ARGUMENTUM_INLINE void argument_parser::describe_errors( ParseResult& result )
 {
-   auto pStream = mParserDef.getConfig().pOutStream;
-   if ( !pStream )
-      pStream = &std::cout;
+   auto pStream = mParserDef.getConfig().output_stream();
+   assert( pStream );
 
    for ( const auto& e : result.errors )
       e.describeError( *pStream );
