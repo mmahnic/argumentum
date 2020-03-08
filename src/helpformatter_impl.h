@@ -50,8 +50,8 @@ ARGUMENTUM_INLINE void HelpFormatter::formatUsage(
       const ParserDefinition& parserDef, std::vector<ArgumentHelpResult>& args, Writer& writer )
 {
    const auto& config = parserDef.getConfig();
-   if ( !config.program.empty() )
-      writer.write( config.program );
+   if ( !config.program().empty() )
+      writer.write( config.program() );
 
    for ( auto& arg : args ) {
       if ( arg.isCommand ) {
@@ -103,8 +103,8 @@ ARGUMENTUM_INLINE void HelpFormatter::format( const ParserDefinition& parserDef,
 
    Writer writer( out, mTextWidth );
    writer.write( "usage: " );
-   if ( !config.usage.empty() )
-      writer.write( config.usage );
+   if ( !config.usage().empty() )
+      writer.write( config.usage() );
    else
       formatUsage( parserDef, args, writer );
    writer.startParagraph();
@@ -132,8 +132,8 @@ ARGUMENTUM_INLINE void HelpFormatter::format( const ParserDefinition& parserDef,
    for ( auto& group : groups )
       sorter.reorderOptions( group );
 
-   if ( !config.description.empty() ) {
-      writer.write( config.description );
+   if ( !config.description().empty() ) {
+      writer.write( config.description() );
       writer.startParagraph();
    }
 
@@ -181,8 +181,8 @@ ARGUMENTUM_INLINE void HelpFormatter::format( const ParserDefinition& parserDef,
       }
    }
 
-   if ( !config.epilog.empty() ) {
-      writer.write( config.epilog );
+   if ( !config.epilog().empty() ) {
+      writer.write( config.epilog() );
       writer.startParagraph();
    }
 }

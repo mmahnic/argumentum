@@ -44,7 +44,7 @@ TEST( ArgumentParserHelpTest, shouldSetProgramName )
    parser.config().program( "testing-testing" );
 
    auto& config = parser.getConfig();
-   EXPECT_EQ( "testing-testing", config.program );
+   EXPECT_EQ( "testing-testing", config.program() );
 }
 
 TEST( ArgumentParserHelpTest, shouldSetProgramDescription )
@@ -54,7 +54,7 @@ TEST( ArgumentParserHelpTest, shouldSetProgramDescription )
    parser.config().description( "An example." );
 
    auto& config = parser.getConfig();
-   EXPECT_EQ( "An example.", config.description );
+   EXPECT_EQ( "An example.", config.description() );
 }
 
 TEST( ArgumentParserHelpTest, shouldSetProgramUsage )
@@ -64,7 +64,7 @@ TEST( ArgumentParserHelpTest, shouldSetProgramUsage )
    parser.config().usage( "example [options] [arguments]" );
 
    auto& config = parser.getConfig();
-   EXPECT_EQ( "example [options] [arguments]", config.usage );
+   EXPECT_EQ( "example [options] [arguments]", config.usage() );
 }
 
 TEST( ArgumentParserHelpTest, shouldReturnDescriptionsOfAllArguments )
@@ -167,7 +167,7 @@ TEST( ArgumentParserHelpTest, shouldSetHelpEpilog )
    parser.config().epilog( "This comes after help." );
 
    auto& config = parser.getConfig();
-   EXPECT_EQ( "This comes after help.", config.epilog );
+   EXPECT_EQ( "This comes after help.", config.epilog() );
 }
 
 TEST( ArgumentParserHelpTest, shouldReformatLongDescriptions )

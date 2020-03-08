@@ -278,12 +278,12 @@ ARGUMENTUM_INLINE void Parser::parseCommandArguments(
       Command& command, ArgumentStream& argStream, ParseResultBuilder& result )
 {
    auto parser = argument_parser::createSubParser();
-   auto commandpath = mParserDef.getConfig().program + " " + command.getName();
+   auto commandpath = mParserDef.getConfig().program() + " " + command.getName();
    parser.config().program( commandpath ).description( command.getHelp() );
 
-   auto pcout = mParserDef.getConfig().pOutStream;
-   if ( pcout )
-      parser.config().cout( *pcout );
+   auto pcout = mParserDef.getConfig().output_stream();
+   assert( pcout );
+   parser.config().cout( *pcout );
 
    auto pCmdOptions = command.getOptions();
    if ( pCmdOptions ) {
@@ -295,13 +295,16 @@ ARGUMENTUM_INLINE void Parser::parseCommandArguments(
 
 ARGUMENTUM_INLINE void Parser::parseSubstream( std::string_view streamName, unsigned depth )
 {
-   if ( !mParserDef.getConfig().pFilesystem )
+   if ( !mParserDef.getConfig().filesystem() )
       throw MissingFilesystem();
 
-   if ( depth > mParserDef.getConfig().maxIncludeDepth )
+   if ( depth > mParserDef.getConfig().max_include_depth() )
       throw IncludeDepthExceeded( std::string{ streamName } );
 
-   auto pSubstream = mParserDef.getConfig().pFilesystem->open( std::string{ streamName } );
+   auto pFilesystem = mParserDef.getConfig().filesystem();
+   assert( pFilesystem );
+
+   auto pSubstream = pFilesystem->open( std::string{ streamName } );
    if ( pSubstream )
       parse( *pSubstream, depth + 1 );
 }

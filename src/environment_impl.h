@@ -30,12 +30,12 @@ ARGUMENTUM_INLINE const ParserDefinition& Environment::get_parser_def() const
 ARGUMENTUM_INLINE std::shared_ptr<IFormatHelp> Environment::get_help_formatter(
       const std::string& helpOption ) const
 {
-   return get_config().get_help_formatter( helpOption );
+   return get_config().help_formatter( helpOption );
 }
 
 ARGUMENTUM_INLINE std::ostream* Environment::get_output_stream() const
 {
-   return get_config().get_output_stream();
+   return get_config().output_stream();
 }
 
 ARGUMENTUM_INLINE void Environment::exit_parser()

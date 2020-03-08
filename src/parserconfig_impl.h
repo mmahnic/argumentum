@@ -19,38 +19,37 @@ ARGUMENTUM_INLINE const ParserConfig::Data& ParserConfig::data() const
 
 ARGUMENTUM_INLINE ParserConfig& ParserConfig::program( std::string_view program )
 {
-   mData.program = program;
+   mData.mProgram = program;
    return *this;
 }
 
 ARGUMENTUM_INLINE ParserConfig& ParserConfig::usage( std::string_view usage )
 {
-   mData.usage = usage;
+   mData.mUsage = usage;
    return *this;
 }
 
 ARGUMENTUM_INLINE ParserConfig& ParserConfig::description( std::string_view description )
 {
-   mData.description = description;
+   mData.mDescription = description;
    return *this;
 }
 
 ARGUMENTUM_INLINE ParserConfig& ParserConfig::epilog( std::string_view epilog )
 {
-   mData.epilog = epilog;
+   mData.mEpilog = epilog;
    return *this;
 }
 
 ARGUMENTUM_INLINE ParserConfig& ParserConfig::cout( std::ostream& stream )
 {
-   mData.pOutStream = &stream;
+   mData.mpOutStream = &stream;
    return *this;
 }
 
 ARGUMENTUM_INLINE ParserConfig& ParserConfig::filesystem( std::shared_ptr<Filesystem> pFilesystem )
 {
-   if ( pFilesystem )
-      mData.pFilesystem = std::move( pFilesystem );
+   mData.mpFilesystem = std::move( pFilesystem );
    return *this;
 }
 
@@ -61,15 +60,45 @@ ARGUMENTUM_INLINE ParserConfig& ParserConfig::help_formatter(
    return *this;
 }
 
-ARGUMENTUM_INLINE std::shared_ptr<IFormatHelp> ParserConfig::Data::get_help_formatter(
+ARGUMENTUM_INLINE const std::string& ParserConfig::Data::program() const
+{
+   return mProgram;
+}
+
+ARGUMENTUM_INLINE const std::string& ParserConfig::Data::usage() const
+{
+   return mUsage;
+}
+
+ARGUMENTUM_INLINE const std::string& ParserConfig::Data::description() const
+{
+   return mDescription;
+}
+
+ARGUMENTUM_INLINE const std::string& ParserConfig::Data::epilog() const
+{
+   return mEpilog;
+}
+
+ARGUMENTUM_INLINE unsigned ParserConfig::Data::max_include_depth() const
+{
+   return mMaxIncludeDepth;
+}
+
+ARGUMENTUM_INLINE std::ostream* ParserConfig::Data::output_stream() const
+{
+   return mpOutStream ? mpOutStream : &std::cout;
+}
+
+ARGUMENTUM_INLINE std::shared_ptr<IFormatHelp> ParserConfig::Data::help_formatter(
       const std::string& helpOption ) const
 {
    return mpHelpFormatter ? mpHelpFormatter : std::make_shared<HelpFormatter>();
 }
 
-ARGUMENTUM_INLINE std::ostream* ParserConfig::Data::get_output_stream() const
+ARGUMENTUM_INLINE std::shared_ptr<Filesystem> ParserConfig::Data::filesystem() const
 {
-   return pOutStream ? pOutStream : &std::cout;
+   return mpFilesystem ? mpFilesystem : std::make_shared<DefaultFilesystem>();
 }
 
 }   // namespace argumentum
