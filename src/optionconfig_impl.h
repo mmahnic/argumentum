@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+// Copyright (c) 2018, 2019, 2020 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
@@ -15,12 +15,6 @@ ARGUMENTUM_INLINE OptionConfig::OptionConfig( const std::shared_ptr<Option>& pOp
    assert( pOption );
    if ( !mpOption )
       throw std::invalid_argument( "OptionConfig requires an option." );
-}
-
-ARGUMENTUM_INLINE OptionConfig& OptionConfig::action( AssignAction action )
-{
-   getOption().setAction( action );
-   return *this;
 }
 
 ARGUMENTUM_INLINE Option& OptionConfig::getOption()

@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2019 Marko Mahnič
+// Copyright (c) 2018, 2019, 2020 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
@@ -7,23 +7,24 @@
 
 namespace argumentum {
 
+class ParameterConfig;
+
 /**
  * OptionConfig is used to configure an option after an option was created with add_argument.
  */
 class OptionConfig
 {
+   friend class ::argumentum::ParameterConfig;
+
+private:
    std::shared_ptr<Option> mpOption;
    bool mCountWasSet = false;
 
-public:
+protected:
+   OptionConfig( const OptionConfig& ) = default;
+   OptionConfig( OptionConfig&& ) = default;
    OptionConfig( const std::shared_ptr<Option>& pOption );
 
-   // Define an action to execute when the option is present in input arguments.
-   // The action is executed instead of the default assignment action and can
-   // set the value of the target variable associated with the option.
-   OptionConfig& action( AssignAction action );
-
-protected:
    Option& getOption();
    void markCountWasSet();
    void ensureCountWasNotSet() const;
@@ -32,16 +33,12 @@ protected:
 template<typename TDerived>
 class OptionConfigBaseT : public OptionConfig
 {
+   friend class ::argumentum::ParameterConfig;
+
 public:
    using this_t = TDerived;
 
 public:
-   using OptionConfig::OptionConfig;
-
-   OptionConfigBaseT( OptionConfig&& wrapped )
-      : OptionConfig( std::move( wrapped ) )
-   {}
-
    this_t& setShortName( std::string_view name )
    {
       getOption().setShortName( name );
@@ -118,10 +115,17 @@ public:
       getOption().setChoices( choices );
       return *static_cast<this_t*>( this );
    }
+
+protected:
+   using OptionConfig::OptionConfig;
+
+   OptionConfigBaseT( OptionConfig&& wrapped )
+      : OptionConfig( std::move( wrapped ) )
+   {}
 };
 
 template<typename TTarget>
-class OptionConfigA : public OptionConfigBaseT<OptionConfigA<TTarget>>
+class OptionConfigA final : public OptionConfigBaseT<OptionConfigA<TTarget>>
 {
    using this_t = OptionConfigA<TTarget>;
    using assign_action_t = std::function<void( TTarget&, const std::string& )>;
@@ -201,7 +205,7 @@ public:
    }
 };
 
-class VoidOptionConfig : public OptionConfigBaseT<VoidOptionConfig>
+class VoidOptionConfig final : public OptionConfigBaseT<VoidOptionConfig>
 {
 public:
    using assign_action_env_t = std::function<void( const std::string&, Environment& )>;
@@ -210,6 +214,9 @@ public:
    using OptionConfigBaseT<VoidOptionConfig>::OptionConfigBaseT;
    VoidOptionConfig( OptionConfig&& wrapped );
 
+   // Define an action to execute when the option is present in input arguments.
+   // The action is executed instead of the default assignment action and can
+   // set the value of the target variable associated with the option.
    VoidOptionConfig& action( assign_action_env_t action );
 };
 
