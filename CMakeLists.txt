@@ -5,6 +5,7 @@ project( Argumentum VERSION 0.2.2 )
 option( BUILD_STATIC_LIBS           "Build static libraries" ON )
 option( ARGUMENTUM_BUILD_EXAMPLES   "Build examples" OFF )
 option( ARGUMENTUM_BUILD_TESTS      "Build tests"    OFF )
+option( ARGUMENTUM_DEPRECATED_ATTR  "Enable deprecation attributes"      OFF )
 option( ARGUMENTUM_PEDANTIC         "Treat warnings as errors (TODO)"    OFF )
 
 if( BUILD_SHARED_LIBS )
@@ -21,6 +22,10 @@ set( ARGUMENTUM_STATIC_NAME argumentum )
 
 # The name of the internal static library target used for tests, examples.
 set( ARGUMENTUM_INTERNAL_NAME argumentum-si )
+
+if ( ARGUMENTUM_DEPRECATED_ATTR )
+   add_definitions( -DARGUMENTUM_DEPRECATED_ATTR )
+endif()
 
 add_subdirectory( src )
 add_subdirectory( include )

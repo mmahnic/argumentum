@@ -65,8 +65,12 @@ public:
     */
    const ParserDefinition& getDefinition() const;
 
+#ifdef ARGUMENTUM_DEPRECATED_ATTR
 // Attributes are not handled well by clang-format so we use a macro.
 #define ARGUMENTUM_DEPRECATED( x ) [[deprecated( x )]]
+#else
+#define ARGUMENTUM_DEPRECATED( x )
+#endif
 
    // Deprecated. Use args = parser.params(); args.add_command(...);
    ARGUMENTUM_DEPRECATED( "Use parser.params()" )
