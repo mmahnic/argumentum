@@ -1,5 +1,7 @@
 build/
 build-*/
+.vs/
+out/
 
 *.swp
 *.*~
