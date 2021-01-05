@@ -59,6 +59,45 @@ int main( int argc, char** argv )
 }
 ```
 
+The basic example can be run like this:
+
+```shell
+$ basic 1 3 2
+3
+
+$ basic --sum 1 3 2
+6
+
+$ basic
+usage: basic [--sum] [--help] INT [INT ...]
+
+Accumulator
+
+positional arguments:
+  INT        Integers
+
+optional arguments:
+  -s, --sum  Sum the integers (default: find the max)
+  -h, --help Display this help message and exit.
+```
+
+The program can read command line arguments from one or more files.  Each line of the file contains
+one argument and the files can be nested.
+
+```shell
+$ for a in 1 2 3 4; do echo $a >> numbers.opt ; done
+$ basic @numbers.opt
+4
+
+$ basic --sum @numbers.opt @numbers.opt
+20
+
+$ echo "--sum" > summany.opt
+$ for a in 1 2 3 4; do echo "@numbers.opt" >> summany.opt ; done
+$ basic @summany.opt
+40
+```
+
 ## Target values
 
 The parser parses input strings and stores the parsed results in target values
