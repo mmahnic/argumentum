@@ -85,17 +85,26 @@ The program can read command line arguments from one or more files.  Each line o
 one argument and the files can be nested.
 
 ```shell
-$ for a in 1 2 3 4; do echo $a >> numbers.opt ; done
+$ cat numbers.opt
+1
+2
+3
+4
+
 $ basic @numbers.opt
 4
 
 $ basic --sum @numbers.opt @numbers.opt
 20
 
-$ echo "--sum" > summany.opt
-$ for a in 1 2 3 4; do echo "@numbers.opt" >> summany.opt ; done
+$ cat summany.opt
+--sum
+@numbers.opt
+@numbers.opt
+@numbers.opt
+
 $ basic @summany.opt
-40
+30
 ```
 
 ## Target values
