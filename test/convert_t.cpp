@@ -203,7 +203,8 @@ enum ETypeError {
 };
 
 template<typename TValue>
-ETypeError testType( const std::string& example, const TValue result,
+ETypeError testType(
+      const std::string& example, const TValue result,
       std::function<bool( const TValue&, const TValue& )> equal =
             []( const TValue& a, const TValue& b ) { return a == b; } )
 {
@@ -273,8 +274,8 @@ TEST( ArgumentParserConvertTest, shouldSupportIntegralNumericTypes )
 TEST( ArgumentParserConvertTest, shouldSupportFloatingNumericTypes )
 {
    auto near = []( const auto& a, const auto& b ) { return abs( a - b ) < 1e-4; };
-   EXPECT_EQ( OK, testType<float>( "123.45", 123.45, near ) );
-   EXPECT_EQ( OK, testType<float>( "-123.45", -123.45, near ) );
+   EXPECT_EQ( OK, testType<float>( "123.45", 123.45f, near ) );
+   EXPECT_EQ( OK, testType<float>( "-123.45", -123.45f, near ) );
 
    EXPECT_EQ( OK, testType<double>( "2123.45", 2123.45, near ) );
    EXPECT_EQ( OK, testType<double>( "-2123.45", -2123.45, near ) );

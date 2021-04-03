@@ -113,7 +113,7 @@ TEST( ArgumentParserGroupsTest, shouldAddGroupsForHelpFormatting )
 
 TEST( ArgumentParserGroupsTest, shouldNotMixSimpleAndExclusiveGroups )
 {
-   int first, second, third;
+   int first, second;
 
    std::stringstream strout;
    auto parser = argument_parser{};
@@ -128,7 +128,7 @@ TEST( ArgumentParserGroupsTest, shouldNotMixSimpleAndExclusiveGroups )
 
 TEST( ArgumentParserGroupsTest, shouldNotMixExclusiveAndSimpleGroups )
 {
-   int first, second, third;
+   int first, second;
 
    std::stringstream strout;
    auto parser = argument_parser{};

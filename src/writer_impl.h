@@ -88,7 +88,7 @@ ARGUMENTUM_INLINE std::vector<std::string_view> Writer::splitIntoParagraphs( std
 
    auto it = std::cregex_iterator( text.data(), text.data() + text.size(), rxParagraph );
    auto iend = std::cregex_iterator();
-   auto lastPosition = 0U;
+   size_t lastPosition = 0;
    for ( ; it != iend; ++it ) {
       auto match = std::cmatch( *it );
       if ( match.position() == 0 )
