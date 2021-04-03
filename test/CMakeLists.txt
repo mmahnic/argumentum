@@ -10,21 +10,23 @@ include_directories(${GTEST_INCLUDE_DIRS})
 add_executable( argumentumTests
    runtest.cpp
    testutil.cpp
-   argparser_t.cpp
+
    # argparser_depr_t.cpp
+   action_t.cpp
+   argparser_t.cpp
+   argumentstream_t.cpp
+   command_t.cpp
+   commandhelp_t.cpp
+   convert_t.cpp
+   filesystemarguments_t.cpp
+   # forwardparam_t.cpp
+   group_t.cpp
+   help_t.cpp
+   negativenumber_t.cpp
+   number_t.cpp
+   optionfactory_t.cpp
    parameterconfig_t.cpp
    parserconfig_t.cpp
-   number_t.cpp
-   negativenumber_t.cpp
-   convert_t.cpp
-   group_t.cpp
-   command_t.cpp
-   action_t.cpp
-   help_t.cpp
-   commandhelp_t.cpp
-   filesystemarguments_t.cpp
-   argumentstream_t.cpp
-   optionfactory_t.cpp
    value_t.cpp
    )
 
