@@ -4,6 +4,7 @@
 #include <argumentum/argparse.h>
 
 #include <algorithm>
+#include <array>
 #include <gtest/gtest.h>
 #include <map>
 #include <sstream>

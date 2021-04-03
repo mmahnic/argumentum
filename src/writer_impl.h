@@ -84,25 +84,26 @@ ARGUMENTUM_INLINE std::vector<std::string_view> Writer::splitIntoWords( std::str
 ARGUMENTUM_INLINE std::vector<std::string_view> Writer::splitIntoParagraphs( std::string_view text )
 {
    auto rxParagraph = std::regex( "[ \t]*\n[ \t]*\n\\s*" );
-   std::vector<std::string_view> res;
+   std::vector<std::string_view> paragraphs;
 
    auto it = std::cregex_iterator( text.data(), text.data() + text.size(), rxParagraph );
    auto iend = std::cregex_iterator();
-   auto lastPosition = 0U;
+   size_t lastPosition = 0;
    for ( ; it != iend; ++it ) {
       auto match = std::cmatch( *it );
       if ( match.position() == 0 )
-         res.emplace_back();
+         paragraphs.emplace_back();
       else {
-         res.push_back( text.substr( lastPosition, match.position() - lastPosition ) );
-         res.emplace_back();
+         paragraphs.push_back( text.substr( lastPosition, match.position() - lastPosition ) );
+         paragraphs.emplace_back();
       }
       lastPosition = match.position() + match.length();
    }
 
    if ( lastPosition < text.size() )
-      res.push_back( text.substr( lastPosition ) );
-   return res;
+      paragraphs.push_back( text.substr( lastPosition ) );
+
+   return paragraphs;
 }
 
 ARGUMENTUM_INLINE void Writer::write_paragraph( std::string_view text )

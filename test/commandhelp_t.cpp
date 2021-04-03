@@ -68,7 +68,6 @@ struct TestCommandOptions : public argumentum::Options
 
 TEST( ArgumentParserCommandHelpTest, shouldOutputCommandSummary )
 {
-   int dummy;
    auto parser = argument_parser{};
    auto params = parser.params();
 
@@ -91,7 +90,6 @@ TEST( ArgumentParserCommandHelpTest, shouldOutputCommandSummary )
 
 TEST( ArgumentParserCommandHelpTest, shouldPutUngroupedCommandsUnderCommandsTitle )
 {
-   int dummy;
    auto parser = argument_parser{};
    auto params = parser.params();
 

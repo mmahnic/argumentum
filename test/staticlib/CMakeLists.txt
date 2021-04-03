@@ -5,6 +5,8 @@ if ( BUILD_STATIC_LIBS )
    find_package( GTest REQUIRED )
    find_package( Threads REQUIRED )
 
+   include_directories(${GTEST_INCLUDE_DIRS})
+
    add_executable( staticLibraryTest
       runtest.cpp
       ../testutil.cpp
