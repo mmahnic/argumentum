@@ -4,6 +4,8 @@ include_directories( ../../include )
 find_package( GTest REQUIRED )
 find_package( Threads REQUIRED )
 
+include_directories(${GTEST_INCLUDE_DIRS})
+
 add_executable( headerLibraryTest
    runtest.cpp
    ../testutil.cpp

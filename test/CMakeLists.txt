@@ -5,7 +5,9 @@ set ( argumentum_test_lib ${ARGUMENTUM_INTERNAL_NAME} )
 find_package( GTest REQUIRED )
 find_package( Threads REQUIRED )
 
-add_executable( runUnitTests
+include_directories(${GTEST_INCLUDE_DIRS})
+
+add_executable( argumentumTests
    runtest.cpp
    testutil.cpp
    argparser_t.cpp
@@ -26,13 +28,17 @@ add_executable( runUnitTests
    value_t.cpp
    )
 
-target_link_libraries( runUnitTests 
+target_link_libraries( argumentumTests
    ${GTEST_LIBRARIES}
    ${CMAKE_THREAD_LIBS_INIT}
    ${argumentum_test_lib}
-   stdc++fs
    )
-add_dependencies( runUnitTests ${argumentum_test_lib} )
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL GNU)
+   target_link_libraries( argumentumTests  stdc++fs )
+endif()
+
+add_dependencies( argumentumTests ${argumentum_test_lib} )
 
 add_executable( utilityTests
    runtest.cpp
@@ -40,7 +46,7 @@ add_executable( utilityTests
    testutil_t.cpp
    )
 
-target_link_libraries( utilityTests 
+target_link_libraries( utilityTests
    ${GTEST_LIBRARIES}
    ${CMAKE_THREAD_LIBS_INIT}
    ${argumentum_test_lib}
@@ -58,6 +64,6 @@ add_test(
   NAME
     parser
   COMMAND
-    ${CMAKE_BINARY_DIR}/test/runUnitTests
+    ${CMAKE_BINARY_DIR}/test/argumentumTests
 )
 
