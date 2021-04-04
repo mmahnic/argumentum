@@ -201,7 +201,7 @@ ARGUMENTUM_INLINE void Parser::startOption( std::string_view option )
    std::string_view name;
    std::string_view arg;
 
-   // A comma in the option may separate a forwarded argument.
+   // A comma in the option may start a list of forwarded arguments.
    auto commapos = option.find( "," );
    if ( commapos != std::string::npos ) {
       name = option.substr( 0, commapos );
@@ -210,7 +210,7 @@ ARGUMENTUM_INLINE void Parser::startOption( std::string_view option )
       auto pOption = mParserDef.findOption( name );
       if ( pOption && pOption->isForwarded() && !arg.empty() ) {
          pOption->onOptionStarted();
-         setValue( *pOption, std::string{ arg } );
+         parseForwardedArguments( *pOption, arg );
          return;
       }
    }
@@ -241,6 +241,30 @@ ARGUMENTUM_INLINE void Parser::startOption( std::string_view option )
    }
    else
       addError( name, UNKNOWN_OPTION );
+}
+
+ARGUMENTUM_INLINE void Parser::parseForwardedArguments( Option& option, std::string_view args )
+{
+   // Forwarded arguments are a comma delimited list.  Split it and add each
+   // argument as an option value.
+
+   auto addArg( [this, &args, &option]( auto&& ibeg, auto&& iend ) {
+      auto arg = args.substr( ibeg - args.begin(), iend - ibeg );
+      if ( !arg.empty() )
+         setValue( option, std::string{ arg } );
+   } );
+
+   auto it = args.begin();
+   auto iprev = it;
+   for ( ; it != args.end(); ++it ) {
+      if ( *it == ',' ) {
+         addArg( iprev, it );
+         iprev = ++it;
+      }
+   }
+
+   if ( iprev != args.end() )
+      addArg( iprev, args.end() );
 }
 
 ARGUMENTUM_INLINE bool Parser::haveActiveOption() const

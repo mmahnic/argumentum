@@ -117,13 +117,18 @@ public:
       return *static_cast<this_t*>( this );
    }
 
-   // Set to true if the parameter of this option is forwarded to a subprocess
-   // or processed in a different way.  The parameter is part of this option,
-   // it is separated from the option name with a comma.
+   // Set to true if the parameters of this option are forwarded to a
+   // subprocess or processed in a different way.  The parameters are a part of
+   // this option, they are a comma separated list that is separated from the
+   // option name with a comma.
    //
-   // Forwarding works only with long options.
+   // Forwarding works only with long options.  The value of this option should
+   // be a list of strings that will hold the parameters to forward.
    //
-   // @example --forward,--silent
+   // @example Store the options --silent and --threads=3 so that they can be
+   // forwarded to a subprocess.
+   //
+   //    --forward,--silent,--threads=3
    this_t& forward( bool isForwarded = true )
    {
       ensureCanBeForwarded();

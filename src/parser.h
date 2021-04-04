@@ -45,6 +45,7 @@ private:
    void parse( ArgumentStream& argStream, unsigned depth );
    void parseCommandArguments(
          Command& command, ArgumentStream& argStream, ParseResultBuilder& result );
+   void parseForwardedArguments( Option& option, std::string_view args );
    void parseSubstream( std::string_view streamName, unsigned depth );
    EArgumentType getNextArgumentType( std::string_view arg );
 };
