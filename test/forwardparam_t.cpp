@@ -48,3 +48,22 @@ TEST( ForwardParam, shouldShouldFailWhenForwardIsFalse )
    auto res = parser.parse_args( { "--forward,--one" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
 }
+
+TEST( ForwardParam, shouldCollectMultipleParamsFromLongOption )
+{
+   std::vector<std::string> forward;
+
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( forward, "--forward" ).forward( true );
+
+   auto res = parser.parse_args( { "--forward,--one,first,second", "--forward,--two,third" } );
+   EXPECT_TRUE( static_cast<bool>( res ) );
+
+   ASSERT_EQ( 5, forward.size() );
+   EXPECT_EQ( "--one", forward[0] );
+   EXPECT_EQ( "first", forward[1] );
+   EXPECT_EQ( "second", forward[2] );
+   EXPECT_EQ( "--two", forward[3] );
+   EXPECT_EQ( "third", forward[4] );
+}
