@@ -78,6 +78,16 @@ ARGUMENTUM_INLINE void Option::setGroup( const std::shared_ptr<OptionGroup>& pGr
    mpGroup = pGroup;
 }
 
+ARGUMENTUM_INLINE void Option::setForwarded( bool isForwarded )
+{
+   mIsForwarded = isForwarded;
+}
+
+ARGUMENTUM_INLINE bool Option::isForwarded() const
+{
+   return mIsForwarded;
+}
+
 ARGUMENTUM_INLINE bool Option::isRequired() const
 {
    return mIsRequired;

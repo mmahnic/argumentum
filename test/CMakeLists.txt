@@ -19,7 +19,7 @@ add_executable( argumentumTests
    commandhelp_t.cpp
    convert_t.cpp
    filesystemarguments_t.cpp
-   # forwardparam_t.cpp
+   forwardparam_t.cpp
    group_t.cpp
    help_t.cpp
    negativenumber_t.cpp

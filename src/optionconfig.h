@@ -25,9 +25,10 @@ protected:
    OptionConfig( OptionConfig&& ) = default;
    OptionConfig( const std::shared_ptr<Option>& pOption );
 
-   Option& getOption();
+   Option& getOption() const;
    void markCountWasSet();
    void ensureCountWasNotSet() const;
+   void ensureCanBeForwarded() const;
 };
 
 template<typename TDerived>
@@ -113,6 +114,20 @@ public:
    this_t& choices( const std::vector<std::string>& choices )
    {
       getOption().setChoices( choices );
+      return *static_cast<this_t*>( this );
+   }
+
+   // Set to true if the parameter of this option is forwarded to a subprocess
+   // or processed in a different way.  The parameter is part of this option,
+   // it is separated from the option name with a comma.
+   //
+   // Forwarding works only with long options.
+   //
+   // @example --forward,--silent
+   this_t& forward( bool isForwarded = true )
+   {
+      ensureCanBeForwarded();
+      getOption().setForwarded( isForwarded );
       return *static_cast<this_t*>( this );
    }
 

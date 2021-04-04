@@ -9,17 +9,42 @@
 
 using namespace argumentum;
 
-TEST( ForwardParam, shouldCollectSingleParam )
+TEST( ForwardParam, shouldCollectSingleParamFromLongOption )
 {
    std::vector<std::string> forward;
 
    auto parser = argument_parser{};
    auto params = parser.params();
-   params.add_parameter( forward, "--forward", "-f" ).forward( true );
+   params.add_parameter( forward, "--forward" ).forward( true );
 
-   parser.parse_args( { "--forward,--one", "-f,--two" } );
+   auto res = parser.parse_args( { "--forward,--one", "--forward,--two" } );
+   EXPECT_TRUE( static_cast<bool>( res ) );
 
    ASSERT_EQ( 2, forward.size() );
    EXPECT_EQ( "--one", forward.front() );
    EXPECT_EQ( "--two", forward.back() );
+}
+
+TEST( ForwardParam, shouldShouldFailWithEmptyForwardParam )
+{
+   std::vector<std::string> forward;
+
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( forward, "--forward" ).forward( true );
+
+   auto res = parser.parse_args( { "--forward," } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
+}
+
+TEST( ForwardParam, shouldShouldFailWhenForwardIsFalse )
+{
+   std::vector<std::string> forward;
+
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( forward, "--forward" ).forward( false );
+
+   auto res = parser.parse_args( { "--forward,--one" } );
+   EXPECT_FALSE( static_cast<bool>( res ) );
 }

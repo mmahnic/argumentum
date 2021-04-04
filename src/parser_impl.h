@@ -35,13 +35,28 @@ ARGUMENTUM_INLINE void Parser::parse( ArgumentStream& argStream )
 }
 
 enum class EArgumentType {
+   // A free argument is not an option or an option value.
    freeArgument,
+
+   // Include the contents of a file as options.
    include,
+
+   // Treat the rest of the arguments as free argumetns.
    endOfOptions,
+
+   // An option with a long name, currently identified with '--' prefix.
    longOption,
+
+   // An option with a sinble character name, currently identified with '-' prefix.
    shortOption,
+
+   // Short options can be combined in a single argument prefixed with '-'.
    multiOption,
+
+   // A value of an option that accepts one or more valuers.
    optionValue,
+
+   // The name of a command.
    commandName
 };
 
@@ -86,6 +101,7 @@ ARGUMENTUM_INLINE EArgumentType Parser::getNextArgumentType( std::string_view ar
    //        as an option, change the order of arguments;
    //      - positionals will accept -M as a value if -M is not an option; to
    //        treat it as a value, put it after --.
+
    enum class ENegativeMode { argparse, argumentum };
    const auto negativeMode = ENegativeMode::argumentum;
 
@@ -177,17 +193,35 @@ ARGUMENTUM_INLINE void Parser::parse( ArgumentStream& argStream, unsigned depth 
    }
 }
 
-ARGUMENTUM_INLINE void Parser::startOption( std::string_view name )
+ARGUMENTUM_INLINE void Parser::startOption( std::string_view option )
 {
    if ( haveActiveOption() )
       closeOption();
 
+   std::string_view name;
    std::string_view arg;
-   auto eqpos = name.find( "=" );
-   if ( eqpos != std::string::npos ) {
-      arg = name.substr( eqpos + 1 );
-      name = name.substr( 0, eqpos );
+
+   // A comma in the option may separate a forwarded argument.
+   auto commapos = option.find( "," );
+   if ( commapos != std::string::npos ) {
+      name = option.substr( 0, commapos );
+      arg = option.substr( commapos + 1 );
+
+      auto pOption = mParserDef.findOption( name );
+      if ( pOption && pOption->isForwarded() && !arg.empty() ) {
+         pOption->onOptionStarted();
+         setValue( *pOption, std::string{ arg } );
+         return;
+      }
    }
+
+   auto eqpos = option.find( "=" );
+   if ( eqpos != std::string::npos ) {
+      name = option.substr( 0, eqpos );
+      arg = option.substr( eqpos + 1 );
+   }
+   else
+      name = option;
 
    auto pOption = mParserDef.findOption( name );
    if ( pOption ) {
