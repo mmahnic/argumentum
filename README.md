@@ -400,7 +400,7 @@ int main( int argc, char** argv )
 }
 ```
 
-## Forwarding arguments to subcommands
+## Forwarding arguments to a subprocess
 
 If an option has the setting `.forward(true)` it can capture a list of arguments that can be
 forwarded to a subprocess or processed differently.  Forwarding works only with long options.  The
