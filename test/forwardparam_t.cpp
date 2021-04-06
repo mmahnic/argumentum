@@ -78,11 +78,32 @@ TEST( ForwardParam, shouldEscapeCommaInParams )
    params.add_parameter( forward, "--forward" ).forward( true );
 
    auto res = parser.parse_args(
-         { "--forward,--one,,combined", "--forward,,first-escaped,second,,combined" } );
+         { "--forward,--one,,combined,", "--forward,,first-escaped,second,,combined,," } );
    EXPECT_TRUE( static_cast<bool>( res ) );
 
    ASSERT_EQ( 3, forward.size() );
    EXPECT_EQ( "--one,combined", forward[0] );
    EXPECT_EQ( ",first-escaped", forward[1] );
-   EXPECT_EQ( "second,combined", forward[2] );
+   EXPECT_EQ( "second,combined,", forward[2] );
+}
+
+TEST( ForwardParam, shouldEscapeConsecutiveCommaInParams )
+{
+   std::vector<std::string> forward;
+
+   // NOTE: The case with an odd number of commas in forwareded arguments is
+   // ambiguous.  We make the escaped commas part of the current argument.  The
+   // next argument starts after the last comma.
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( forward, "--forward" ).forward( true );
+
+   auto res = parser.parse_args(
+         { "--forward,--one,,,,combined", "--forward,,,,first-escaped,,,,,second,,combined,,," } );
+   EXPECT_TRUE( static_cast<bool>( res ) );
+
+   ASSERT_EQ( 3, forward.size() );
+   EXPECT_EQ( "--one,,combined", forward[0] );
+   EXPECT_EQ( ",,first-escaped,,", forward[1] );
+   EXPECT_EQ( "second,combined,", forward[2] );
 }
