@@ -445,7 +445,7 @@ int main( int argc, char** argv )
 
 
 When two consecutive commas are present in a forward-option, a single comma becomes a part of a
-forwarded argument.  Each pair of commas in the option generates a comma in the argumetn.  When an
+forwarded argument.  Each pair of commas in the option generates a comma in the argument.  When an
 odd number of commas is present, the escaped commas belong to the first forwarded argument while the
 second argument starts after the last comma:
 
