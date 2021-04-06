@@ -248,7 +248,7 @@ ARGUMENTUM_INLINE void Parser::parseForwardedArguments( Option& option, std::str
    // Forwarded arguments are a comma delimited list.  Split it and add each
    // argument as an option value.
 
-   auto addArg( [this, &args, &option]( std::string& str ) {
+   auto addArg( [this, &option]( const std::string& str ) {
       if ( !str.empty() )
          setValue( option, str );
    } );
