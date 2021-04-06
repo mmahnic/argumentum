@@ -248,23 +248,39 @@ ARGUMENTUM_INLINE void Parser::parseForwardedArguments( Option& option, std::str
    // Forwarded arguments are a comma delimited list.  Split it and add each
    // argument as an option value.
 
-   auto addArg( [this, &args, &option]( auto&& ibeg, auto&& iend ) {
-      auto arg = args.substr( ibeg - args.begin(), iend - ibeg );
-      if ( !arg.empty() )
-         setValue( option, std::string{ arg } );
+   auto addArg( [this, &args, &option]( std::string& str ) {
+      if ( !str.empty() )
+         setValue( option, str );
    } );
 
+   std::stringstream ssarg;
    auto it = args.begin();
-   auto iprev = it;
-   for ( ; it != args.end(); ++it ) {
-      if ( *it == ',' ) {
-         addArg( iprev, it );
-         iprev = ++it;
-      }
+
+   // The parameter args is the part of the opition after the comma, so the
+   // first comma of args is always escaped.
+   if ( it != args.end() && *it == ',' ) {
+      ssarg << ',';
+      ++it;
    }
 
-   if ( iprev != args.end() )
-      addArg( iprev, args.end() );
+   for ( ; it != args.end(); ++it ) {
+      if ( *it == ',' ) {
+         auto inext = it + 1;
+         if ( inext != args.end() && *inext == ',' ) {
+            ssarg << ',';
+            it = inext;
+         }
+         else {
+            addArg( ssarg.str() );
+            ssarg.str( "" );
+         }
+         continue;
+      }
+
+      ssarg << *it;
+   }
+
+   addArg( ssarg.str() );
 }
 
 ARGUMENTUM_INLINE bool Parser::haveActiveOption() const

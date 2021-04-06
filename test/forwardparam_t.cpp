@@ -72,7 +72,7 @@ TEST( ForwardParam, shouldEscapeCommaInParams )
 {
    std::vector<std::string> forward;
 
-   // TODO (mmahnic): (maybe) Escaping of commas in forwareded arguments could ba a parser setting.
+   // TODO: (maybe) Escaping of commas in forwareded arguments could ba a parser setting.
    auto parser = argument_parser{};
    auto params = parser.params();
    params.add_parameter( forward, "--forward" ).forward( true );
