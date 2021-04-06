@@ -67,3 +67,22 @@ TEST( ForwardParam, shouldCollectMultipleParamsFromLongOption )
    EXPECT_EQ( "--two", forward[3] );
    EXPECT_EQ( "third", forward[4] );
 }
+
+TEST( ForwardParam, shouldEscapeCommaInParams )
+{
+   std::vector<std::string> forward;
+
+   // TODO (mmahnic): (maybe) Escaping of commas in forwareded arguments could ba a parser setting.
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( forward, "--forward" ).forward( true );
+
+   auto res = parser.parse_args(
+         { "--forward,--one,,combined", "--forward,,first-escaped,second,,combined" } );
+   EXPECT_TRUE( static_cast<bool>( res ) );
+
+   ASSERT_EQ( 3, forward.size() );
+   EXPECT_EQ( "--one,combined", forward[0] );
+   EXPECT_EQ( ",first-escaped", forward[1] );
+   EXPECT_EQ( "second,combined", forward[2] );
+}
