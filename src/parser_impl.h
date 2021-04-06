@@ -193,7 +193,7 @@ ARGUMENTUM_INLINE void Parser::parse( ArgumentStream& argStream, unsigned depth 
    }
 }
 
-ARGUMENTUM_INLINE void Parser::startOption( std::string_view option )
+ARGUMENTUM_INLINE void Parser::startOption( std::string_view optionStr )
 {
    if ( haveActiveOption() )
       closeOption();
@@ -202,10 +202,10 @@ ARGUMENTUM_INLINE void Parser::startOption( std::string_view option )
    std::string_view arg;
 
    // A comma in the option may start a list of forwarded arguments.
-   auto commapos = option.find( "," );
+   auto commapos = optionStr.find( "," );
    if ( commapos != std::string::npos ) {
-      name = option.substr( 0, commapos );
-      arg = option.substr( commapos + 1 );
+      name = optionStr.substr( 0, commapos );
+      arg = optionStr.substr( commapos + 1 );
 
       auto pOption = mParserDef.findOption( name );
       if ( pOption && pOption->isForwarded() && !arg.empty() ) {
@@ -215,13 +215,13 @@ ARGUMENTUM_INLINE void Parser::startOption( std::string_view option )
       }
    }
 
-   auto eqpos = option.find( "=" );
+   auto eqpos = optionStr.find( "=" );
    if ( eqpos != std::string::npos ) {
-      name = option.substr( 0, eqpos );
-      arg = option.substr( eqpos + 1 );
+      name = optionStr.substr( 0, eqpos );
+      arg = optionStr.substr( eqpos + 1 );
    }
    else
-      name = option;
+      name = optionStr;
 
    auto pOption = mParserDef.findOption( name );
    if ( pOption ) {
