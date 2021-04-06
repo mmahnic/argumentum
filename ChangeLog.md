@@ -18,3 +18,9 @@
   parameters are deprecated and will be removed.
 - Fix: Treat negative numbers as numbers when they can not be mistaken for options.
 
+## [Next]
+
+### Added
+
+- It is possible to collect parameters that will be forwarded to a subprocess.  The syntax is
+  similar to the one used in GCC.
