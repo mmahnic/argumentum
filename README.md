@@ -442,3 +442,15 @@ int main( int argc, char** argv )
    return 0;
 }
 ```
+
+
+When two consecutive commas are present in a forward-option, a single comma becomes a part of a
+forwarded argument.  Each pair of commas in the option generates a comma in the argumetn.  When an
+odd number of commas is present, the escaped commas belong to the first forwarded argument while the
+second argument starts after the last comma:
+
+- `--linker,-Wl,,-rpath,,.`  generates `{ "-Wl,-rpath,." }`.
+- `--linker,-Wl,,-rpath,-Wl,,.` generates `{ "-Wl,-rpath", "-Wl,." }`.
+- `--test,a,,,,,b` generates `{ "a,,", "b" }`.
+- `--test,a  --test,,,,b` generates `{ "a", ",,b" }`.
+
