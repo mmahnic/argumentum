@@ -139,9 +139,11 @@ If information about whether a value was set or not is needed, `std::optional` c
 Additional types can be supported through parsing actions like in the examples below.
 
 
-## Variants of the basic example
+## Using custom actions to process options
 
-The same example implemented with an action and a default value:
+The same example implemented with an action and a default value.  Instead of deciding on an action
+to take after the parser has done its work (`auto acc = isSum...`), we can store the algorithm to
+use and the initial value with function defined in `.action()`:
 
 ```c++
 #include <climits>
@@ -179,6 +181,14 @@ int main( int argc, char** argv )
    return 0;
 }
 ```
+
+The `target` of the `.action()` is the variable we defined in `add_parameter`, in this case
+`operation`.  The `value` is ignored.  When `--sum` is used, the operation will be set to `sum()`
+with the initial value 0.  If `--sum` is not present, the operation will be set to the defuault
+(`absent()`) value `max()` with the initial value `INT_MIN`.
+
+
+## Storing options in structures
 
 In simple programs target variables can be declared in the function where parameters are defined and
 arguments parsed.  In larger programs it is more convenient to store target variables in one or more
@@ -239,6 +249,9 @@ int main( int argc, char** argv )
    return 0;
 }
 ```
+
+
+## Using subcommands
 
 When a program becomes even more complex it can be subdivided into commands that often act as
 independent programs.  We can rewrite the above example with commands.  The main change is that the
@@ -386,3 +399,58 @@ int main( int argc, char** argv )
    return 0;
 }
 ```
+
+## Forwarding arguments to subcommands
+
+If an option has the setting `.forward(true)` it can capture a list of arguments that can be
+forwarded to a subprocess or processed differently.  Forwarding works only with long options.  The
+target value of such an option should be a list of strings that will hold the arguments to forward.
+
+The arguments to forward are part of the option.  They are a comma separated list that is separated
+from the option name with a comma.  In the following example we pass arguments for the subprocess
+`ls` with `--dir,<arguments>`, for example `--dir,--color=auto,-la,--recursive`.  The arguments are
+stored in `lsoptions` and passed to `ls` with the `system()` call.
+
+```c++
+#include <argumentum/argparse.h>
+#include <string>
+#include <vector>
+
+using namespace std;
+using namespace argumentum;
+
+int main( int argc, char** argv )
+{
+   vector<string> lsoptions;
+
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   parser.config().program( argv[0] ).description( "Lister" );
+   params.add_parameter( lsoptions, "--dir" ).forward(true);
+         .help( "The parameters to forward to ls." );
+
+   if ( !parser.parse_args( argc, argv, 1 ) )
+      return 1;
+
+   auto join( []( const vector<string>& words ) {
+     std::accumulate( words.begin(), words.end(), "", []( auto&& a, auto&& s ) {
+       return a.empty() ? s : a + " " + s;
+     } );
+   } );
+
+   system( "ls " + join( lsoptions ) );
+   return 0;
+}
+```
+
+
+When two consecutive commas are present in a forward-option, a single comma becomes a part of a
+forwarded argument.  Each pair of commas in the option generates a comma in the argument.  When an
+odd number of commas is present, the escaped commas belong to the first forwarded argument while the
+second argument starts after the last comma:
+
+- `--linker,-Wl,,-rpath,,.`  generates `{ "-Wl,-rpath,." }`.
+- `--linker,-Wl,,-rpath,-Wl,,.` generates `{ "-Wl,-rpath", "-Wl,." }`.
+- `--test,a,,,,,b` generates `{ "a,,", "b" }`.
+- `--test,a  --test,,,,b` generates `{ "a", ",,b" }`.
+

@@ -37,6 +37,9 @@ private:
    bool mIsRequired = false;
    bool mIsVectorValue = false;
 
+   // The parameter of this option is forwarded.  The parameter is defined after a comma.
+   bool mIsForwarded = false;
+
    // The number of asignments through the option that is currently active in
    // the parser.
    int mCurrentAssignCount = 0;
@@ -58,6 +61,7 @@ public:
    void setAction( AssignAction action );
    void setAssignDefaultAction( AssignDefaultAction action );
    void setGroup( const std::shared_ptr<OptionGroup>& pGroup );
+   void setForwarded( bool isForwarded = true );
    bool isRequired() const;
    bool isPositional() const;
    bool isShortNumeric() const;
@@ -77,6 +81,7 @@ public:
    bool willAcceptArgument() const;
    bool needsMoreArguments() const;
    bool hasVectorValue() const;
+   bool isForwarded() const;
 
    /**
     * @returns true if the value was assigned through any option that shares

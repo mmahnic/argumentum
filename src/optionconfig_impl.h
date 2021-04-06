@@ -17,7 +17,7 @@ ARGUMENTUM_INLINE OptionConfig::OptionConfig( const std::shared_ptr<Option>& pOp
       throw std::invalid_argument( "OptionConfig requires an option." );
 }
 
-ARGUMENTUM_INLINE Option& OptionConfig::getOption()
+ARGUMENTUM_INLINE Option& OptionConfig::getOption() const
 {
    return *mpOption;
 }
@@ -31,6 +31,12 @@ ARGUMENTUM_INLINE void OptionConfig::ensureCountWasNotSet() const
 {
    if ( mCountWasSet )
       throw std::invalid_argument( "Only one of nargs, minargs and maxargs can be used." );
+}
+
+ARGUMENTUM_INLINE void OptionConfig::ensureCanBeForwarded() const
+{
+   if ( !getOption().getShortName().empty() )
+      throw std::invalid_argument( "Only long options can be used for forwarding parameters." );
 }
 
 ARGUMENTUM_INLINE VoidOptionConfig::VoidOptionConfig( OptionConfig&& wrapped )

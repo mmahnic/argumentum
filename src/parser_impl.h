@@ -35,13 +35,28 @@ ARGUMENTUM_INLINE void Parser::parse( ArgumentStream& argStream )
 }
 
 enum class EArgumentType {
+   // A free argument is not an option or an option value.
    freeArgument,
+
+   // Include the contents of a file as options.
    include,
+
+   // Treat the rest of the arguments as free argumetns.
    endOfOptions,
+
+   // An option with a long name, currently identified with '--' prefix.
    longOption,
+
+   // An option with a sinble character name, currently identified with '-' prefix.
    shortOption,
+
+   // Short options can be combined in a single argument prefixed with '-'.
    multiOption,
+
+   // A value of an option that accepts one or more valuers.
    optionValue,
+
+   // The name of a command.
    commandName
 };
 
@@ -86,6 +101,7 @@ ARGUMENTUM_INLINE EArgumentType Parser::getNextArgumentType( std::string_view ar
    //        as an option, change the order of arguments;
    //      - positionals will accept -M as a value if -M is not an option; to
    //        treat it as a value, put it after --.
+
    enum class ENegativeMode { argparse, argumentum };
    const auto negativeMode = ENegativeMode::argumentum;
 
@@ -177,17 +193,35 @@ ARGUMENTUM_INLINE void Parser::parse( ArgumentStream& argStream, unsigned depth 
    }
 }
 
-ARGUMENTUM_INLINE void Parser::startOption( std::string_view name )
+ARGUMENTUM_INLINE void Parser::startOption( std::string_view optionStr )
 {
    if ( haveActiveOption() )
       closeOption();
 
+   std::string_view name;
    std::string_view arg;
-   auto eqpos = name.find( "=" );
-   if ( eqpos != std::string::npos ) {
-      arg = name.substr( eqpos + 1 );
-      name = name.substr( 0, eqpos );
+
+   // A comma in the option may start a list of forwarded arguments.
+   auto commapos = optionStr.find( "," );
+   if ( commapos != std::string::npos ) {
+      name = optionStr.substr( 0, commapos );
+      arg = optionStr.substr( commapos + 1 );
+
+      auto pOption = mParserDef.findOption( name );
+      if ( pOption && pOption->isForwarded() && !arg.empty() ) {
+         pOption->onOptionStarted();
+         parseForwardedArguments( *pOption, arg );
+         return;
+      }
    }
+
+   auto eqpos = optionStr.find( "=" );
+   if ( eqpos != std::string::npos ) {
+      name = optionStr.substr( 0, eqpos );
+      arg = optionStr.substr( eqpos + 1 );
+   }
+   else
+      name = optionStr;
 
    auto pOption = mParserDef.findOption( name );
    if ( pOption ) {
@@ -207,6 +241,46 @@ ARGUMENTUM_INLINE void Parser::startOption( std::string_view name )
    }
    else
       addError( name, UNKNOWN_OPTION );
+}
+
+ARGUMENTUM_INLINE void Parser::parseForwardedArguments( Option& option, std::string_view args )
+{
+   // Forwarded arguments are a comma delimited list.  Split it and add each
+   // argument as an option value.
+
+   auto addArg( [this, &option]( const std::string& str ) {
+      if ( !str.empty() )
+         setValue( option, str );
+   } );
+
+   std::stringstream ssarg;
+   auto it = args.begin();
+
+   // The parameter args is the part of the opition after the comma, so the
+   // first comma of args is always escaped.
+   if ( it != args.end() && *it == ',' ) {
+      ssarg << ',';
+      ++it;
+   }
+
+   for ( ; it != args.end(); ++it ) {
+      if ( *it == ',' ) {
+         auto inext = it + 1;
+         if ( inext != args.end() && *inext == ',' ) {
+            ssarg << ',';
+            it = inext;
+         }
+         else {
+            addArg( ssarg.str() );
+            ssarg.str( "" );
+         }
+         continue;
+      }
+
+      ssarg << *it;
+   }
+
+   addArg( ssarg.str() );
 }
 
 ARGUMENTUM_INLINE bool Parser::haveActiveOption() const
