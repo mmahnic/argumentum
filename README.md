@@ -143,7 +143,7 @@ Additional types can be supported through parsing actions like in the examples b
 
 The same example implemented with an action and a default value.  Instead of deciding on an action
 to take after the parser has done its work (`auto acc = isSum...`), we can store the algorithm to
-use and the initial value with function defined in `.action()`:
+use and the initial value with a function defined in `.action()`:
 
 ```c++
 #include <climits>
