@@ -17,6 +17,7 @@ add_executable( argumentumTests
    argumentstream_t.cpp
    command_t.cpp
    commandhelp_t.cpp
+   completion_t.cpp
    convert_t.cpp
    filesystemarguments_t.cpp
    forwardparam_t.cpp
