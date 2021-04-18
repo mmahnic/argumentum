@@ -80,7 +80,7 @@ TEST( CompletionParams, shouldParseCompletionArguments )
    EXPECT_EQ( "--complete-extend=5", completion.completeArgs[0] );
    ASSERT_EQ( 7, completion.programArgs.size() );
 
-   EXPECT_EQ( 5, completion.argumentIndex );
+   EXPECT_EQ( 4, completion.argumentIndex );
    EXPECT_GT( 0, completion.byteOffset );
    EXPECT_FALSE( completion.isNewArgument );
 }

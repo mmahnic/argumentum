@@ -21,10 +21,11 @@ struct CompletionParams
    // Completion is done on this list.
    std::vector<std::string_view> programArgs;
 
-   // The index of the argument to complete.  This is an index into
-   // programArgs, not into the original arguments.  If all ---complete options
-   // are at the end of the command line, these indices are the same.
-   int argumentIndex = 0;
+   // The index of the argument to complete.  A negative index denotes the last
+   // argument.  This is an index into programArgs, not into the original
+   // arguments.  If all ---complete options are at the end of the command
+   // line, these indices are the same.
+   int argumentIndex = -1;
 
    // The position of the cursor inside the argument.  A negative value denotes
    // the end of the argument.
