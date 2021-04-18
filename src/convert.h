@@ -32,7 +32,10 @@ T parse_int( const std::string& s )
       }
    } clear_errno;
 
-   char* pend;
+   char* pend{};
+
+   // TODO (mmahnic): This does not work for T=int64_t. It looks like res is
+   // unsigned in this case, we get a compiler warning. Integral promotion problems?
    auto checkResult = [&]( auto res ) {
       if ( errno == ERANGE )
          throw std::out_of_range( s );
