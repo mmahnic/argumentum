@@ -40,6 +40,8 @@ public:
          std::vector<std::string>::const_iterator iend );
 
    void parseCompletionArguments();
+
+   std::string getPrefix() const;
 };
 
 }   // namespace argumentum

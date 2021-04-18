@@ -11,7 +11,8 @@
 
 namespace argumentum {
 
-void CompletionParams::splitArguments( std::vector<std::string>::const_iterator ibegin,
+ARGUMENTUM_INLINE void CompletionParams::splitArguments(
+      std::vector<std::string>::const_iterator ibegin,
       std::vector<std::string>::const_iterator iend )
 {
    for ( auto iarg = ibegin; iarg != iend; ++iarg )
@@ -21,7 +22,7 @@ void CompletionParams::splitArguments( std::vector<std::string>::const_iterator 
          programArgs.push_back( std::string_view( *iarg ) );
 }
 
-void CompletionParams::parseCompletionArguments()
+ARGUMENTUM_INLINE void CompletionParams::parseCompletionArguments()
 {
    auto parser = argument_parser{};
    std::stringstream strout;
@@ -44,6 +45,7 @@ void CompletionParams::parseCompletionArguments()
          .help( "Complete the word before the index passed as a parameter. "
                 "If the parmeter is omitted, the last word will be completed. "
                 "Word indices start with 1. " )
+         .flagValue( "-1" )
          .action( []( auto& position, const std::string& value ) {
             position.index = from_string<int>::convert( value );
             position.isNew = true;
@@ -60,6 +62,7 @@ void CompletionParams::parseCompletionArguments()
                 "---complete-extend=1/5 will return completions for the first word "
                 "that start with the first 5 bytes of the word. "
                 "---complete-extend=1/0 will return all completions for the first word." )
+         .flagValue( "-1" )
          .action( []( auto& position, const std::string& value ) {
             position.index = from_string<int>::convert( value );
             position.isNew = false;
@@ -80,6 +83,19 @@ void CompletionParams::parseCompletionArguments()
 
    if ( position.offset )
       byteOffset = *position.offset;
+}
+
+ARGUMENTUM_INLINE std::string CompletionParams::getPrefix() const
+{
+   if ( isNewArgument || programArgs.empty()
+         || ( argumentIndex > 0 && argumentIndex >= programArgs.size() ) || byteOffset == 0 )
+      return {};
+
+   auto idx = argumentIndex < 0 ? programArgs.size() - 1 : argumentIndex;
+   if ( byteOffset > 0 )
+      return std::string{ programArgs[idx].substr( 0, byteOffset ) };
+
+   return std::string{ programArgs[idx] };
 }
 
 }   // namespace argumentum

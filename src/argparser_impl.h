@@ -283,6 +283,12 @@ ARGUMENTUM_INLINE void argument_parser::completeParameter(
 
    CompletionParams completion;
    completion.splitArguments( ibegin, iend );
+   completion.parseCompletionArguments();
+   const std::string prefix = completion.getPrefix();
+
+   auto starts_with( []( const std::string_view haystack, const std::string_view needle ) {
+      return needle.empty() || haystack.substr( 0, needle.size() ) == needle;
+   } );
 
    ArgumentDescriber describer;
    const auto args = describer.describe_arguments( mParserDef );
@@ -291,9 +297,12 @@ ARGUMENTUM_INLINE void argument_parser::completeParameter(
          continue;
 
       if ( !arg.short_name.empty() )
-         *pStream << arg.short_name << "\n";
+         if ( starts_with( arg.short_name, prefix ) )
+            *pStream << arg.short_name << "\n";
+
       if ( !arg.long_name.empty() )
-         *pStream << arg.long_name << "\n";
+         if ( starts_with( arg.long_name, prefix ) )
+            *pStream << arg.long_name << "\n";
    }
 }
 

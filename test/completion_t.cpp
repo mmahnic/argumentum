@@ -108,6 +108,36 @@ TEST( CompletionParams, shouldParseCompletionArguments )
    EXPECT_FALSE( completion.isNewArgument );
 }
 
+TEST( CompletionParams, shouldGetCompletionPrefix )
+{
+   std::vector<std::string> args{ "some", "-a", "--normal", "argument" };
+   struct Example
+   {
+      std::vector<std::string> args;
+      std::string completeOption;
+      std::string result;
+   };
+
+   const std::vector<Example> examples{ // (clf)
+      { args, "---complete-extend=1", "some" },   // (clf)
+      { args, "---complete-extend=3", "--normal" },   // (clf)
+      { args, "---complete-extend", "argument" },   // (clf)
+      { args, "---complete-extend=9", "" },   // (clf)
+      { args, "---complete-new=1", "" }
+   };
+
+   for ( const auto& ex : examples ) {
+      auto args = ex.args;
+      args.push_back( ex.completeOption );
+
+      CompletionParams completion;
+      completion.splitArguments( args.begin(), args.end() );
+      completion.parseCompletionArguments();
+
+      EXPECT_EQ( ex.result, completion.getPrefix() );
+   }
+}
+
 #if 0
 TEST( Completion, shouldRedirectCompletions )
 {
