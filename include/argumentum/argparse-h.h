@@ -12,6 +12,7 @@
 #include "../../src/argumentstream_impl.h"
 #include "../../src/command_impl.h"
 #include "../../src/commandconfig_impl.h"
+#include "../../src/completionparams_impl.h"
 #include "../../src/convert_impl.h"
 #include "../../src/environment_impl.h"
 #include "../../src/group_impl.h"

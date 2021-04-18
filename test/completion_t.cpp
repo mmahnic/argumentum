@@ -66,6 +66,25 @@ TEST( CompletionParams, shouldSplitCompletionAndNormalArguments )
    ASSERT_EQ( 7, completion.programArgs.size() );
 }
 
+TEST( CompletionParams, shouldParseCompletionArguments )
+{
+   CompletionParams completion;
+
+   std::vector<std::string> args{ "some", "-a", "--normal", "argument", "---complete-extend=5",
+      "between", "-and", "after" };
+
+   completion.splitArguments( args.begin(), args.end() );
+   completion.parseCompletionArguments();
+
+   ASSERT_EQ( 1, completion.completeArgs.size() );
+   EXPECT_EQ( "--complete-extend=5", completion.completeArgs[0] );
+   ASSERT_EQ( 7, completion.programArgs.size() );
+
+   EXPECT_EQ( 5, completion.argumentIndex );
+   EXPECT_GT( 0, completion.byteOffset );
+   EXPECT_FALSE( completion.isNewArgument );
+}
+
 #if 0
 TEST( Completion, shouldRedirectCompletions )
 {

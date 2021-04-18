@@ -32,18 +32,13 @@ struct CompletionParams
 
    // Set to true if --complete-new is used.  In this case the cursor is between
    // arguments and there is whitespace before and after the cursor.
-   bool isNewParameter = false;
+   bool isNewArgument = false;
 
 public:
    void splitArguments( std::vector<std::string>::const_iterator ibegin,
-         std::vector<std::string>::const_iterator iend )
-   {
-      for ( auto iarg = ibegin; iarg != iend; ++iarg )
-         if ( std::string_view( *iarg ).substr( 0, 11 ) == "---complete" )
-            completeArgs.push_back( iarg->substr( 1 ) );
-         else
-            programArgs.push_back( std::string_view( *iarg ) );
-   }
+         std::vector<std::string>::const_iterator iend );
+
+   void parseCompletionArguments();
 };
 
 }   // namespace argumentum

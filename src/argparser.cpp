@@ -6,6 +6,7 @@
 #include "argumentstream_impl.h"
 #include "command_impl.h"
 #include "commandconfig_impl.h"
+#include "completionparams_impl.h"
 #include "convert_impl.h"
 #include "environment_impl.h"
 #include "group_impl.h"
