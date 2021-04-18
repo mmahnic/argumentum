@@ -281,6 +281,9 @@ ARGUMENTUM_INLINE void argument_parser::completeParameter(
    auto pStream = config.output_stream();
    assert( pStream );
 
+   CompletionParams completion;
+   completion.splitArguments( ibegin, iend );
+
    ArgumentDescriber describer;
    const auto args = describer.describe_arguments( mParserDef );
    for ( auto& arg : args ) {

@@ -5,6 +5,7 @@
 
 #include "argumentstream.h"
 #include "commandconfig.h"
+#include "completionparams.h"
 #include "environment.h"
 #include "groupconfig.h"
 #include "helpformatter.h"

@@ -51,6 +51,21 @@ TEST( Completion, shouldReturnOptionList )
 #endif
 }
 
+TEST( CompletionParams, shouldSplitCompletionAndNormalArguments )
+{
+   CompletionParams completion;
+
+   std::vector<std::string> args{ "some", "-a", "--normal", "argument", "---complete-extend=5",
+      "between", "---complete-new=3", "-and", "after" };
+
+   completion.splitArguments( args.begin(), args.end() );
+
+   ASSERT_EQ( 2, completion.completeArgs.size() );
+   EXPECT_EQ( "--complete-extend=5", completion.completeArgs[0] );
+   EXPECT_EQ( "--complete-new=3", completion.completeArgs[1] );
+   ASSERT_EQ( 7, completion.programArgs.size() );
+}
+
 #if 0
 TEST( Completion, shouldRedirectCompletions )
 {
