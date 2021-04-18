@@ -51,6 +51,29 @@ TEST( Completion, shouldReturnOptionList )
 #endif
 }
 
+TEST( Completion, shouldCompleteOptionWithPrefix )
+{
+   auto parser = argument_parser{};
+   std::stringstream strout;
+   parser.config().cout( strout );
+
+   auto params = parser.params();
+   int dummy;
+   params.add_parameter( dummy, "--sin" ).nargs( 1 );
+   params.add_parameter( dummy, "--sum" ).nargs( 1 );
+   params.add_parameter( dummy, "--depth" ).nargs( 1 );
+   params.add_parameter( dummy, "--done" ).nargs( 1 );
+   params.add_help_option( "-h" );
+
+   auto res = parser.parse_args( { "--depth", "--s", "--done", "---complete-extend=2" } );
+
+   EXPECT_FALSE( res );
+   auto pos = strout.str().find( "--sin\n--sum\n" );
+   EXPECT_NE( std::string::npos, pos );
+   EXPECT_EQ( std::string::npos, strout.str().find( "--depth" ) );
+   EXPECT_EQ( std::string::npos, strout.str().find( "--done" ) );
+}
+
 TEST( CompletionParams, shouldSplitCompletionAndNormalArguments )
 {
    CompletionParams completion;

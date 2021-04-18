@@ -36,16 +36,17 @@ void CompletionParams::parseCompletionArguments()
    } position;
 
    // TODO (mmahnic): The help for the completion parser must be included in
-   // the main help when --help-complete is requested.
+   // the main help when --help-complete is requested.  The parser should be
+   // encapsulated in an Options structure.
 
    params.add_parameter( position, "--complete-new" )
          .maxargs( 1 )
          .help( "Complete the word before the index passed as a parameter. "
                 "If the parmeter is omitted, the last word will be completed. "
                 "Word indices start with 1. " )
-         .action( [this]( auto& target, const std::string& value ) {
-            target.index = from_string<int>::convert( value );
-            target.isNew = true;
+         .action( []( auto& position, const std::string& value ) {
+            position.index = from_string<int>::convert( value );
+            position.isNew = true;
          } );
 
    params.add_parameter( position, "--complete-extend" )
@@ -59,9 +60,9 @@ void CompletionParams::parseCompletionArguments()
                 "---complete-extend=1/5 will return completions for the first word "
                 "that start with the first 5 bytes of the word. "
                 "---complete-extend=1/0 will return all completions for the first word." )
-         .action( [this]( auto& target, const std::string& value ) {
-            target.index = from_string<int>::convert( value );
-            target.isNew = false;
+         .action( []( auto& position, const std::string& value ) {
+            position.index = from_string<int>::convert( value );
+            position.isNew = false;
          } );
 
    auto res = parser.parse_args( completeArgs );
