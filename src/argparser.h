@@ -175,7 +175,10 @@ private:
    void reportExclusiveViolations( ParseResultBuilder& result );
    void reportMissingGroups( ParseResultBuilder& result );
    void describe_errors( ParseResult& result );
+
    bool isCompletionRequest( std::vector<std::string>::const_iterator ibegin,
+         std::vector<std::string>::const_iterator iend );
+   void completeParameter( std::vector<std::string>::const_iterator ibegin,
          std::vector<std::string>::const_iterator iend );
 
    // TODO (mmahnic): remove, moved to ParameterConfig

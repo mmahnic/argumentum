@@ -93,21 +93,7 @@ ARGUMENTUM_INLINE ParseResult argument_parser::parse_args(
    }
 
    if ( isCompletionRequest( ibegin, iend ) ) {
-      auto config = getConfig();
-      auto pStream = config.output_stream();
-      assert( pStream );
-
-      ArgumentDescriber describer;
-      const auto args = describer.describe_arguments( mParserDef );
-      for ( auto& arg : args ) {
-         if ( arg.is_positional() )
-            continue;
-
-         if ( !arg.short_name.empty() )
-            *pStream << arg.short_name << "\n";
-         if ( !arg.long_name.empty() )
-            *pStream << arg.long_name << "\n";
-      }
+      completeParameter( ibegin, iend );
 
       ParseResultBuilder result;
       result.signalHelpShown();
@@ -285,6 +271,27 @@ ARGUMENTUM_INLINE bool argument_parser::isCompletionRequest(
       if ( std::string_view( *iarg ).substr( 0, 11 ) == "---complete" )
          return true;
    return false;
+}
+
+ARGUMENTUM_INLINE void argument_parser::completeParameter(
+      std::vector<std::string>::const_iterator ibegin,
+      std::vector<std::string>::const_iterator iend )
+{
+   auto config = getConfig();
+   auto pStream = config.output_stream();
+   assert( pStream );
+
+   ArgumentDescriber describer;
+   const auto args = describer.describe_arguments( mParserDef );
+   for ( auto& arg : args ) {
+      if ( arg.is_positional() )
+         continue;
+
+      if ( !arg.short_name.empty() )
+         *pStream << arg.short_name << "\n";
+      if ( !arg.long_name.empty() )
+         *pStream << arg.long_name << "\n";
+   }
 }
 
 }   // namespace argumentum
