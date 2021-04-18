@@ -25,6 +25,7 @@ TEST( Completion, shouldReturnOptionList )
    auto params = parser.params();
    params.add_parameter( str, "-s" ).nargs( 1 ).help( "some string" );
    params.add_parameter( depth, "-d", "--depth" ).nargs( 1 ).help( "some depth" );
+   params.add_help_option( "-h" );
 
    // When ---complete is present at the end, completion starts.
    // Parsing is done without setting target values.
@@ -39,7 +40,7 @@ TEST( Completion, shouldReturnOptionList )
 
    EXPECT_TRUE( res );
 #if 1
-   auto pos = strout.str().find( "-s\n-d\n--depth" );
+   auto pos = strout.str().find( "-s\n-d\n--depth\n-h" );
    EXPECT_NE( std::string::npos, pos );
 #else
    ASSERT_EQ( 2, completions.size() );

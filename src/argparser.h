@@ -72,14 +72,14 @@ public:
 #define ARGUMENTUM_DEPRECATED( x )
 #endif
 
-   // Deprecated. Use args = parser.params(); args.add_command(...);
+   // Deprecated. Use params = parser.params(); params.add_command(...);
    ARGUMENTUM_DEPRECATED( "Use parser.params()" )
    CommandConfig add_command( std::shared_ptr<CommandOptions> pOptions )
    {
       return params().add_command( pOptions );
    };
 
-   // Deprecated. Use args = parser.params(); args.add_command(...);
+   // Deprecated. Use params = parser.params(); params.add_command(...);
    template<typename TOptions>
    ARGUMENTUM_DEPRECATED( "Use parser.params()" )
    CommandConfig add_command( const std::string& name )
@@ -87,14 +87,14 @@ public:
       return params().add_command<TOptions>( name );
    }
 
-   // Deprecated. Use args = parser.params(); args.add_command(...);
+   // Deprecated. Use params = parser.params(); params.add_command(...);
    ARGUMENTUM_DEPRECATED( "Use parser.params()" )
    CommandConfig add_command( const std::string& name, Command::options_factory_t factory )
    {
       return params().add_command( name, factory );
    }
 
-   // Deprecated. Use args = parser.params(); args.add_parameter(...);
+   // Deprecated. Use params = parser.params(); params.add_parameter(...);
    template<typename TTarget>
    ARGUMENTUM_DEPRECATED( "Use parser.params()" )
    OptionConfigA<TTarget> add_argument(
@@ -104,42 +104,42 @@ public:
       // return params().add_argument( std::forward<TTarget>( target ), name, altName );
    }
 
-   // Deprecated. Use args = parser.params(); args.add_parameters(...);
+   // Deprecated. Use params = parser.params(); params.add_parameters(...);
    ARGUMENTUM_DEPRECATED( "Use parser.params()" )
    void add_arguments( std::shared_ptr<Options> pOptions )
    {
       return params().add_parameters( pOptions );
    }
 
-   // Deprecated. Use args = parser.params(); args.add_default_help_option(...);
+   // Deprecated. Use params = parser.params(); params.add_default_help_option(...);
    ARGUMENTUM_DEPRECATED( "Use parser.params()" )
    VoidOptionConfig add_default_help_option()
    {
       return params().add_default_help_option();
    }
 
-   // Deprecated. Use args = parser.params(); args.add_help_option(...);
+   // Deprecated. Use params = parser.params(); params.add_help_option(...);
    ARGUMENTUM_DEPRECATED( "Use parser.params()" )
    VoidOptionConfig add_help_option( const std::string& name, const std::string& altName = "" )
    {
       return params().add_help_option( name, altName );
    }
 
-   // Deprecated. Use args = parser.params(); args.add_group(...);
+   // Deprecated. Use params = parser.params(); params.add_group(...);
    ARGUMENTUM_DEPRECATED( "Use parser.params()" )
    GroupConfig add_group( const std::string& name )
    {
       return params().add_group( name );
    }
 
-   // Deprecated. Use args = parser.params(); args.add_exclusive_group(...);
+   // Deprecated. Use params = parser.params(); params.add_exclusive_group(...);
    ARGUMENTUM_DEPRECATED( "Use parser.params()" )
    GroupConfig add_exclusive_group( const std::string& name )
    {
       return params().add_exclusive_group( name );
    }
 
-   // Deprecated. Use args = parser.params(); args.end_group(...);
+   // Deprecated. Use params = parser.params(); params.end_group(...);
    ARGUMENTUM_DEPRECATED( "Use parser.params()" )
    void end_group()
    {
@@ -175,6 +175,9 @@ private:
    void reportExclusiveViolations( ParseResultBuilder& result );
    void reportMissingGroups( ParseResultBuilder& result );
    void describe_errors( ParseResult& result );
+   bool isCompletionRequest( std::vector<std::string>::const_iterator ibegin,
+         std::vector<std::string>::const_iterator iend );
+
    // TODO (mmahnic): remove, moved to ParameterConfig
    OptionFactory& getOptionFactory();
 };

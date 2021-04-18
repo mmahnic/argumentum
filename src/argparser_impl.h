@@ -92,6 +92,28 @@ ARGUMENTUM_INLINE ParseResult argument_parser::parse_args(
       }
    }
 
+   if ( isCompletionRequest( ibegin, iend ) ) {
+      auto config = getConfig();
+      auto pStream = config.output_stream();
+      assert( pStream );
+
+      ArgumentDescriber describer;
+      const auto args = describer.describe_arguments( mParserDef );
+      for ( auto& arg : args ) {
+         if ( arg.is_positional() )
+            continue;
+
+         if ( !arg.short_name.empty() )
+            *pStream << arg.short_name << "\n";
+         if ( !arg.long_name.empty() )
+            *pStream << arg.long_name << "\n";
+      }
+
+      ParseResultBuilder result;
+      result.signalHelpShown();
+      return std::move( result.getResult() );
+   }
+
    auto argStream = IteratorArgumentStream( ibegin, iend );
    return parse_args( argStream );
 }
@@ -153,6 +175,8 @@ ARGUMENTUM_INLINE void argument_parser::assignDefaultValues()
          pOption->assignDefault();
 }
 
+// Verify if option definitions are consistent and throw if they are not (a
+// programming error).  Add help options if they were not added manually.
 ARGUMENTUM_INLINE void argument_parser::verifyDefinedOptions()
 {
    // Check if any help options are defined and add the default if not.
@@ -250,6 +274,16 @@ ARGUMENTUM_INLINE void argument_parser::describe_errors( ParseResult& result )
          *pStream << ", " << *it;
       *pStream << "\n";
    }
+}
+
+ARGUMENTUM_INLINE bool argument_parser::isCompletionRequest(
+      std::vector<std::string>::const_iterator ibegin,
+      std::vector<std::string>::const_iterator iend )
+{
+   for ( auto iarg = ibegin; iarg != iend; ++iarg )
+      if ( std::string_view( *iarg ).substr( 0, 11 ) == "---complete" )
+         return true;
+   return false;
 }
 
 }   // namespace argumentum
