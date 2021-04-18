@@ -38,7 +38,8 @@ TEST( Completion, shouldReturnOptionList )
    //   --complete-extend=1   complete by extending the first word
    auto res = parser.parse_args( { "-", "---complete-extend=1" } );
 
-   EXPECT_TRUE( res );
+   // Completions make the result invalid so that the program can not continue.
+   EXPECT_FALSE( res );
 #if 1
    auto pos = strout.str().find( "-s\n-d\n--depth\n-h" );
    EXPECT_NE( std::string::npos, pos );
@@ -77,7 +78,7 @@ TEST( Completion, shouldCompleteShortOptions )
    // uset has to press the desired letter, anyway.
    auto res = parser.parse_args( { "-s", "---complete-extend=1" } );
 
-   EXPECT_TRUE( res );
+   EXPECT_FALSE( res );
    ASSERT_EQ( 1, completions.size() );
    EXPECT_EQ( "-sd", completions[0] );
 }

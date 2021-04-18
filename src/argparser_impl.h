@@ -111,6 +111,7 @@ ARGUMENTUM_INLINE ParseResult argument_parser::parse_args(
 
       ParseResultBuilder result;
       result.signalHelpShown();
+      result.requestExit();
       return std::move( result.getResult() );
    }
 
