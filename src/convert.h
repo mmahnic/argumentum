@@ -43,12 +43,14 @@ T parse_int( const std::string& s )
       return static_cast<T>( res );
    };
 
-   if ( std::numeric_limits<T>::is_signed )
+   if constexpr ( std::numeric_limits<T>::is_signed )
       return checkResult( sign * strtoll( sv.data(), &pend, base ) );
-   else if ( sign > 0 )
-      return checkResult( strtoull( sv.data(), &pend, base ) );
-   else
-      throw std::out_of_range( s );
+   else {
+      if ( sign > 0 )
+         return checkResult( strtoull( sv.data(), &pend, base ) );
+      else
+         throw std::out_of_range( s );
+   }
 }
 
 namespace strtodx {
