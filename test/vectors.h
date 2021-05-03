@@ -22,7 +22,7 @@ bool vector_eq( const std::vector<T>& values, const std::vector<T>& var )
       return false;
    }
 
-   for ( int i = 0; i < var.size(); ++i )
+   for ( unsigned i = 0; i < var.size(); ++i )
       if ( values[i] != var[i] ) {
          std::cout << "Value: '" << values[i] << "'!='" << var[i] << "'\n";
          dump();
