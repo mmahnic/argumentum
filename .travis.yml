@@ -20,6 +20,14 @@ matrix:
       env:
         - C_COMPILER=gcc-7
         - CXX_COMPILER=g++-7
+        - CXX_FLAGS=-Werror=sign-compare
+
+      install:
+         - mkdir /tmp/build-gtest && cd /tmp/build-gtest
+         - cmake /usr/src/gtest
+         - make
+         - sudo cp libgtest* /usr/lib/
+         - cd -
 
     - os: linux
       dist: xenial
@@ -36,18 +44,71 @@ matrix:
       env:
         - C_COMPILER=gcc-8
         - CXX_COMPILER=g++-8
+        - CXX_FLAGS=-Werror=sign-compare
 
-install:
-   - mkdir /tmp/build-gtest && cd /tmp/build-gtest
-   - cmake /usr/src/gtest
-   - make
-   - sudo cp libgtest* /usr/lib/
-   - cd -
+      install:
+        - mkdir /tmp/build-gtest && cd /tmp/build-gtest
+        - cmake /usr/src/gtest
+        - make
+        - sudo cp libgtest* /usr/lib/
+        - cd -
    
+
+    - os: linux
+      dist: focal
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-9
+            - libgtest-dev
+            - googletest
+            - cmake
+
+      compiler: gcc-9
+
+      env:
+        - C_COMPILER=gcc-9
+        - CXX_COMPILER=g++-9
+        - CXX_FLAGS=-Werror=sign-compare
+
+      install:
+        - mkdir /tmp/build-gtest && cd /tmp/build-gtest
+        - cmake /usr/src/googletest
+        - sudo cmake --build . --target install
+        - cd -
+
+    - os: linux
+      dist: focal
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-10
+            - libgtest-dev
+            - googletest
+            - cmake
+
+      compiler: gcc-10
+
+      env:
+        - C_COMPILER=gcc-10
+        - CXX_COMPILER=g++-10
+        - CXX_FLAGS=-Werror=sign-compare
+
+      install:
+        - mkdir /tmp/build-gtest && cd /tmp/build-gtest
+        - cmake /usr/src/googletest
+        - sudo cmake --build . --target install
+        - cd -
+
 script:
   - >- 
      cmake -H. -Bbuild
      -DCMAKE_C_COMPILER=$C_COMPILER -DCMAKE_CXX_COMPILER=$CXX_COMPILER
+     -DCMAKE_CXX_FLAGS="$CXX_FLAGS"
      -DARGUMENTUM_BUILD_EXAMPLES=ON -DARGUMENTUM_BUILD_TESTS=ON
   - cd build
   - cmake --build .
