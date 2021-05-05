@@ -40,7 +40,6 @@ TEST( ArgumentParserHelpTest, shouldAcceptArgumentHelpStrings )
 TEST( ArgumentParserHelpTest, shouldSetProgramName )
 {
    auto parser = argument_parser{};
-   auto params = parser.params();
    parser.config().program( "testing-testing" );
 
    auto& config = parser.getConfig();
@@ -50,7 +49,6 @@ TEST( ArgumentParserHelpTest, shouldSetProgramName )
 TEST( ArgumentParserHelpTest, shouldSetProgramDescription )
 {
    auto parser = argument_parser{};
-   auto params = parser.params();
    parser.config().description( "An example." );
 
    auto& config = parser.getConfig();
@@ -60,7 +58,6 @@ TEST( ArgumentParserHelpTest, shouldSetProgramDescription )
 TEST( ArgumentParserHelpTest, shouldSetProgramUsage )
 {
    auto parser = argument_parser{};
-   auto params = parser.params();
    parser.config().usage( "example [options] [arguments]" );
 
    auto& config = parser.getConfig();
@@ -163,7 +160,6 @@ TEST( ArgumentParserHelpTest, shouldFormatDescriptionsToTheSameColumn )
 TEST( ArgumentParserHelpTest, shouldSetHelpEpilog )
 {
    auto parser = argument_parser{};
-   auto params = parser.params();
    parser.config().epilog( "This comes after help." );
 
    auto& config = parser.getConfig();
@@ -679,7 +675,6 @@ TEST( ArgumentParserHelpTest, shouldUseSamePositionalMetavarNameInUsageAndHelp )
 
    std::map<std::string, long> count{ { "xpos", 0 }, { "XPOS", 0 }, { "xmetapos", 0 },
       { "XMETAPOS", 0 }, { "mpos", 0 }, { "MPOS", 0 } };
-   int i = 0;
    for ( auto line : helpLines ) {
       for ( const auto& tag : count ) {
          if ( strHasText( line, tag.first ) )

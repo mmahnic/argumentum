@@ -43,8 +43,9 @@ TEST( ValueTest, shouldAssignUniqueValueTypeId )
 
    for ( auto pv1 : all )
       for ( auto pv2 : all )
-         if ( pv1 != pv2 )
+         if ( pv1 != pv2 ) {
             EXPECT_TRUE( pv1->getValueTypeId() != pv2->getValueTypeId() );
+         }
 }
 
 TEST( ValueTest, shouldCastVoidValueToVoidValue )

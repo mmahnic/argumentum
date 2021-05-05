@@ -85,7 +85,7 @@ public:
    CommandConfig add_command( const std::string& name )
    {
       return params().add_command<TOptions>( name );
-   };
+   }
 
    // Deprecated. Use args = parser.params(); args.add_command(...);
    ARGUMENTUM_DEPRECATED( "Use parser.params()" )
