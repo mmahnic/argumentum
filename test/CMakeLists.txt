@@ -22,6 +22,7 @@ add_executable( argumentumTests
    forwardparam_t.cpp
    group_t.cpp
    help_t.cpp
+   metavar_t.cpp
    negativenumber_t.cpp
    number_t.cpp
    optionfactory_t.cpp

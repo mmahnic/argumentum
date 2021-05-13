@@ -52,9 +52,9 @@ public:
       return *static_cast<this_t*>( this );
    }
 
-   // Define the name of the meta variable of the option that will be used as a
-   // placeholder for option values in the generated help.
-   this_t& metavar( std::string_view varname )
+   // Define the names of the meta variables of the option that will be used as
+   // a placeholder for option values in the generated help.
+   this_t& metavar( std::string_view varname... )
    {
       getOption().setMetavar( varname );
       return *static_cast<this_t*>( this );
