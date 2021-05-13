@@ -27,7 +27,7 @@ private:
    AssignDefaultAction mAssignDefaultAction;
    std::string mShortName;
    std::string mLongName;
-   std::string mMetavar;
+   std::vector<std::string> mMetavar;
    std::string mHelp;
    std::string mFlagValue = "1";
    std::vector<std::string> mChoices;
@@ -50,7 +50,7 @@ private:
 public:
    void setShortName( std::string_view name );
    void setLongName( std::string_view name );
-   void setMetavar( std::string_view varname );
+   void setMetavar( const std::vector<std::string_view>& varnames );
    void setHelp( std::string_view help );
    void setNArgs( int count );
    void setMinArgs( int count );
@@ -71,7 +71,7 @@ public:
    std::string getHelpName() const;
    bool hasName( std::string_view name ) const;
    const std::string& getRawHelp() const;
-   std::string getMetavar() const;
+   std::vector<std::string> getMetavar() const;
    void setValue( std::string_view value, Environment& env );
    void assignDefault();
    bool hasDefault() const;

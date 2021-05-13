@@ -8,6 +8,8 @@
 #include "exceptions.h"
 #include "group.h"
 
+#include <cstdarg>
+
 namespace argumentum {
 
 ARGUMENTUM_INLINE void Option::setShortName( std::string_view name )
@@ -20,9 +22,18 @@ ARGUMENTUM_INLINE void Option::setLongName( std::string_view name )
    mLongName = name;
 }
 
-ARGUMENTUM_INLINE void Option::setMetavar( std::string_view varname )
+ARGUMENTUM_INLINE void Option::setMetavar( const std::vector<std::string_view>& varnames )
 {
-   mMetavar = varname;
+   auto cleanStr( []( std::string_view v ) -> std::string {
+      return std::string( v );
+   } );
+
+   mMetavar.clear();
+   for ( auto v : varnames ) {
+      auto cv = cleanStr( v );
+      if ( !cv.empty() )
+         mMetavar.push_back( std::move( cv ) );
+   }
 }
 
 ARGUMENTUM_INLINE void Option::setHelp( std::string_view help )
@@ -121,7 +132,8 @@ ARGUMENTUM_INLINE const std::string& Option::getLongName() const
 ARGUMENTUM_INLINE std::string Option::getHelpName() const
 {
    if ( isPositional() ) {
-      const auto& name = !mMetavar.empty() ? mMetavar : !mLongName.empty() ? mLongName : mShortName;
+      const auto& name =
+            !mMetavar.empty() ? mMetavar[0] : ( !mLongName.empty() ? mLongName : mShortName );
       return !name.empty() ? name : "ARG";
    }
    return !mLongName.empty() ? mLongName : mShortName;
@@ -137,7 +149,7 @@ ARGUMENTUM_INLINE const std::string& Option::getRawHelp() const
    return mHelp;
 }
 
-ARGUMENTUM_INLINE std::string Option::getMetavar() const
+ARGUMENTUM_INLINE std::vector<std::string> Option::getMetavar() const
 {
    if ( !mMetavar.empty() )
       return mMetavar;
@@ -148,7 +160,7 @@ ARGUMENTUM_INLINE std::string Option::getMetavar() const
    auto isPositional = pos == 0;
    std::transform(
          metavar.begin(), metavar.end(), metavar.begin(), isPositional ? tolower : toupper );
-   return metavar;
+   return { metavar };
 }
 
 ARGUMENTUM_INLINE void Option::setValue( std::string_view value, Environment& env )

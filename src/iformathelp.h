@@ -1,9 +1,10 @@
-// Copyright (c) 2018, 2019, 2020 Marko Mahnič
+// Copyright (c) 2018-2021 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace argumentum {
 
@@ -14,7 +15,7 @@ struct ArgumentHelpResult
    std::string help_name;
    std::string short_name;
    std::string long_name;
-   std::string metavar;
+   std::vector<std::string> metavar;
    std::string arguments;
    std::string help;
    bool isRequired = false;

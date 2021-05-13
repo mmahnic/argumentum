@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2018, 2019, 2020 Marko Mahnič
+﻿// Copyright (c) 2018-2021 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #include "testutil.h"

@@ -81,8 +81,10 @@ ARGUMENTUM_INLINE ArgumentHelpResult ArgumentDescriber::describeCommand(
 }
 
 ARGUMENTUM_INLINE std::string ArgumentDescriber::describeArguments(
-      const Option& option, const std::string& metavar ) const
+      const Option& option, const std::vector<std::string>& metavars ) const
 {
+   auto metavar = metavars.empty() ? "TODO" : metavars[0];
+
    std::string res;
    auto [mmin, mmax] = option.getArgumentCounts();
    if ( mmin > 0 ) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2019, 2020 Marko Mahnič
+// Copyright (c) 2018-2021 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #include "testutil.h"
@@ -41,7 +41,7 @@ TEST( HelpMetavar, shouldSupportMultipleMetavarsInOption )
    std::string str;
    auto parser = argument_parser{};
    auto params = parser.params();
-   params.add_parameter( str, "--bees" ).nargs( 2 ).metavar( "FLY", "WORK" );
+   params.add_parameter( str, "--bees" ).nargs( 2 ).metavar( { "FLY", "WORK" } );
 
    auto formatter = HelpFormatter();
    formatter.setTextWidth( 60 );

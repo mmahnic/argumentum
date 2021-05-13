@@ -25,7 +25,8 @@ public:
    ArgumentHelpResult describeCommand( const Command& command ) const;
 
 private:
-   std::string describeArguments( const Option& option, const std::string& metavar ) const;
+   std::string describeArguments(
+         const Option& option, const std::vector<std::string>& metavar ) const;
 };
 
 }   // namespace argumentum
