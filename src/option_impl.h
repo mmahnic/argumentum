@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2019, 2020 Marko Mahnič
+// Copyright (c) 2018-2021 Marko Mahnič
 // License: MPL2. See LICENSE in the root of the project.
 
 #pragma once
@@ -24,13 +24,28 @@ ARGUMENTUM_INLINE void Option::setLongName( std::string_view name )
 
 ARGUMENTUM_INLINE void Option::setMetavar( const std::vector<std::string_view>& varnames )
 {
-   auto cleanStr( []( std::string_view v ) -> std::string {
-      return std::string( v );
+   auto cleanVarName( []( std::string_view v ) -> std::string {
+      size_t b = 0;
+      size_t e = v.size();
+      while ( b < e && std::isspace( v[b] ) || v[b] == '-' )
+         ++b;
+      while ( b < e && std::isspace( v[e - 1] ) )
+         --e;
+
+      if ( b >= e )
+         return {};
+
+      std::string res;
+      res.reserve( e - b );
+      std::transform( v.begin() + b, v.begin() + e, std::back_inserter( res ), []( char c ) {
+         return std::isspace( c ) ? '_' : c;
+      } );
+      return res;
    } );
 
    mMetavar.clear();
-   for ( auto v : varnames ) {
-      auto cv = cleanStr( v );
+   for ( const auto& v : varnames ) {
+      auto cv = cleanVarName( v );
       if ( !cv.empty() )
          mMetavar.push_back( std::move( cv ) );
    }
@@ -132,6 +147,8 @@ ARGUMENTUM_INLINE const std::string& Option::getLongName() const
 ARGUMENTUM_INLINE std::string Option::getHelpName() const
 {
    if ( isPositional() ) {
+      // TODO: mMetavar should no longer be used as helpName since we do not
+      // know which name to choose.  Maybe help name should be set separately (.helpname).
       const auto& name =
             !mMetavar.empty() ? mMetavar[0] : ( !mLongName.empty() ? mLongName : mShortName );
       return !name.empty() ? name : "ARG";
