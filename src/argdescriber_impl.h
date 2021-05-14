@@ -83,24 +83,32 @@ ARGUMENTUM_INLINE ArgumentHelpResult ArgumentDescriber::describeCommand(
 ARGUMENTUM_INLINE std::string ArgumentDescriber::describeArguments(
       const Option& option, const std::vector<std::string>& metavars ) const
 {
-   auto metavar = metavars.empty() ? "TODO" : metavars[0];
-
    std::string res;
+   auto getMetavar( [&]( int i ) {
+      if ( metavars.empty() )
+         return option.getHelpName();
+
+      if ( i >= metavars.size() )
+         return metavars.back();
+      return metavars[i];
+   } );
+
+   int i = 0;
    auto [mmin, mmax] = option.getArgumentCounts();
    if ( mmin > 0 ) {
-      res = metavar;
-      for ( int i = 1; i < mmin; ++i )
-         res = res + " " + metavar;
+      res = getMetavar( 0 );
+      for ( i = 1; i < mmin; ++i )
+         res = res + " " + getMetavar( i );
    }
    if ( mmax < mmin ) {
-      auto opt = ( res.empty() ? "[" : " [" ) + metavar + " ...]";
+      auto opt = ( res.empty() ? "[" : " [" ) + getMetavar( i ) + " ...]";
       res += opt;
    }
    else if ( mmax - mmin == 1 )
-      res += "[" + metavar + "]";
+      res += "[" + getMetavar( i ) + "]";
    else if ( mmax > mmin ) {
-      auto opt =
-            ( res.empty() ? "[" : " [" ) + metavar + " {0.." + std::to_string( mmax - mmin ) + "}]";
+      auto opt = ( res.empty() ? "[" : " [" ) + getMetavar( i ) + " {0.."
+            + std::to_string( mmax - mmin ) + "}]";
       res += opt;
    }
 
