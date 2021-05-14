@@ -59,3 +59,51 @@ TEST( HelpMetavar, shouldSupportMultipleMetavarsInOption )
       EXPECT_LT( optpos, argspos );
    }
 }
+
+TEST( HelpMetavar, shouldReuseTheLastMetavarInOption )
+{
+   std::string str;
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( str, "--bees" ).nargs( 5 ).metavar( { "FLY", "WORK" } );
+
+   auto formatter = HelpFormatter();
+   formatter.setTextWidth( 60 );
+   formatter.setMaxDescriptionIndent( 20 );
+   auto help = getTestHelp( parser, formatter );
+   auto lines = splitLines( help, KEEPEMPTY );
+
+   for ( auto line : lines ) {
+      auto optpos = line.find( "--bees" );
+      if ( optpos == std::string::npos )
+         continue;
+
+      auto argspos = line.find( "FLY WORK WORK WORK WORK" );
+      ASSERT_NE( std::string::npos, argspos );
+      EXPECT_LT( optpos, argspos );
+   }
+}
+
+TEST( HelpMetavar, shouldSupportReuseTheLastMetavarInOptionWithMinArgs )
+{
+   std::string str;
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( str, "--bees" ).minargs( 3 ).metavar( { "FLY", "WORK" } );
+
+   auto formatter = HelpFormatter();
+   formatter.setTextWidth( 60 );
+   formatter.setMaxDescriptionIndent( 20 );
+   auto help = getTestHelp( parser, formatter );
+   auto lines = splitLines( help, KEEPEMPTY );
+
+   for ( auto line : lines ) {
+      auto optpos = line.find( "--bees" );
+      if ( optpos == std::string::npos )
+         continue;
+
+      auto argspos = line.find( "FLY WORK WORK [WORK ...]" );
+      ASSERT_NE( std::string::npos, argspos );
+      EXPECT_LT( optpos, argspos );
+   }
+}
