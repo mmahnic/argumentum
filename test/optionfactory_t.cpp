@@ -67,10 +67,10 @@ struct TestStructure
    int shared = 0;
    TestStructure() = default;
    TestStructure( const TestStructure& ) = default;
-   TestStructure( const std::string& v )
+   TestStructure( const std::string& )
    {}
    TestStructure& operator=( const TestStructure& ) = default;
-   TestStructure& operator=( const std::string& v )
+   TestStructure& operator=( const std::string& )
    {
       return *this;
    }

@@ -167,7 +167,9 @@ TEST( ArgumentParserActionTest, shouldSetSameVariableThroughMultipleActions )
 
 TEST( ArgumentParserActionTest, shouldTerminateParserThroughEnvironmentInAction )
 {
-   auto actionNormal = []( std::string& target, const std::string& value ) { target = value; };
+   auto actionNormal = []( std::string& target, const std::string& value ) {
+      target = value;
+   };
    auto actionEnv = []( std::string& target, const std::string& value, Environment& env ) {
       target = value;
       env.exit_parser();

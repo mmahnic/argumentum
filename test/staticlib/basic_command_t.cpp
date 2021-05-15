@@ -46,8 +46,12 @@ protected:
       common = std::make_shared<SharedOptions>();
       params.add_parameters( common );
 
-      auto max = []( int a, int b ) { return std::max( a, b ); };
-      auto sum = []( int a, int b ) { return a + b; };
+      auto max = []( int a, int b ) {
+         return std::max( a, b );
+      };
+      auto sum = []( int a, int b ) {
+         return a + b;
+      };
 
       params.add_parameter( operation, "--sum", "-s" )
             .nargs( 0 )

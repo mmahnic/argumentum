@@ -56,7 +56,9 @@ struct TestCommandOptions : public argumentum::Options
 
    void add_parameters( ParameterConfig& params ) override
    {
-      auto pGlobal = std::make_shared<GlobalOptions>();
+      if ( !pGlobal )
+         pGlobal = std::make_shared<GlobalOptions>();
+
       params.add_parameters( pGlobal );
 
       params.add_command<CmdOneOptions>( "cmdone" ).help( "Command One description." );

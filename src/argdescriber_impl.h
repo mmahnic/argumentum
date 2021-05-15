@@ -84,7 +84,7 @@ ARGUMENTUM_INLINE std::string ArgumentDescriber::describeArguments(
       const Option& option, const std::vector<std::string>& metavars ) const
 {
    std::string res;
-   auto getMetavar( [&]( int i ) {
+   auto getMetavar( [&]( unsigned i ) {
       if ( metavars.empty() )
          return option.getHelpName();
 
@@ -93,11 +93,11 @@ ARGUMENTUM_INLINE std::string ArgumentDescriber::describeArguments(
       return metavars[i];
    } );
 
-   int i = 0;
+   unsigned i = 0;
    auto [mmin, mmax] = option.getArgumentCounts();
    if ( mmin > 0 ) {
       res = getMetavar( 0 );
-      for ( i = 1; i < mmin; ++i )
+      for ( i = 1; i < unsigned( mmin ); ++i )
          res = res + " " + getMetavar( i );
    }
    if ( mmax < mmin ) {

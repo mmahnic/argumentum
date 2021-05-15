@@ -492,10 +492,10 @@ TEST( ArgumentParserTest, shouldSupportMaxNumberOfOptionArguments )
    EXPECT_EQ( 0, res.errors.size() );
 
    for ( int nargs = 3; nargs < 5; ++nargs ) {
-      auto res = testWithMaxArgs( nargs, params );
+      auto res2 = testWithMaxArgs( nargs, params );
       EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) ) << "maxargs:" << nargs;
-      EXPECT_EQ( 0, res.ignoredArguments.size() ) << "maxargs:" << nargs;
-      EXPECT_EQ( 0, res.errors.size() ) << "maxargs:" << nargs;
+      EXPECT_EQ( 0, res2.ignoredArguments.size() ) << "maxargs:" << nargs;
+      EXPECT_EQ( 0, res2.errors.size() ) << "maxargs:" << nargs;
    }
 }
 
@@ -557,10 +557,10 @@ TEST( ArgumentParserTest, shouldSupportMaxNumberOfPositionalArguments )
    EXPECT_EQ( 0, res.errors.size() );
 
    for ( int nargs = 3; nargs < 5; ++nargs ) {
-      auto res = testWithMaxArgs( nargs, params );
+      auto res2 = testWithMaxArgs( nargs, params );
       EXPECT_TRUE( vector_eq( { "read", "the", "text" }, texts ) ) << "maxargs:" << nargs;
-      EXPECT_EQ( 0, res.ignoredArguments.size() ) << "maxargs:" << nargs;
-      EXPECT_EQ( 0, res.errors.size() ) << "maxargs:" << nargs;
+      EXPECT_EQ( 0, res2.ignoredArguments.size() ) << "maxargs:" << nargs;
+      EXPECT_EQ( 0, res2.errors.size() ) << "maxargs:" << nargs;
    }
 }
 

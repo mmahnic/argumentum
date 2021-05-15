@@ -15,6 +15,7 @@ namespace argumentum {
 class Filesystem
 {
 public:
+   virtual ~Filesystem() = default;
    virtual std::unique_ptr<ArgumentStream> open( const std::string& filename ) = 0;
 };
 
