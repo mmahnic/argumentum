@@ -84,33 +84,53 @@ ARGUMENTUM_INLINE std::string ArgumentDescriber::describeArguments(
       const Option& option, const std::vector<std::string>& metavars ) const
 {
    std::string res;
-   auto getMetavar( [&]( unsigned i ) {
+   auto getMetavar( [&]( unsigned ivar ) {
       if ( metavars.empty() )
          return option.getHelpName();
 
-      if ( i >= metavars.size() )
+      if ( ivar >= metavars.size() )
          return metavars.back();
-      return metavars[i];
+      return metavars[ivar];
    } );
 
-   unsigned i = 0;
+   unsigned closecount = 0;
+   auto getOpenBracket( [&closecount]( const std::string& res ) {
+      ++closecount;
+      return res.empty() ? "[" : " [";
+   } );
+
+   unsigned ivar = 0;
    auto [mmin, mmax] = option.getArgumentCounts();
    if ( mmin > 0 ) {
+      // Mandatory parameters
       res = getMetavar( 0 );
-      for ( i = 1; i < unsigned( mmin ); ++i )
-         res = res + " " + getMetavar( i );
+      for ( ivar = 1; ivar < unsigned( mmin ); ++ivar )
+         res = res + " " + getMetavar( ivar );
    }
+
    if ( mmax < mmin ) {
-      auto opt = ( res.empty() ? "[" : " [" ) + getMetavar( i ) + " ...]";
+      // Optional parameters, unlimited
+      while ( ivar < metavars.size() - 1 ) {
+         auto opt = getOpenBracket( res ) + getMetavar( ivar );
+         res += opt;
+         ++ivar;
+      }
+      auto opt = getOpenBracket( res ) + getMetavar( ivar ) + " ...";
       res += opt;
    }
-   else if ( mmax - mmin == 1 )
-      res += "[" + getMetavar( i ) + "]";
-   else if ( mmax > mmin ) {
-      auto opt = ( res.empty() ? "[" : " [" ) + getMetavar( i ) + " {0.."
-            + std::to_string( mmax - mmin ) + "}]";
-      res += opt;
+   else {
+      // Optional parameters, limited
+      if ( mmax - mmin == 1 )
+         res += getOpenBracket( res ) + getMetavar( ivar );
+      else if ( mmax > mmin ) {
+         auto opt = getOpenBracket( res ) + getMetavar( ivar ) + " {0.."
+               + std::to_string( mmax - mmin ) + "}";
+         res += opt;
+      }
    }
+
+   if ( closecount > 0 )
+      res += std::string( closecount, ']' );
 
    return res;
 }

@@ -84,7 +84,7 @@ TEST( HelpMetavar, shouldReuseTheLastMetavarInOption )
    }
 }
 
-TEST( HelpMetavar, shouldSupportReuseTheLastMetavarInOptionWithMinArgs )
+TEST( HelpMetavar, shouldReuseTheLastMetavarInOptionWithMinArgs )
 {
    std::string str;
    auto parser = argument_parser{};
@@ -103,6 +103,32 @@ TEST( HelpMetavar, shouldSupportReuseTheLastMetavarInOptionWithMinArgs )
          continue;
 
       auto argspos = line.find( "FLY WORK WORK [WORK ...]" );
+      ASSERT_NE( std::string::npos, argspos );
+      EXPECT_LT( optpos, argspos );
+   }
+}
+
+TEST( HelpMetavar, shouldDisplayExcessiveMetavarsAsOptional )
+{
+   std::string str;
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( str, "--bees" )
+         .minargs( 2 )
+         .metavar( { "FLY", "WORK", "EAT", "DRINK", "SLEEP" } );
+
+   auto formatter = HelpFormatter();
+   formatter.setTextWidth( 60 );
+   formatter.setMaxDescriptionIndent( 20 );
+   auto help = getTestHelp( parser, formatter );
+   auto lines = splitLines( help, KEEPEMPTY );
+
+   for ( auto line : lines ) {
+      auto optpos = line.find( "--bees" );
+      if ( optpos == std::string::npos )
+         continue;
+
+      auto argspos = line.find( "FLY WORK [EAT [DRINK [SLEEP ...]]]" );
       ASSERT_NE( std::string::npos, argspos );
       EXPECT_LT( optpos, argspos );
    }
