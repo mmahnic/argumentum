@@ -133,3 +133,84 @@ TEST( HelpMetavar, shouldDisplayExcessiveMetavarsAsOptional )
       EXPECT_LT( optpos, argspos );
    }
 }
+
+TEST( HelpMetavar, shouldDisplayExcessiveMetavarsAsOptional_WithExactMax )
+{
+   std::string str;
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( str, "--bees" )
+         .minargs( 2 )
+         .maxargs( 5 )
+         .metavar( { "FLY", "WORK", "EAT", "DRINK", "SLEEP" } );
+
+   auto formatter = HelpFormatter();
+   formatter.setTextWidth( 60 );
+   formatter.setMaxDescriptionIndent( 20 );
+   auto help = getTestHelp( parser, formatter );
+   auto lines = splitLines( help, KEEPEMPTY );
+
+   for ( auto line : lines ) {
+      auto optpos = line.find( "--bees" );
+      if ( optpos == std::string::npos )
+         continue;
+
+      auto argspos = line.find( "FLY WORK [EAT [DRINK [SLEEP]]]" );
+      ASSERT_NE( std::string::npos, argspos );
+      EXPECT_LT( optpos, argspos );
+   }
+}
+
+TEST( HelpMetavar, shouldDisplayExcessiveMetavarsAsOptional_WithLowerMax )
+{
+   std::string str;
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( str, "--bees" )
+         .minargs( 2 )
+         .maxargs( 4 )
+         .metavar( { "FLY", "WORK", "EAT", "DRINK", "SLEEP" } );
+
+   auto formatter = HelpFormatter();
+   formatter.setTextWidth( 60 );
+   formatter.setMaxDescriptionIndent( 20 );
+   auto help = getTestHelp( parser, formatter );
+   auto lines = splitLines( help, KEEPEMPTY );
+
+   for ( auto line : lines ) {
+      auto optpos = line.find( "--bees" );
+      if ( optpos == std::string::npos )
+         continue;
+
+      auto argspos = line.find( "FLY WORK [EAT [DRINK]]" );
+      ASSERT_NE( std::string::npos, argspos );
+      EXPECT_LT( optpos, argspos );
+   }
+}
+
+TEST( HelpMetavar, shouldDisplayExcessiveMetavarsAsOptional_WithHigherMax )
+{
+   std::string str;
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( str, "--bees" )
+         .minargs( 2 )
+         .maxargs( 6 )
+         .metavar( { "FLY", "WORK", "EAT", "DRINK", "SLEEP" } );
+
+   auto formatter = HelpFormatter();
+   formatter.setTextWidth( 60 );
+   formatter.setMaxDescriptionIndent( 20 );
+   auto help = getTestHelp( parser, formatter );
+   auto lines = splitLines( help, KEEPEMPTY );
+
+   for ( auto line : lines ) {
+      auto optpos = line.find( "--bees" );
+      if ( optpos == std::string::npos )
+         continue;
+
+      auto argspos = line.find( "FLY WORK [EAT [DRINK [SLEEP{0-2}]]]" );
+      ASSERT_NE( std::string::npos, argspos );
+      EXPECT_LT( optpos, argspos );
+   }
+}
