@@ -1,0 +1,28 @@
+﻿{
+  "configurations": [
+    {
+      "name": "win-x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "variables": [
+        {
+          "name": "ARGUMENTUM_BUILD_TESTS",
+          "value": "True",
+          "type": "BOOL"
+        },
+        {
+          "name": "CMAKE_CXX_FLAGS",
+          "value": "/DWIN32 /D_WINDOWS /W4 /wd4100 /we4018 /GR /EHsc",
+          "type": "STRING"
+        }
+      ],
+      "cmakeToolchain": "D:/users/mmarko/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    }
+  ]
+}

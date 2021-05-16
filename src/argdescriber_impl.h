@@ -10,6 +10,7 @@
 #include "option.h"
 #include "parser.h"
 
+#include <sstream>
 #include <string>
 
 namespace argumentum {
@@ -81,28 +82,62 @@ ARGUMENTUM_INLINE ArgumentHelpResult ArgumentDescriber::describeCommand(
 }
 
 ARGUMENTUM_INLINE std::string ArgumentDescriber::describeArguments(
-      const Option& option, const std::string& metavar ) const
+      const Option& option, const std::vector<std::string>& metavars ) const
 {
-   std::string res;
+   auto getMetavar( [&]( unsigned ivar ) {
+      if ( metavars.empty() )
+         return option.getHelpName();
+
+      if ( ivar >= metavars.size() )
+         return metavars.back();
+      return metavars[ivar];
+   } );
+
+   unsigned closecount = 0;
+   auto getOpenBracket( [&closecount]( std::stringstream& res ) {
+      ++closecount;
+      return res.tellp() == 0 ? "[" : " [";
+   } );
+
+   unsigned ivar = 0;
    auto [mmin, mmax] = option.getArgumentCounts();
+   if ( mmin < 0 )
+      mmin = 0;
+
+   std::stringstream res;
    if ( mmin > 0 ) {
-      res = metavar;
-      for ( int i = 1; i < mmin; ++i )
-         res = res + " " + metavar;
-   }
-   if ( mmax < mmin ) {
-      auto opt = ( res.empty() ? "[" : " [" ) + metavar + " ...]";
-      res += opt;
-   }
-   else if ( mmax - mmin == 1 )
-      res += "[" + metavar + "]";
-   else if ( mmax > mmin ) {
-      auto opt =
-            ( res.empty() ? "[" : " [" ) + metavar + " {0.." + std::to_string( mmax - mmin ) + "}]";
-      res += opt;
+      // Mandatory parameters
+      res << getMetavar( 0 );
+      for ( ivar = 1; ivar < unsigned( mmin ); ++ivar )
+         res << " " << getMetavar( ivar );
    }
 
-   return res;
+   if ( mmax < mmin ) {
+      // Optional parameters, unlimited
+      while ( ivar < metavars.size() - 1 )
+         res << getOpenBracket( res ) << getMetavar( ivar++ );
+
+      res << getOpenBracket( res ) << getMetavar( ivar ) << " ...";
+   }
+   else if ( mmax > mmin ) {
+      // Optional parameters, limited
+      auto limit = std::min<size_t>( mmax - 1, metavars.size() - 1 );
+      while ( ivar < limit )
+         res << getOpenBracket( res ) << getMetavar( ivar++ );
+
+      auto remaining = mmax - limit;
+      if ( remaining == 1 )
+         res << getOpenBracket( res ) + getMetavar( ivar );
+      else {
+         res << getOpenBracket( res ) << getMetavar( ivar ) << " {0.."
+             << std::to_string( remaining ) << "}";
+      }
+   }
+
+   if ( closecount > 0 )
+      res << std::string( closecount, ']' );
+
+   return res.str();
 }
 
 }   // namespace argumentum

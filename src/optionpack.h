@@ -15,6 +15,7 @@ class ParameterConfig;
 class Options
 {
 public:
+   virtual ~Options() = default;
    virtual void add_parameters( ParameterConfig& args )
    {
       // TODO (mmahnic): make method add_parameters( ParameterConfig) abstract.

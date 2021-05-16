@@ -45,9 +45,9 @@ public:
       else {
          using wrap_type = ConvertedValue<val_vector>;
          pValue = std::make_shared<wrap_type>( value );
-      }
 
-      return Option( getValueForKnownTarget( pValue ), Option::vectorValue );
+         return Option( getValueForKnownTarget( pValue ), Option::vectorValue );
+      }
    }
 
 private:

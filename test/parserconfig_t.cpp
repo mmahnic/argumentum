@@ -55,5 +55,5 @@ TEST( ParserConfig, shouldChangeHelpFormatter )
    auto res = parser.parse_args( { "--help" } );
    EXPECT_FALSE( static_cast<bool>( res ) );
 
-   EXPECT_EQ( 1, pFormatter->formatCount );
+   EXPECT_EQ( 1U, pFormatter->formatCount );
 }
