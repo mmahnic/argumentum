@@ -24,3 +24,5 @@
 
 - It is possible to collect parameters that will be forwarded to a subprocess.  The syntax is
   similar to the one used in GCC.
+- Multiple names can be defined for meta-varaiables in `metavar()` by specifying a list of strings
+  instead of a simple string.
