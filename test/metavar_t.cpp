@@ -19,7 +19,7 @@ std::optional<std::string> getMetavarHelpLine(
    std::string str;
    auto parser = argument_parser{};
    auto params = parser.params();
-   auto& bees = params.add_parameter( str, "--bees" ).metavar( metavarDef );
+   auto& bees = params.add_parameter( str, "--bees" ).metavar( metavarDef ).required( true );
    if ( minargs < maxargs )
       // only one of minargs, maxargs or nargs can be used
       bees.maxargs( maxargs );
@@ -117,7 +117,7 @@ TEST( HelpMetavar, shouldDisplayExcessiveMetavarsAsOptional_WithExactMax )
 
    ASSERT_TRUE( oLine.has_value() );
    auto argspos = oLine->find( "[FLY [WORK [EAT [DRINK [SLEEP]]]]]" );
-   ASSERT_NE( std::string::npos, argspos );
+   ASSERT_NE( std::string::npos, argspos ) << *oLine << "\n";
    EXPECT_LT( oLine->find( "--bees" ), argspos );
 }
 
@@ -128,7 +128,7 @@ TEST( HelpMetavar, shouldDisplayExcessiveMetavarsAsOptional_WithLowerMax )
 
    ASSERT_TRUE( oLine.has_value() );
    auto argspos = oLine->find( "[FLY [WORK [EAT [DRINK]]]]" );
-   ASSERT_NE( std::string::npos, argspos );
+   ASSERT_NE( std::string::npos, argspos ) << *oLine << "\n";
    EXPECT_LT( oLine->find( "--bees" ), argspos );
 }
 
@@ -139,7 +139,7 @@ TEST( HelpMetavar, shouldDisplayExcessiveMetavarsAsOptional_WithLowerMaxAtMinPlu
 
    ASSERT_TRUE( oLine.has_value() );
    auto argspos = oLine->find( "[FLY]" );
-   ASSERT_NE( std::string::npos, argspos );
+   ASSERT_NE( std::string::npos, argspos ) << *oLine << "\n";
    EXPECT_LT( oLine->find( "--bees" ), argspos );
 }
 
@@ -149,7 +149,7 @@ TEST( HelpMetavar, shouldDisplayExcessiveMetavarsAsOptional_WithHigherMax )
    auto oLine = getMetavarHelpLine( -1, 6, { "FLY", "WORK", "EAT", "DRINK", "SLEEP" } );
 
    ASSERT_TRUE( oLine.has_value() );
-   auto argspos = oLine->find( "[FLY [WORK [EAT [DRINK [SLEEP{0-2}]]]]]" );
-   ASSERT_NE( std::string::npos, argspos );
+   auto argspos = oLine->find( "[FLY [WORK [EAT [DRINK [SLEEP {0..2}]]]]]" );
+   ASSERT_NE( std::string::npos, argspos ) << *oLine << "\n";
    EXPECT_LT( oLine->find( "--bees" ), argspos );
 }

@@ -101,6 +101,9 @@ ARGUMENTUM_INLINE std::string ArgumentDescriber::describeArguments(
 
    unsigned ivar = 0;
    auto [mmin, mmax] = option.getArgumentCounts();
+   if ( mmin < 0 )
+      mmin = 0;
+
    if ( mmin > 0 ) {
       // Mandatory parameters
       res = getMetavar( 0 );
@@ -120,12 +123,23 @@ ARGUMENTUM_INLINE std::string ArgumentDescriber::describeArguments(
    }
    else {
       // Optional parameters, limited
-      if ( mmax - mmin == 1 )
+      if ( mmax == 1 )
          res += getOpenBracket( res ) + getMetavar( ivar );
       else if ( mmax > mmin ) {
-         auto opt = getOpenBracket( res ) + getMetavar( ivar ) + " {0.."
-               + std::to_string( mmax - mmin ) + "}";
-         res += opt;
+         auto limit = std::min<size_t>( mmax - 1, metavars.size() - 1 );
+         while ( ivar < limit ) {
+            auto opt = getOpenBracket( res ) + getMetavar( ivar );
+            res += opt;
+            ++ivar;
+         }
+         auto remaining = mmax - limit;
+         if ( remaining == 1 )
+            res += getOpenBracket( res ) + getMetavar( ivar );
+         else {
+            auto opt = getOpenBracket( res ) + getMetavar( ivar ) + " {0.."
+                  + std::to_string( remaining ) + "}";
+            res += opt;
+         }
       }
    }
 
