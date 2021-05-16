@@ -12,205 +12,144 @@
 using namespace argumentum;
 using namespace testutil;
 
-TEST( HelpMetavar, shouldChangeOptionMetavarName )
+namespace {
+std::optional<std::string> getMetavarHelpLine(
+      int minargs, int maxargs, std::vector<std::string_view> metavarDef )
 {
    std::string str;
    auto parser = argument_parser{};
    auto params = parser.params();
-   params.add_parameter( str, "--bees" ).minargs( 1 ).metavar( "WORK" );
+   auto& bees = params.add_parameter( str, "--bees" ).metavar( metavarDef );
+   if ( minargs < maxargs )
+      // only one of minargs, maxargs or nargs can be used
+      bees.maxargs( maxargs );
+   else if ( minargs == maxargs )
+      bees.nargs( minargs );
+   else
+      bees.minargs( minargs );
 
    auto formatter = HelpFormatter();
-   formatter.setTextWidth( 60 );
+   formatter.setTextWidth( 80 );
    formatter.setMaxDescriptionIndent( 20 );
    auto help = getTestHelp( parser, formatter );
    auto lines = splitLines( help, KEEPEMPTY );
 
    for ( auto line : lines ) {
       auto optpos = line.find( "--bees" );
-      if ( optpos == std::string::npos )
-         continue;
-
-      auto argspos = line.find( "WORK [WORK ...]" );
-      ASSERT_NE( std::string::npos, argspos );
-      EXPECT_LT( optpos, argspos );
+      if ( optpos != std::string::npos )
+         return std::string( line );
    }
+
+   return {};
+}
+}   // namespace
+
+TEST( HelpMetavar, shouldUseDefaultMetavarName )
+{
+   // .minargs(1)
+   auto oLine = getMetavarHelpLine( 1, -1, {} );
+
+   ASSERT_TRUE( oLine.has_value() );
+   auto argspos = oLine->find( "BEES [BEES ...]" );
+   ASSERT_NE( std::string::npos, argspos );
+   EXPECT_LT( oLine->find( "--bees" ), argspos );
+}
+
+TEST( HelpMetavar, shouldChangeOptionMetavarName )
+{
+   // .minargs(1)
+   auto oLine = getMetavarHelpLine( 1, -1, { "WORK" } );
+
+   ASSERT_TRUE( oLine.has_value() );
+   auto argspos = oLine->find( "WORK [WORK ...]" );
+   ASSERT_NE( std::string::npos, argspos );
+   EXPECT_LT( oLine->find( "--bees" ), argspos );
 }
 
 TEST( HelpMetavar, shouldSupportMultipleMetavarsInOption )
 {
-   std::string str;
-   auto parser = argument_parser{};
-   auto params = parser.params();
-   params.add_parameter( str, "--bees" ).nargs( 2 ).metavar( { "FLY", "WORK" } );
+   // .nargs(2)
+   auto oLine = getMetavarHelpLine( 2, 2, { "FLY", "WORK" } );
 
-   auto formatter = HelpFormatter();
-   formatter.setTextWidth( 60 );
-   formatter.setMaxDescriptionIndent( 20 );
-   auto help = getTestHelp( parser, formatter );
-   auto lines = splitLines( help, KEEPEMPTY );
-
-   for ( auto line : lines ) {
-      auto optpos = line.find( "--bees" );
-      if ( optpos == std::string::npos )
-         continue;
-
-      auto argspos = line.find( "FLY WORK" );
-      ASSERT_NE( std::string::npos, argspos );
-      EXPECT_LT( optpos, argspos );
-   }
+   ASSERT_TRUE( oLine.has_value() );
+   auto argspos = oLine->find( "FLY WORK" );
+   ASSERT_NE( std::string::npos, argspos );
+   EXPECT_LT( oLine->find( "--bees" ), argspos );
 }
 
 TEST( HelpMetavar, shouldReuseTheLastMetavarInOption )
 {
-   std::string str;
-   auto parser = argument_parser{};
-   auto params = parser.params();
-   params.add_parameter( str, "--bees" ).nargs( 5 ).metavar( { "FLY", "WORK" } );
+   // .nargs(5)
+   auto oLine = getMetavarHelpLine( 5, 5, { "FLY", "WORK" } );
 
-   auto formatter = HelpFormatter();
-   formatter.setTextWidth( 60 );
-   formatter.setMaxDescriptionIndent( 20 );
-   auto help = getTestHelp( parser, formatter );
-   auto lines = splitLines( help, KEEPEMPTY );
-
-   for ( auto line : lines ) {
-      auto optpos = line.find( "--bees" );
-      if ( optpos == std::string::npos )
-         continue;
-
-      auto argspos = line.find( "FLY WORK WORK WORK WORK" );
-      ASSERT_NE( std::string::npos, argspos );
-      EXPECT_LT( optpos, argspos );
-   }
+   ASSERT_TRUE( oLine.has_value() );
+   auto argspos = oLine->find( "FLY WORK WORK WORK WORK" );
+   ASSERT_NE( std::string::npos, argspos );
+   EXPECT_LT( oLine->find( "--bees" ), argspos );
 }
 
 TEST( HelpMetavar, shouldReuseTheLastMetavarInOptionWithMinArgs )
 {
-   std::string str;
-   auto parser = argument_parser{};
-   auto params = parser.params();
-   params.add_parameter( str, "--bees" ).minargs( 3 ).metavar( { "FLY", "WORK" } );
+   // .minargs(3)
+   auto oLine = getMetavarHelpLine( 3, -1, { "FLY", "WORK" } );
 
-   auto formatter = HelpFormatter();
-   formatter.setTextWidth( 60 );
-   formatter.setMaxDescriptionIndent( 20 );
-   auto help = getTestHelp( parser, formatter );
-   auto lines = splitLines( help, KEEPEMPTY );
-
-   for ( auto line : lines ) {
-      auto optpos = line.find( "--bees" );
-      if ( optpos == std::string::npos )
-         continue;
-
-      auto argspos = line.find( "FLY WORK WORK [WORK ...]" );
-      ASSERT_NE( std::string::npos, argspos );
-      EXPECT_LT( optpos, argspos );
-   }
+   ASSERT_TRUE( oLine.has_value() );
+   auto argspos = oLine->find( "FLY WORK WORK [WORK ...]" );
+   ASSERT_NE( std::string::npos, argspos );
+   EXPECT_LT( oLine->find( "--bees" ), argspos );
 }
 
 TEST( HelpMetavar, shouldDisplayExcessiveMetavarsAsOptional )
 {
-   std::string str;
-   auto parser = argument_parser{};
-   auto params = parser.params();
-   params.add_parameter( str, "--bees" )
-         .minargs( 2 )
-         .metavar( { "FLY", "WORK", "EAT", "DRINK", "SLEEP" } );
+   // .minargs(2)
+   auto oLine = getMetavarHelpLine( 2, -1, { "FLY", "WORK", "EAT", "DRINK", "SLEEP" } );
 
-   auto formatter = HelpFormatter();
-   formatter.setTextWidth( 60 );
-   formatter.setMaxDescriptionIndent( 20 );
-   auto help = getTestHelp( parser, formatter );
-   auto lines = splitLines( help, KEEPEMPTY );
-
-   for ( auto line : lines ) {
-      auto optpos = line.find( "--bees" );
-      if ( optpos == std::string::npos )
-         continue;
-
-      auto argspos = line.find( "FLY WORK [EAT [DRINK [SLEEP ...]]]" );
-      ASSERT_NE( std::string::npos, argspos );
-      EXPECT_LT( optpos, argspos );
-   }
+   ASSERT_TRUE( oLine.has_value() );
+   auto argspos = oLine->find( "FLY WORK [EAT [DRINK [SLEEP ...]]]" );
+   ASSERT_NE( std::string::npos, argspos );
+   EXPECT_LT( oLine->find( "--bees" ), argspos );
 }
 
 TEST( HelpMetavar, shouldDisplayExcessiveMetavarsAsOptional_WithExactMax )
 {
-   std::string str;
-   auto parser = argument_parser{};
-   auto params = parser.params();
-   params.add_parameter( str, "--bees" )
-         .minargs( 2 )
-         .maxargs( 5 )
-         .metavar( { "FLY", "WORK", "EAT", "DRINK", "SLEEP" } );
+   // .maxargs(5)
+   auto oLine = getMetavarHelpLine( -1, 5, { "FLY", "WORK", "EAT", "DRINK", "SLEEP" } );
 
-   auto formatter = HelpFormatter();
-   formatter.setTextWidth( 60 );
-   formatter.setMaxDescriptionIndent( 20 );
-   auto help = getTestHelp( parser, formatter );
-   auto lines = splitLines( help, KEEPEMPTY );
-
-   for ( auto line : lines ) {
-      auto optpos = line.find( "--bees" );
-      if ( optpos == std::string::npos )
-         continue;
-
-      auto argspos = line.find( "FLY WORK [EAT [DRINK [SLEEP]]]" );
-      ASSERT_NE( std::string::npos, argspos );
-      EXPECT_LT( optpos, argspos );
-   }
+   ASSERT_TRUE( oLine.has_value() );
+   auto argspos = oLine->find( "[FLY [WORK [EAT [DRINK [SLEEP]]]]]" );
+   ASSERT_NE( std::string::npos, argspos );
+   EXPECT_LT( oLine->find( "--bees" ), argspos );
 }
 
 TEST( HelpMetavar, shouldDisplayExcessiveMetavarsAsOptional_WithLowerMax )
 {
-   std::string str;
-   auto parser = argument_parser{};
-   auto params = parser.params();
-   params.add_parameter( str, "--bees" )
-         .minargs( 2 )
-         .maxargs( 4 )
-         .metavar( { "FLY", "WORK", "EAT", "DRINK", "SLEEP" } );
+   // .maxargs(4)
+   auto oLine = getMetavarHelpLine( -1, 4, { "FLY", "WORK", "EAT", "DRINK", "SLEEP" } );
 
-   auto formatter = HelpFormatter();
-   formatter.setTextWidth( 60 );
-   formatter.setMaxDescriptionIndent( 20 );
-   auto help = getTestHelp( parser, formatter );
-   auto lines = splitLines( help, KEEPEMPTY );
+   ASSERT_TRUE( oLine.has_value() );
+   auto argspos = oLine->find( "[FLY [WORK [EAT [DRINK]]]]" );
+   ASSERT_NE( std::string::npos, argspos );
+   EXPECT_LT( oLine->find( "--bees" ), argspos );
+}
 
-   for ( auto line : lines ) {
-      auto optpos = line.find( "--bees" );
-      if ( optpos == std::string::npos )
-         continue;
+TEST( HelpMetavar, shouldDisplayExcessiveMetavarsAsOptional_WithLowerMaxAtMinPlus1 )
+{
+   // .maxargs(1)
+   auto oLine = getMetavarHelpLine( -1, 1, { "FLY", "WORK", "EAT", "DRINK", "SLEEP" } );
 
-      auto argspos = line.find( "FLY WORK [EAT [DRINK]]" );
-      ASSERT_NE( std::string::npos, argspos );
-      EXPECT_LT( optpos, argspos );
-   }
+   ASSERT_TRUE( oLine.has_value() );
+   auto argspos = oLine->find( "[FLY]" );
+   ASSERT_NE( std::string::npos, argspos );
+   EXPECT_LT( oLine->find( "--bees" ), argspos );
 }
 
 TEST( HelpMetavar, shouldDisplayExcessiveMetavarsAsOptional_WithHigherMax )
 {
-   std::string str;
-   auto parser = argument_parser{};
-   auto params = parser.params();
-   params.add_parameter( str, "--bees" )
-         .minargs( 2 )
-         .maxargs( 6 )
-         .metavar( { "FLY", "WORK", "EAT", "DRINK", "SLEEP" } );
+   // .maxargs(6)
+   auto oLine = getMetavarHelpLine( -1, 6, { "FLY", "WORK", "EAT", "DRINK", "SLEEP" } );
 
-   auto formatter = HelpFormatter();
-   formatter.setTextWidth( 60 );
-   formatter.setMaxDescriptionIndent( 20 );
-   auto help = getTestHelp( parser, formatter );
-   auto lines = splitLines( help, KEEPEMPTY );
-
-   for ( auto line : lines ) {
-      auto optpos = line.find( "--bees" );
-      if ( optpos == std::string::npos )
-         continue;
-
-      auto argspos = line.find( "FLY WORK [EAT [DRINK [SLEEP{0-2}]]]" );
-      ASSERT_NE( std::string::npos, argspos );
-      EXPECT_LT( optpos, argspos );
-   }
+   ASSERT_TRUE( oLine.has_value() );
+   auto argspos = oLine->find( "[FLY [WORK [EAT [DRINK [SLEEP{0-2}]]]]]" );
+   ASSERT_NE( std::string::npos, argspos );
+   EXPECT_LT( oLine->find( "--bees" ), argspos );
 }
