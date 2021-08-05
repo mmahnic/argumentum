@@ -190,8 +190,11 @@ ARGUMENTUM_INLINE void argument_parser::reportMissingOptions( ParseResultBuilder
          result.addError( pOption->getHelpName(), MISSING_OPTION );
 
    for ( auto& pOption : mParserDef.mPositional )
+      // A positional option must have enough arguments.
       if ( pOption->needsMoreArguments() )
-         result.addError( pOption->getHelpName(), MISSING_ARGUMENT );
+         // If it is optional, it may have no arguments.
+         if ( pOption->isRequired() || pOption->wasAssigned() )
+            result.addError( pOption->getHelpName(), MISSING_ARGUMENT );
 }
 
 ARGUMENTUM_INLINE bool argument_parser::hasRequiredArguments() const

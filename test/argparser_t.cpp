@@ -247,6 +247,22 @@ TEST( ArgumentParserTest, shouldStorePositionalArgumentsInValues )
    EXPECT_TRUE( vector_eq( { "one", "two", "three" }, strings ) );
 }
 
+TEST( ArgumentParserTest, shouldIgnoreOptionalPositionalArguments )
+{
+   std::vector<std::string> text;
+   std::vector<std::string> data;
+
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( text, "text" ).nargs( 1 );
+   // This is equivalent to .maxargs(1), but was failing
+   params.add_parameter( data, "data" ).nargs( 1 ).required( false );
+
+   auto res = parser.parse_args( { "one" } );
+
+   EXPECT_TRUE( vector_eq( { "one" }, text ) );
+}
+
 TEST( ArgumentParserTest, shouldGroupPositionalArguments )
 {
    std::string strvalue;
