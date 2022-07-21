@@ -26,3 +26,5 @@
   similar to the one used in GCC.
 - Multiple names can be defined for meta-varaiables in `metavar()` by specifying a list of strings
   instead of a simple string.
+- Added the method `add` as an alias for `add_parameter`.
+- The method `absent` is now an alias for `default_value`.
