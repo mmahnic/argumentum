@@ -1153,6 +1153,23 @@ TEST( ArgumentParserTest, shouldAssignDefaultValueWithAction )
    EXPECT_EQ( 3, num );
 }
 
+TEST( ArgumentParserTest, shouldSupportAlternativeMethodNames )
+{
+   auto parser = argument_parser{};
+   auto params = parser.params();
+
+   // add is an alias for add_parameter
+   int num = 5;
+   params.add_parameter( num, "--num" ).nargs( 1 );
+   params.add( num, "--numtoo" ).nargs( 1 );
+
+   // absent is an alias for default_value
+   int abs1 = 5;
+   int abs2 = 5;
+   params.add( abs1, "--abs1" ).nargs( 1 ).required( false ).default_value( 3 );
+   params.add( abs2, "--abs2" ).nargs( 1 ).required( false ).absent( 3 );
+}
+
 // If two options have the same target, they should be referenced by the same
 // Value.  We can detect that by setting the default vaule on one of the options
 // while setting the other one through arguments.

@@ -57,6 +57,18 @@ public:
    }
 
    /**
+    * Add an argument with names @p name and @p altName and store the reference
+    * to @p target value that will receive the parsed parameter(s).  This is an
+    * alias for `add_parameter`.
+    */
+   template<typename TTarget>
+   OptionConfigA<TTarget> add(
+         TTarget& target, const std::string& name = "", const std::string& altName = "" )
+   {
+      return add_parameter( target, name, altName );
+   }
+
+   /**
     * Add the @p pOptions structure and call its add_parameters method to add
     * the arguments to the parser.  The pointer to @p pOptions is stored in the
     * parser so that the structure outlives the parser.
