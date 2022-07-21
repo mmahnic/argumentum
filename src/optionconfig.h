@@ -210,8 +210,8 @@ public:
 
    // Define the value that will be assigned to the target if the option is
    // not present in arguments.  If multiple options that are configured with
-   // absent() have the same target, the result is undefined.
-   this_t& absent( const TTarget& defaultValue )
+   // default_value() have the same target, the result is undefined.
+   this_t& default_value( const TTarget& defaultValue )
    {
       auto wrapDefault = [=]( Value& value ) {
          auto pConverted = ConvertedValue<TTarget>::value_cast( value );
@@ -224,8 +224,8 @@ public:
 
    // Define the action that will assign the default value to the target if
    // the option is not present in arguments.  If multiple options that are
-   // configured with absent() have the same target, the result is undefined.
-   this_t& absent( assign_default_action_t action )
+   // configured with default_value() have the same target, the result is undefined.
+   this_t& default_value( assign_default_action_t action )
    {
       auto wrapDefault = [=]( Value& value ) {
          auto pConverted = ConvertedValue<TTarget>::value_cast( value );
@@ -234,6 +234,21 @@ public:
       };
       OptionConfig::getOption().setAssignDefaultAction( wrapDefault );
       return *this;
+   }
+
+   // Define the value that will be assigned to the target if the option is
+   // not present in arguments.  This is an alias for `default_value`.
+   this_t& absent( const TTarget& defaultValue )
+   {
+      return default_value( defaultValue );
+   }
+
+   // Define the action that will assign the default value to the target if
+   // the option is not present in arguments.  This is an alias for
+   // `default_value`.
+   this_t& absent( assign_default_action_t action )
+   {
+      return default_value( action );
    }
 };
 
