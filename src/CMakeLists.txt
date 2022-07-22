@@ -1,5 +1,6 @@
 
 set( static_library_name ${ARGUMENTUM_STATIC_NAME} )
+set( module_name ${ARGUMENTUM_MODULE_NAME} )
 set( internal_library_name ${ARGUMENTUM_INTERNAL_NAME} )
 set( target_list_name ${PROJECT_NAME}Targets )
 
@@ -19,6 +20,16 @@ if ( BUILD_STATIC_LIBS )
       EXPORT ${target_list_name}
       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
       LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      )
+endif()
+
+if ( BUILD_MODULE )
+   add_library( ${module_name} STATIC
+      argumentum.ixx
+      )
+   set_property(TARGET ${module_name} PROPERTY CXX_STANDARD 20)
+   target_compile_options( ${module_name} PRIVATE
+      $<$<CXX_COMPILER_ID:MSVC>:/experimental:module>
       )
 endif()
 
