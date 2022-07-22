@@ -8,7 +8,9 @@
 #include "exceptions.h"
 #include "group.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <cstdarg>
+#endif
 
 namespace argumentum {
 

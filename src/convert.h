@@ -3,6 +3,7 @@
 
 #pragma once
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <cerrno>
 #include <limits>
 #include <optional>
@@ -10,6 +11,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#endif
 
 namespace argumentum {
 

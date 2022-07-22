@@ -10,4 +10,4 @@ import std.filesystem;
 import std.memory;
 import std.regex;
 
-// #include "argparser.cpp"
+#include "argparser.cpp"

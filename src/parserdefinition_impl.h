@@ -6,7 +6,9 @@
 #include "command.h"
 #include "option.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <string_view>
+#endif
 
 namespace argumentum {
 

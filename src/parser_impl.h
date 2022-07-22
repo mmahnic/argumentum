@@ -10,7 +10,9 @@
 #include "parser.h"
 #include "parseresult.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <regex>
+#endif
 
 namespace argumentum {
 

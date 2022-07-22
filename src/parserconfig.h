@@ -5,10 +5,12 @@
 
 #include "filesystem.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <memory>
 #include <ostream>
 #include <string>
 #include <string_view>
+#endif
 
 namespace argumentum {
 

@@ -5,10 +5,12 @@
 
 #include "value.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
+#endif
 
 namespace argumentum {
 

@@ -3,7 +3,9 @@
 
 #pragma once
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <iostream>
+#endif
 
 namespace argumentum {
 

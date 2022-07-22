@@ -3,8 +3,10 @@
 
 #pragma once
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <stdexcept>
 #include <string>
+#endif
 
 namespace argumentum {
 

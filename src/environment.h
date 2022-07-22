@@ -5,8 +5,10 @@
 
 #include "parserconfig.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <memory>
 #include <string_view>
+#endif
 
 namespace argumentum {
 

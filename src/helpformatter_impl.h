@@ -10,7 +10,9 @@
 #include "parser.h"
 #include "writer.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <sstream>
+#endif
 
 namespace argumentum {
 

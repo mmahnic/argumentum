@@ -5,11 +5,13 @@
 
 #include "iformathelp.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <vector>
+#endif
 
 namespace argumentum {
 

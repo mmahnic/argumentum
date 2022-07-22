@@ -7,10 +7,12 @@
 #include "option.h"
 #include "value.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <cassert>
 #include <map>
 #include <memory>
 #include <vector>
+#endif
 
 namespace argumentum {
 

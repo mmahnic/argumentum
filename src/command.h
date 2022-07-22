@@ -3,12 +3,14 @@
 
 #pragma once
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <cassert>
 #include <functional>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
+#endif
 
 namespace argumentum {
 

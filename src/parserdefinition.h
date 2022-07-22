@@ -5,11 +5,13 @@
 
 #include "parserconfig.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <map>
 #include <set>
 #include <string>
 #include <string_view>
 #include <vector>
+#endif
 
 namespace argumentum {
 

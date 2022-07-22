@@ -5,7 +5,9 @@
 
 #include "optionconfig.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <cassert>
+#endif
 
 namespace argumentum {
 

@@ -6,8 +6,10 @@
 #include "convert.h"
 #include "notifier.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <functional>
 #include <string>
+#endif
 
 namespace argumentum {
 

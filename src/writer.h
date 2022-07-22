@@ -3,11 +3,13 @@
 
 #pragma once
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <ostream>
 #include <regex>
 #include <string>
 #include <string_view>
 #include <vector>
+#endif
 
 namespace argumentum {
 

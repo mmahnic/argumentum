@@ -5,9 +5,11 @@
 
 #include "command.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <string>
 #include <string_view>
 #include <vector>
+#endif
 
 namespace argumentum {
 

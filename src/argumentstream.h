@@ -3,11 +3,13 @@
 
 #pragma once
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <functional>
 #include <istream>
 #include <memory>
 #include <optional>
 #include <string_view>
+#endif
 
 namespace argumentum {
 

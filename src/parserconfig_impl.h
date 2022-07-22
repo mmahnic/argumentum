@@ -6,9 +6,11 @@
 #include "helpformatter.h"
 #include "parserconfig.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <ostream>
 #include <string>
 #include <string_view>
+#endif
 
 namespace argumentum {
 

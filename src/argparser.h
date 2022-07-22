@@ -16,6 +16,7 @@
 #include "parserdefinition.h"
 #include "parseresult.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <algorithm>
 #include <cassert>
 #include <cctype>
@@ -26,6 +27,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#endif
 
 namespace argumentum {
 

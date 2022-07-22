@@ -10,8 +10,10 @@
 #include "optionfactory.h"
 #include "optionpack.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <memory>
 #include <string>
+#endif
 
 namespace argumentum {
 

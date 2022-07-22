@@ -5,7 +5,9 @@
 
 #include "iformathelp.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <vector>
+#endif
 
 namespace argumentum {
 

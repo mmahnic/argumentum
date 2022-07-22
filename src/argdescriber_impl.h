@@ -10,8 +10,10 @@
 #include "option.h"
 #include "parser.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <sstream>
 #include <string>
+#endif
 
 namespace argumentum {
 

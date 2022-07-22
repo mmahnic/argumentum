@@ -5,9 +5,11 @@
 
 #include "argumentstream.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
 #include <fstream>
 #include <memory>
 #include <string>
+#endif
 
 namespace argumentum {
 
