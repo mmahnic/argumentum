@@ -8,6 +8,8 @@
 #include "value.h"
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <cassert>
 #include <map>
 #include <memory>
@@ -16,6 +18,7 @@
 
 namespace argumentum {
 
+ARGUMENTUM_EXPORT
 class OptionFactory
 {
    std::map<TargetId, std::shared_ptr<Value>> mValueFromTargetId;

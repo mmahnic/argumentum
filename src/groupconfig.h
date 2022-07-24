@@ -4,6 +4,8 @@
 #pragma once
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <memory>
 #include <string_view>
 #endif
@@ -12,6 +14,7 @@ namespace argumentum {
 
 class OptionGroup;
 
+ARGUMENTUM_EXPORT
 class GroupConfig
 {
    std::shared_ptr<OptionGroup> mpGroup;

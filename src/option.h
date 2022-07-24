@@ -6,6 +6,8 @@
 #include "value.h"
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <memory>
 #include <string>
 #include <string_view>
@@ -16,6 +18,7 @@ namespace argumentum {
 
 class OptionGroup;
 
+ARGUMENTUM_EXPORT
 class Option
 {
    friend class OptionFactory;

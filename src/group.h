@@ -4,6 +4,8 @@
 #pragma once
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <memory>
 #include <string>
 #include <string_view>
@@ -14,6 +16,7 @@ namespace argumentum {
 // NOTE: An option group with the same name can be defined in multiple
 // places.  When it is configured multiple times the last configured values
 // will be used, except for setRequired().
+ARGUMENTUM_EXPORT
 class OptionGroup
 {
 private:

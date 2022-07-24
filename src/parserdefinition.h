@@ -6,6 +6,8 @@
 #include "parserconfig.h"
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <map>
 #include <set>
 #include <string>
@@ -19,6 +21,7 @@ class Option;
 class OptionGroup;
 class Command;
 
+ARGUMENTUM_EXPORT
 class ParserDefinition
 {
    friend class ParameterConfig;

@@ -4,6 +4,8 @@
 #pragma once
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <memory>
 #include <string_view>
 #endif
@@ -12,6 +14,7 @@ namespace argumentum {
 
 class Command;
 
+ARGUMENTUM_EXPORT
 class CommandConfig
 {
    std::shared_ptr<Command> mpCommand;

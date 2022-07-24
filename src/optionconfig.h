@@ -5,6 +5,10 @@
 
 #include "option.h"
 
+#ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+#endif
+
 namespace argumentum {
 
 class ParameterConfig;
@@ -12,6 +16,7 @@ class ParameterConfig;
 /**
  * OptionConfig is used to configure an option after an option was created with add_argument.
  */
+ARGUMENTUM_EXPORT
 class OptionConfig
 {
    friend class ::argumentum::ParameterConfig;

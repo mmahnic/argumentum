@@ -11,6 +11,8 @@
 #include "optionpack.h"
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <memory>
 #include <string>
 #endif
@@ -20,6 +22,7 @@ namespace argumentum {
 class argument_parser;
 class ParserDefinition;
 
+ARGUMENTUM_EXPORT
 class ParameterConfig
 {
    friend class argument_parser;

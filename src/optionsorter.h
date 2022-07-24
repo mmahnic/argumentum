@@ -6,11 +6,14 @@
 #include "iformathelp.h"
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <vector>
 #endif
 
 namespace argumentum {
 
+ARGUMENTUM_EXPORT
 class OptionSorter
 {
 public:

@@ -3,5 +3,7 @@
 
 #pragma once
 
+#define ARGUMENTUM_EXPORT
+
 #include "../../src/argparser.h"
 #include "../../src/exceptions.h"

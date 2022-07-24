@@ -4,6 +4,8 @@
 #pragma once
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <functional>
 #include <istream>
 #include <memory>
@@ -13,6 +15,7 @@
 
 namespace argumentum {
 
+ARGUMENTUM_EXPORT
 class ArgumentStream
 {
 public:

@@ -4,6 +4,8 @@
 #pragma once
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <string>
 #include <vector>
 #endif
@@ -12,6 +14,7 @@ namespace argumentum {
 
 class ParserDefinition;
 
+ARGUMENTUM_EXPORT
 struct ArgumentHelpResult
 {
    std::string help_name;
@@ -42,6 +45,7 @@ struct ArgumentHelpResult
    }
 };
 
+ARGUMENTUM_EXPORT
 class IFormatHelp
 {
 public:

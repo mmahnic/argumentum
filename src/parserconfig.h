@@ -6,6 +6,8 @@
 #include "filesystem.h"
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <memory>
 #include <ostream>
 #include <string>
@@ -16,6 +18,7 @@ namespace argumentum {
 
 class IFormatHelp;
 
+ARGUMENTUM_EXPORT
 class ParserConfig
 {
 public:

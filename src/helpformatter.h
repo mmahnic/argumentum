@@ -6,6 +6,8 @@
 #include "iformathelp.h"
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
@@ -17,6 +19,7 @@ namespace argumentum {
 
 class Writer;
 
+ARGUMENTUM_EXPORT
 class HelpFormatter : public IFormatHelp
 {
    // The number of spaces before argument names.

@@ -3,6 +3,8 @@
 
 #pragma once
 
+#define ARGUMENTUM_EXPORT
+
 #include "../../src/argparser.h"
 
 #define ARGUMENTUM_INLINE inline

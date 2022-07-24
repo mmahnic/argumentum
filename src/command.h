@@ -4,6 +4,8 @@
 #pragma once
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <cassert>
 #include <functional>
 #include <memory>
@@ -17,6 +19,7 @@ namespace argumentum {
 class CommandOptions;
 
 // An internal definition of a command.
+ARGUMENTUM_EXPORT
 class Command
 {
 public:

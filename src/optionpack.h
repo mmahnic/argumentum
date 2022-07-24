@@ -4,6 +4,8 @@
 #pragma once
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <string>
 #include <string_view>
 #endif
@@ -14,6 +16,7 @@ class ParseResult;
 class argument_parser;
 class ParameterConfig;
 
+ARGUMENTUM_EXPORT
 class Options
 {
 public:
@@ -37,6 +40,7 @@ public:
 #undef ARGUMENTUM_DEPRECATED
 };
 
+ARGUMENTUM_EXPORT
 class CommandOptions : public Options
 {
    std::string mName;

@@ -6,6 +6,8 @@
 #include "parserconfig.h"
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <memory>
 #include <string_view>
 #endif
@@ -16,6 +18,7 @@ class Option;
 class ParseResultBuilder;
 class ParserDefinition;
 
+ARGUMENTUM_EXPORT
 class Environment
 {
    const Option& mOption;

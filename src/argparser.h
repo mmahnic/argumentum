@@ -17,6 +17,8 @@
 #include "parseresult.h"
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cctype>
@@ -31,6 +33,7 @@
 
 namespace argumentum {
 
+ARGUMENTUM_EXPORT
 class argument_parser
 {
    friend class Parser;

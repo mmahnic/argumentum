@@ -7,6 +7,8 @@
 #include "parserdefinition.h"
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <set>
 #include <string>
 #include <string_view>
@@ -21,6 +23,7 @@ class ParseResultBuilder;
 class ArgumentStream;
 enum class EArgumentType;
 
+ARGUMENTUM_EXPORT
 class Parser
 {
    const ParserDefinition& mParserDef;

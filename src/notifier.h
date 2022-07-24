@@ -4,11 +4,14 @@
 #pragma once
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <iostream>
 #endif
 
 namespace argumentum {
 
+ARGUMENTUM_EXPORT
 class Notifier
 {
 public:

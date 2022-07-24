@@ -7,6 +7,8 @@
 #include "notifier.h"
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <functional>
 #include <string>
 #endif
@@ -39,6 +41,7 @@ using AssignAction =
  */
 using AssignDefaultAction = std::function<void( Value& target )>;
 
+ARGUMENTUM_EXPORT
 class Value
 {
    int mAssignCount = 0;
@@ -66,6 +69,7 @@ protected:
    virtual void doReset();
 };
 
+ARGUMENTUM_EXPORT
 class VoidValue : public Value
 {
 public:
@@ -79,6 +83,7 @@ protected:
 template<typename T>
 class OptionConfigA;
 
+ARGUMENTUM_EXPORT
 template<typename TTarget>
 class ConvertedValue : public Value
 {

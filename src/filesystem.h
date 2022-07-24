@@ -6,6 +6,8 @@
 #include "argumentstream.h"
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <fstream>
 #include <memory>
 #include <string>
@@ -14,6 +16,7 @@
 namespace argumentum {
 
 // A virtual filesystem for opening streams of arguments.
+ARGUMENTUM_EXPORT
 class Filesystem
 {
 public:
@@ -21,6 +24,7 @@ public:
    virtual std::unique_ptr<ArgumentStream> open( const std::string& filename ) = 0;
 };
 
+ARGUMENTUM_EXPORT
 class DefaultFilesystem : public Filesystem
 {
 public:

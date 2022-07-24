@@ -6,6 +6,8 @@
 #include "command.h"
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <string>
 #include <string_view>
 #include <vector>
@@ -14,6 +16,7 @@
 namespace argumentum {
 
 // Errors known by the parser
+ARGUMENTUM_EXPORT
 enum EError {
    // The option is not known by the argument parser.
    UNKNOWN_OPTION,
@@ -41,6 +44,7 @@ enum EError {
    INCLUDE_TOO_DEEP
 };
 
+ARGUMENTUM_EXPORT
 struct ParseError
 {
    const std::string option;
@@ -54,6 +58,7 @@ struct ParseError
    void describeError( std::ostream& stream ) const;
 };
 
+ARGUMENTUM_EXPORT
 class ParseResult
 {
    friend class ParseResultBuilder;
@@ -103,6 +108,7 @@ private:
    void clear();
 };
 
+ARGUMENTUM_EXPORT
 class ParseResultBuilder
 {
    ParseResult mResult;

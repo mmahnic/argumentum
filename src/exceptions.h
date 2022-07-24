@@ -4,12 +4,15 @@
 #pragma once
 
 #ifndef ARGUMENTUM_BUILD_MODULE
+#include "nomodule.h"
+
 #include <stdexcept>
 #include <string>
 #endif
 
 namespace argumentum {
 
+ARGUMENTUM_EXPORT
 class InvalidChoiceError : public std::invalid_argument
 {
 public:
@@ -18,6 +21,7 @@ public:
    {}
 };
 
+ARGUMENTUM_EXPORT
 class UnsupportedTargetType : public std::invalid_argument
 {
 public:
@@ -26,6 +30,7 @@ public:
    {}
 };
 
+ARGUMENTUM_EXPORT
 class UncheckedParseResult : public std::exception
 {
 public:
@@ -35,6 +40,7 @@ public:
    }
 };
 
+ARGUMENTUM_EXPORT
 class MixingGroupTypes : public std::runtime_error
 {
 public:
@@ -43,6 +49,7 @@ public:
    {}
 };
 
+ARGUMENTUM_EXPORT
 class RequiredExclusiveOption : public std::runtime_error
 {
 public:
@@ -52,6 +59,7 @@ public:
    {}
 };
 
+ARGUMENTUM_EXPORT
 class DuplicateOption : public std::runtime_error
 {
 public:
@@ -61,6 +69,7 @@ public:
    {}
 };
 
+ARGUMENTUM_EXPORT
 class DuplicateCommand : public std::runtime_error
 {
 public:
@@ -69,6 +78,7 @@ public:
    {}
 };
 
+ARGUMENTUM_EXPORT
 class MissingCommandOptions : public std::runtime_error
 {
 public:
@@ -77,6 +87,7 @@ public:
    {}
 };
 
+ARGUMENTUM_EXPORT
 class MissingFilesystem : public std::exception
 {
 public:
@@ -86,6 +97,7 @@ public:
    }
 };
 
+ARGUMENTUM_EXPORT
 class IncludeDepthExceeded : public std::runtime_error
 {
 public:
