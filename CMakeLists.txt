@@ -45,5 +45,6 @@ if( ARGUMENTUM_BUILD_TESTS )
    add_subdirectory( test )
    add_subdirectory( test/staticlib )
    add_subdirectory( test/headerlib )
+   # add_subdirectory( test/module )
 endif()
 

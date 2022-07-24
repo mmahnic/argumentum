@@ -9,6 +9,13 @@ if ( BUILD_STATIC_LIBS )
    add_library( ${static_library_name} STATIC
       argparser.cpp
       )
+   target_compile_definitions(${static_library_name} PRIVATE 
+        # ARGUMENTUM_EXPORT is defined when the module is being build. In all other cases
+        # we have to define it separately. If we just define it here, the compiler will
+        # see it as ARGUMENTUM_EXPORT=1. So we use an intermediate define and define 
+        # ARGUMENTUM_EXPORT in the code (nomodule.h).
+        ARGUMENTUM_DEFINE_EXPORT=true
+   )
    if( ARGUMENTUM_PEDANTIC )
       target_compile_options( ${static_library_name} PRIVATE
          $<$<CXX_COMPILER_ID:GNU>:-Werror -Wall>
@@ -37,6 +44,9 @@ endif()
 add_library( ${internal_library_name} STATIC
    argparser.cpp
    )
+target_compile_definitions(${internal_library_name} PRIVATE
+	ARGUMENTUM_DEFINE_EXPORT=true
+)
 if( ARGUMENTUM_PEDANTIC )
    target_compile_options( ${internal_library_name} PRIVATE
       $<$<CXX_COMPILER_ID:GNU>:-Werror -Wall>
