@@ -80,6 +80,7 @@ protected:
    AssignAction getDefaultAction() override;
 };
 
+ARGUMENTUM_EXPORT
 template<typename T>
 class OptionConfigA;
 

@@ -47,7 +47,14 @@ public:
 
    // Define a command. The @p factory will create an instance of CommandOptions
    // when the command is activated with an input argument.
-   CommandConfig add_command( const std::string& name, Command::options_factory_t factory );
+   CommandConfig add_command( const std::string& name, Command::options_factory_t factory )
+   {
+      if ( !factory )
+         throw MissingCommandOptions( name );
+
+      auto command = Command( name, factory );
+      return tryAddCommand( command );
+   }
 
    /**
     * Add an argument with names @p name and @p altName and store the reference

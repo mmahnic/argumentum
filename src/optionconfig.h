@@ -36,6 +36,7 @@ protected:
    void ensureCanBeForwarded() const;
 };
 
+ARGUMENTUM_EXPORT
 template<typename TDerived>
 class OptionConfigBaseT : public OptionConfig
 {
@@ -161,6 +162,7 @@ protected:
    {}
 };
 
+ARGUMENTUM_EXPORT
 template<typename TTarget>
 class OptionConfigA final : public OptionConfigBaseT<OptionConfigA<TTarget>>
 {
@@ -257,6 +259,7 @@ public:
    }
 };
 
+ARGUMENTUM_EXPORT
 class VoidOptionConfig final : public OptionConfigBaseT<VoidOptionConfig>
 {
 public:

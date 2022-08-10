@@ -55,3 +55,19 @@ target_link_libraries( example2
    )
 add_dependencies( example2 ${argumentum_example_lib} )
 
+
+if ( BUILD_MODULE )
+   add_executable( basic_command_modules
+      basic_command_modules.cpp
+      )
+
+   set_property(TARGET basic_command_modules PROPERTY CXX_STANDARD 20)
+   target_compile_options( basic_command_modules PRIVATE
+      $<$<CXX_COMPILER_ID:MSVC>:/experimental:module>
+      )
+
+   target_link_libraries( basic_command_modules
+      ${ARGUMENTUM_MODULE_NAME}
+      )
+   add_dependencies( basic_command_modules ${ARGUMENTUM_MODULE_NAME} )
+endif()

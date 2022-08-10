@@ -20,6 +20,11 @@
                "name": "BUILD_MODULE",
                "value": "True",
                "type": "BOOL"
+            },
+            {
+               "name": "ARGUMENTUM_BUILD_EXAMPLES",
+               "value": "True",
+               "type": "BOOL"
             }
          ],
          "_cmakeToolchain": "${env.HOME}/temp/vcpkg/scripts/buildsystems/vcpkg.cmake"
@@ -42,6 +47,11 @@
             },
             {
                "name": "BUILD_MODULE",
+               "value": "True",
+               "type": "BOOL"
+            },
+            {
+               "name": "ARGUMENTUM_BUILD_EXAMPLES",
                "value": "True",
                "type": "BOOL"
             }
