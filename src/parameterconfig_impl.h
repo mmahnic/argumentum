@@ -62,7 +62,7 @@ ARGUMENTUM_INLINE VoidOptionConfig ParameterConfig::add_default_help_option()
 ARGUMENTUM_INLINE VoidOptionConfig ParameterConfig::add_help_option(
       const std::string& name, const std::string& altName )
 {
-   if ( !name.empty() && name[0] != '-' || !altName.empty() && altName[0] != '-' )
+   if ( (!name.empty() && name[0] != '-') || (!altName.empty() && altName[0] != '-') )
       throw std::invalid_argument( "A help argument must be an option." );
 
    auto value = VoidValue{};

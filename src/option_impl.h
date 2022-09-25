@@ -27,7 +27,7 @@ ARGUMENTUM_INLINE void Option::setMetavar( const std::vector<std::string_view>& 
    auto cleanVarName( []( std::string_view v ) -> std::string {
       size_t b = 0;
       size_t e = v.size();
-      while ( b < e && std::isspace( v[b] ) || v[b] == '-' )
+      while ( b < e && (std::isspace( v[b] ) || v[b] == '-' ))
          ++b;
       while ( b < e && std::isspace( v[e - 1] ) )
          --e;
