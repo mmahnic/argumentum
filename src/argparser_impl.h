@@ -114,7 +114,7 @@ ARGUMENTUM_INLINE ParseResult argument_parser::parse_args( ArgumentStream& args 
       result.signalErrorsShown();
       auto res = std::move( result.getResult() );
       describe_errors( res );
-      return std::move( res );
+      return res;
    }
 
    return std::move( result.getResult() );
