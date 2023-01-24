@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.1 )
 
-project( Argumentum VERSION 0.2.2 )
+project( Argumentum VERSION 0.3.2 )
 
 option( BUILD_STATIC_LIBS           "Build static libraries" ON )
 option( ARGUMENTUM_BUILD_EXAMPLES   "Build examples" OFF )
