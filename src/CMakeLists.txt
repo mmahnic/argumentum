@@ -22,10 +22,13 @@ if ( BUILD_STATIC_LIBS )
       )
 endif()
 
-# The static library used for internal purposes: instutil, tests, examples.
-add_library( ${internal_library_name} STATIC
-   argparser.cpp
-   )
+if (PROJECT_IS_TOP_LEVEL)
+   # The static library used for internal purposes: instutil, tests, examples.
+   add_library( ${internal_library_name} STATIC
+      argparser.cpp
+      )
+endif()
+
 if( ARGUMENTUM_PEDANTIC )
    target_compile_options( ${internal_library_name} PRIVATE
       $<$<CXX_COMPILER_ID:GNU>:-Werror -Wall>
