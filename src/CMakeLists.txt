@@ -5,9 +5,12 @@ set( target_list_name ${PROJECT_NAME}Targets )
 
 # The published static library
 if ( BUILD_STATIC_LIBS )
-   add_library( ${static_library_name} STATIC
+   add_library( ${static_library_name} STATIC)
+   target_sources( ${static_library_name}
+      PRIVATE
       argparser.cpp
       )
+
    if( ARGUMENTUM_PEDANTIC )
       target_compile_options( ${static_library_name} PRIVATE
          $<$<CXX_COMPILER_ID:GNU>:-Werror -Wall>
@@ -24,7 +27,9 @@ endif()
 
 if( ARGUMENTUM_IS_TOP_LEVEL )
    # The static library used for internal purposes: instutil, tests, examples.
-   add_library( ${internal_library_name} STATIC
+   add_library( ${internal_library_name} STATIC )
+   target_sources( ${internal_library_name}
+      PRIVATE
       argparser.cpp
       )
 endif()
