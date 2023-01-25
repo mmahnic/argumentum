@@ -22,7 +22,7 @@ if ( BUILD_STATIC_LIBS )
       )
 endif()
 
-if (PROJECT_IS_TOP_LEVEL)
+if( ARGUMENTUM_IS_TOP_LEVEL )
    # The static library used for internal purposes: instutil, tests, examples.
    add_library( ${internal_library_name} STATIC
       argparser.cpp

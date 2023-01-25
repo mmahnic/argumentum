@@ -13,6 +13,12 @@ endif()
 set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_DEBUG_POSTFIX d )
 
+if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+   set( ARGUMENTUM_IS_TOP_LEVEL TRUE )
+else()
+   set( ARGUMENTUM_IS_TOP_LEVEL FALSE )
+endif()
+
 include( GNUInstallDirs )
 
 # The name of the published static library target.
@@ -30,9 +36,9 @@ add_subdirectory( include )
 
 include( cmake/InstallConfig.cmake )
 
-if (PROJECT_IS_TOP_LEVEL)
-   option( ARGUMENTUM_BUILD_EXAMPLES   "Build examples" OFF )
-   option( ARGUMENTUM_BUILD_TESTS      "Build tests"    OFF )
+if( ARGUMENTUM_IS_TOP_LEVEL )
+   option( ARGUMENTUM_BUILD_EXAMPLES   "Build examples" ON )
+   option( ARGUMENTUM_BUILD_TESTS      "Build tests"    ON )
 
    if( ARGUMENTUM_BUILD_EXAMPLES )
       add_subdirectory( example )
