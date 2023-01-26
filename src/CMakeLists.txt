@@ -8,7 +8,7 @@ set( target_list_name ${PROJECT_NAME}Targets )
 if( NOT ARGUMENTUM_IS_TOP_LEVEL )
    set( headeronly_name __argumentum_hpp__ )
    add_library( ${headeronly_name} INTERFACE )
-   add_library( Argumentum::header ALIAS ${headeronly_name} )
+   add_library( ${PROJECT_NAME}:headers ALIAS ${headeronly_name} )
 
    target_include_directories( ${headeronly_name}
       INTERFACE
@@ -19,7 +19,7 @@ endif()
 # The published static library
 if ( ARGUMENTUM_BUILD_STATIC_LIBS )
    add_library( ${static_library_name} STATIC "" )
-   add_library( Argumentum::static ALIAS ${static_library_name} )
+   add_library( ${PROJECT_NAME}::${static_library_name} ALIAS ${static_library_name} )
 
    target_sources( ${static_library_name}
       PRIVATE
