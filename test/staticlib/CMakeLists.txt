@@ -1,5 +1,5 @@
 
-if ( BUILD_STATIC_LIBS )
+if ( ARGUMENTUM_BUILD_STATIC_LIBS )
    include_directories( ../../include )
 
    find_package( GTest REQUIRED )
