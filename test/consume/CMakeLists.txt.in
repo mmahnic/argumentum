@@ -1,0 +1,11 @@
+cmake_minimum_required( VERSION 3.1 )
+
+project( Argumentum-test )
+
+set( CMAKE_CXX_STANDARD 17 )
+
+if( (NOT ARGUMENTUM_LIBRARY) )
+   add_subdirectory(external/argumentum)
+endif()
+
+add_subdirectory(src)
