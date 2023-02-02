@@ -8,7 +8,7 @@ set( target_list_name ${PROJECT_NAME}Targets )
 if( NOT ARGUMENTUM_IS_TOP_LEVEL )
    set( headeronly_name __argumentum_hpp__ )
    add_library( ${headeronly_name} INTERFACE )
-   add_library( ${PROJECT_NAME}:headers ALIAS ${headeronly_name} )
+   add_library( ${PROJECT_NAME}::headers ALIAS ${headeronly_name} )
 
    target_include_directories( ${headeronly_name}
       INTERFACE
