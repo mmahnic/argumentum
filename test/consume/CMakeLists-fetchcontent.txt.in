@@ -1,0 +1,15 @@
+cmake_minimum_required( VERSION 3.11 )
+
+project( Argumentum-test )
+
+set( CMAKE_CXX_STANDARD 17 )
+
+include(FetchContent)
+
+FetchContent_Declare(Argumentum
+   GIT_REPOSITORY @THIS_REPO@
+   GIT_TAG improve_cmake
+)
+FetchContent_MakeAvailable(Argumentum)
+
+add_subdirectory(src)
