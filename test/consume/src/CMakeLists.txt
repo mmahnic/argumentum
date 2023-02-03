@@ -6,7 +6,6 @@ target_sources( basic
    )
 target_link_libraries( basic
    PRIVATE
-   # Argumentum::headers
    Argumentum::argumentum
    )
 
