@@ -2,6 +2,7 @@ build/
 build-*/
 .vs/
 out/
+xdata/
 
 *.swp
 *.*~
