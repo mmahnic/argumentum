@@ -21,6 +21,7 @@ if( ARGUMENTUM_IS_TOP_LEVEL )
           -D TOP_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
           -D P_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
           -D P_BINARY_DIR="${CMAKE_CURRENT_BINARY_DIR}"
+          -D P_HEADERONLY="${ARGUMENTUM_INSTALL_HEADERONLY}"
           -P "${CMAKE_CURRENT_SOURCE_DIR}/prepare-headers.cmake"
       )
 
@@ -35,4 +36,11 @@ if( ARGUMENTUM_IS_TOP_LEVEL )
       PATTERN "inc/*.txt" EXCLUDE
       PATTERN "inc/*.cpp" EXCLUDE
       )
+
+   if ( ${ARGUMENTUM_INSTALL_HEADERONLY} )
+      install( DIRECTORY ${CMAKE_BINARY_DIR}/include/argumentum
+         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+         FILES_MATCHING PATTERN "*_impl.h"
+         )
+   endif()
 endif()

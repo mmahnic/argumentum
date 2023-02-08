@@ -11,7 +11,7 @@ set( _build_static_libs ${ARGUMENTUM_IS_TOP_LEVEL} )
 
 option( ARGUMENTUM_BUILD_STATIC_LIBS  "Build static libraries" ${_build_static_libs} )
 option( ARGUMENTUM_DEPRECATED_ATTR    "Enable deprecation attributes"      OFF )
-option( ARGUMENTUM_PEDANTIC           "Treat warnings as errors (TODO)"    OFF )
+option( ARGUMENTUM_PEDANTIC           "Treat warnings as errors"           OFF )
 
 if( BUILD_SHARED_LIBS )
    message( FATAL_ERROR "Shared libries are not supported ATM" )
@@ -38,6 +38,7 @@ add_subdirectory( include )
 include( cmake/InstallConfig.cmake )
 
 if( ARGUMENTUM_IS_TOP_LEVEL )
+   option( ARGUMENTUM_INSTALL_HEADERONLY "Install the header-only version"    OFF )
    option( ARGUMENTUM_BUILD_EXAMPLES   "Build examples" OFF )
    option( ARGUMENTUM_BUILD_TESTS      "Build tests"    OFF )
 

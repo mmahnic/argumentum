@@ -1,5 +1,5 @@
 # Run with cmake -P
-# Parameters (-D): TOP_SOURCE_DIR, P_BINARY_DIR, P_SOURCE_DIR
+# Parameters (-D): TOP_SOURCE_DIR, P_BINARY_DIR, P_SOURCE_DIR, P_HEADERONLY
 
 file( MAKE_DIRECTORY ${P_BINARY_DIR}/argumentum )
 
@@ -11,8 +11,19 @@ file( COPY ${TOP_SOURCE_DIR}/src/
 file( READ ${P_SOURCE_DIR}/argumentum/argparse.h
    main_header )
 
-string( REPLACE "../../src/" "inc/" 
+string( REPLACE "../../src/" "inc/"
    main_header "${main_header}" )
 
 file( WRITE ${P_BINARY_DIR}/argumentum/argparse.h
    "${main_header}" )
+
+if( P_HEADERONLY )
+   file( READ ${P_SOURCE_DIR}/argumentum/argparse-h.h
+      main_header )
+
+   string( REPLACE "../../src/" "inc/"
+      main_header "${main_header}" )
+
+   file( WRITE ${P_BINARY_DIR}/argumentum/argparse-h.h
+      "${main_header}" )
+endif()
