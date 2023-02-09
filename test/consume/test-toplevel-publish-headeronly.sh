@@ -21,9 +21,19 @@ create_test_dir() {
 
    cd $workdir/argumentum
    mkdir -p $builddir
+
+   local testdir=$workdir/basic
+   mkdir $testdir
+   cd $here
+   cp CMakeLists-installed.txt.in $testdir/CMakeLists.txt
+   mkdir -p $testdir/src
+   cp -r src-headeronly/* $testdir/src/
+
+   cd $testdir
+   mkdir -p $builddir
 }
 
-configure() {
+configure_argumentum() {
    cd $workdir/argumentum
    # local debug=--debug-output
    cmake -S . -B $builddir \
@@ -33,20 +43,38 @@ configure() {
       $debug
 }
 
-build() {
+build_argumentum() {
    cd $workdir/argumentum
    # local debug=--debug-output
    cmake --build $builddir $debug
 }
 
-install() {
+install_argumentum() {
    cd $workdir/argumentum
    # local debug=--debug-output
    cmake --install $builddir $debug
 }
 
+configure() {
+   cd $workdir/basic
+   # local debug=--debug-output
+   cmake -S . -B $builddir $debug
+}
+
+build() {
+   cd $workdir/basic
+   # local debug=--debug-output
+   cmake --build $builddir $debug
+}
+
 create_test_dir
+configure_argumentum
+build_argumentum
+install_argumentum
+
+export CMAKE_PREFIX_PATH=$workdir/install
+
 configure
 build
-install
+
 
