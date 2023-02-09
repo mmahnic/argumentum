@@ -69,6 +69,7 @@ if( NOT ARGUMENTUM_IS_TOP_LEVEL OR ARGUMENTUM_INSTALL_HEADERONLY  )
       install( TARGETS ${headeronly_name}
          EXPORT ${target_list_name}
          )
+      set( _argumentum_has_exported_targets TRUE PARENT_SCOPE )
    endif()
 endif()
 

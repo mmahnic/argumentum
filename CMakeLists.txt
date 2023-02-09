@@ -28,14 +28,18 @@ set( ARGUMENTUM_STATIC_NAME argumentum )
 # The name of the internal static library target used for tests, examples.
 set( ARGUMENTUM_INTERNAL_NAME argumentum-si )
 
+
 if( ARGUMENTUM_DEPRECATED_ATTR )
    add_definitions( -DARGUMENTUM_DEPRECATED_ATTR )
 endif()
 
+# Whenever a target is exported, set this variable to TRUE in parent scope. The
+# value is used in InstallConfig.cmake:  without this variable install(EXPORT)
+# fails when no targets are exported.
+set( _argumentum_has_exported_targets FALSE )
+
 add_subdirectory( src )
 add_subdirectory( include )
-
-include( cmake/InstallConfig.cmake )
 
 if( ARGUMENTUM_IS_TOP_LEVEL )
    option( ARGUMENTUM_INSTALL_HEADERONLY "Install the header-only version"    OFF )
@@ -51,3 +55,6 @@ if( ARGUMENTUM_IS_TOP_LEVEL )
       add_subdirectory( test )
    endif()
 endif()
+
+include( cmake/InstallConfig.cmake )
+
