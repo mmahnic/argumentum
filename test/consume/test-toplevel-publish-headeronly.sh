@@ -37,7 +37,7 @@ configure_argumentum() {
    cd $workdir/argumentum
    # local debug=--debug-output
    cmake -S . -B $builddir \
-      -D ARGUMENTUM_BUILD_STATIC_LIBS=ON \
+      -D ARGUMENTUM_BUILD_STATIC_LIBS=OFF \
       -D ARGUMENTUM_INSTALL_HEADERONLY=ON \
       -D CMAKE_INSTALL_PREFIX="$workdir/install" \
       $debug

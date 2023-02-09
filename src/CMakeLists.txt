@@ -3,19 +3,6 @@ set( static_library_name ${ARGUMENTUM_STATIC_NAME} )
 set( internal_library_name ${ARGUMENTUM_INTERNAL_NAME} )
 set( target_list_name ${PROJECT_NAME}Targets )
 
-# When Argumentum is a Git submodule it can be used as header-only through a
-# CMake target.
-if( NOT ARGUMENTUM_IS_TOP_LEVEL )
-   set( headeronly_name __argumentum_hpp__ )
-   add_library( ${headeronly_name} INTERFACE )
-   add_library( ${PROJECT_NAME}::headers ALIAS ${headeronly_name} )
-
-   target_include_directories( ${headeronly_name}
-      INTERFACE
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-      )
-endif()
-
 # The published static library
 if ( ARGUMENTUM_BUILD_STATIC_LIBS )
    add_library( ${static_library_name} STATIC "" )

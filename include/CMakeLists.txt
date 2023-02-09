@@ -44,3 +44,28 @@ if( ARGUMENTUM_IS_TOP_LEVEL )
          )
    endif()
 endif()
+
+# When Argumentum is a Git submodule or when the header-only version is
+# installed it can be used as header-only through a CMake target.
+if( NOT ARGUMENTUM_IS_TOP_LEVEL OR ARGUMENTUM_INSTALL_HEADERONLY  )
+   message( WARNING "$$$ will create ::headers" )
+   set( headeronly_name __argumentum_hpp__ )
+   add_library( ${headeronly_name} INTERFACE )
+   add_library( ${PROJECT_NAME}::headers ALIAS ${headeronly_name} )
+
+   if( NOT ARGUMENTUM_IS_TOP_LEVEL )
+      target_include_directories( ${headeronly_name}
+         INTERFACE
+         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+         )
+   endif()
+
+   if( ARGUMENTUM_INSTALL_HEADERONLY )
+      message( WARNING "$$$ will install ::headers" )
+      set( target_list_name ${PROJECT_NAME}Targets )
+      install( TARGETS ${PROJECT_NAME}::headers
+         EXPORT ${target_list_name}
+         )
+   endif()
+endif()
+
