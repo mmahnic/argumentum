@@ -16,13 +16,11 @@ write_basic_package_version_file( ${version_file}
    COMPATIBILITY AnyNewerVersion
    )
 
-if( BUILD_STATIC_LIBS )
-   install(
-      EXPORT ${targets_export_name}
-      NAMESPACE ${cmake_package_name}::
-      DESTINATION ${cmake_files_install_dir}
-      )
-endif()
+install(
+   EXPORT ${targets_export_name}
+   NAMESPACE ${cmake_package_name}::
+   DESTINATION ${cmake_files_install_dir}
+   )
 
 configure_package_config_file(
    ${config_file_in}

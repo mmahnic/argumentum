@@ -70,9 +70,6 @@ configure_argumentum
 build_argumentum
 install_argumentum
 
-# export CPLUS_INCLUDE_PATH=$workdir/install/include
-# export CMAKE_MODULE_PATH=$workdir/install/include
-# export CMAKE_MODULE_PATH=$workdir/install
 export CMAKE_PREFIX_PATH=$workdir/install
 
 configure
