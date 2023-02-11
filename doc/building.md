@@ -1,15 +1,5 @@
 # Building and consuming the library
 
-The recommended way to consume the library is to build and link the static library.
-
-If installing is not an option, the library can be used from source. The header-only library can be
-used without building. To
-It can be used a header-only or static
-library by cloning the repository and linking to the appropriate `Argumentum` target.
-
-The library is also available through VCPKG (`./vcpkg install argumentum`).
-
-
 ## Build, install and use the static library
 
 Build and install the library from the sources:
