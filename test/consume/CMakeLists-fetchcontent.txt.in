@@ -8,7 +8,7 @@ include(FetchContent)
 
 FetchContent_Declare(Argumentum
    GIT_REPOSITORY @THIS_REPO@
-   GIT_TAG improve_cmake
+   GIT_TAG master
 )
 FetchContent_MakeAvailable(Argumentum)
 
