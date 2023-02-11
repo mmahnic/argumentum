@@ -31,3 +31,4 @@
 - Some targets are available only when the Argumentum project is top-level.
 - The library can be used from a Git submodule using modern CMake.
 - The header-only version can be installed.
+- Added shell tests for various library usage scenarios.
