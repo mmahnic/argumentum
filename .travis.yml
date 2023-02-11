@@ -6,55 +6,6 @@ language:
 matrix:
   include:
     - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - libgtest-dev
-
-      compiler: gcc-7
-
-      env:
-        - C_COMPILER=gcc-7
-        - CXX_COMPILER=g++-7
-        - CXX_FLAGS=-Werror=sign-compare
-
-      install:
-         - mkdir /tmp/build-gtest && cd /tmp/build-gtest
-         - cmake /usr/src/gtest
-         - make
-         - sudo cp libgtest* /usr/lib/
-         - cd -
-
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - libgtest-dev
-
-      compiler: gcc-8
-
-      env:
-        - C_COMPILER=gcc-8
-        - CXX_COMPILER=g++-8
-        - CXX_FLAGS=-Werror=sign-compare
-
-      install:
-        - mkdir /tmp/build-gtest && cd /tmp/build-gtest
-        - cmake /usr/src/gtest
-        - make
-        - sudo cp libgtest* /usr/lib/
-        - cd -
-   
-
-    - os: linux
       dist: focal
       addons:
         apt:
