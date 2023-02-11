@@ -1,5 +1,4 @@
 [![Build Status](https://travis-ci.com/mmahnic/argumentum.svg?branch=master)](https://travis-ci.com/mmahnic/argumentum)
-[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/mmahnic/argumentum.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/mmahnic/argumentum/context:cpp)
 
 # Argumentum / Argparse
 
