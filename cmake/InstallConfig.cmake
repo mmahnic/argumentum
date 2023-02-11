@@ -9,7 +9,7 @@ set( cmake_files_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${cmake_package_name
 set( version_file "${generated_dir}/${cmake_package_name}ConfigVersion.cmake" )
 set( config_file_in "cmake/ArgumentumConfig.cmake.in" )
 set( config_file "${generated_dir}/${cmake_package_name}Config.cmake" )
-set( targets_export_name ${cmake_package_name}Targets CACHE INTERNAL "" )
+set( targets_export_name ArgumentumTargets CACHE INTERNAL "" )
 
 if ( _argumentum_has_exported_targets )
    write_basic_package_version_file( ${version_file}

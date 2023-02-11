@@ -22,13 +22,6 @@ set( CMAKE_DEBUG_POSTFIX d )
 
 include( GNUInstallDirs )
 
-# The name of the published static library target.
-set( ARGUMENTUM_STATIC_NAME argumentum )
-
-# The name of the internal static library target used for tests, examples.
-set( ARGUMENTUM_INTERNAL_NAME argumentum-si )
-
-
 if( ARGUMENTUM_DEPRECATED_ATTR )
    add_definitions( -DARGUMENTUM_DEPRECATED_ATTR )
 endif()
@@ -38,13 +31,13 @@ endif()
 # fails when no targets are exported.
 set( _argumentum_has_exported_targets FALSE )
 
-add_subdirectory( src )
-add_subdirectory( include )
-
 if( ARGUMENTUM_IS_TOP_LEVEL )
    option( ARGUMENTUM_INSTALL_HEADERONLY "Install the header-only version"    OFF )
    option( ARGUMENTUM_BUILD_EXAMPLES   "Build examples" OFF )
    option( ARGUMENTUM_BUILD_TESTS      "Build tests"    OFF )
+
+   # The name of the internal static library target used for tests, examples.
+   set( _ARGUMENTUM_INTERNAL_NAME argumentum-si )
 
    if( ARGUMENTUM_BUILD_EXAMPLES )
       add_subdirectory( example )
@@ -55,6 +48,9 @@ if( ARGUMENTUM_IS_TOP_LEVEL )
       add_subdirectory( test )
    endif()
 endif()
+
+add_subdirectory( src )
+add_subdirectory( include )
 
 include( cmake/InstallConfig.cmake )
 

@@ -51,7 +51,7 @@ endif()
 if( NOT ARGUMENTUM_IS_TOP_LEVEL OR ARGUMENTUM_INSTALL_HEADERONLY  )
    set( headeronly_name headers )
    add_library( ${headeronly_name} INTERFACE )
-   add_library( ${PROJECT_NAME}::headers ALIAS ${headeronly_name} )
+   add_library( Argumentum::${headeronly_name} ALIAS ${headeronly_name} )
 
    if( NOT ARGUMENTUM_IS_TOP_LEVEL )
       target_include_directories( ${headeronly_name}
@@ -61,13 +61,12 @@ if( NOT ARGUMENTUM_IS_TOP_LEVEL OR ARGUMENTUM_INSTALL_HEADERONLY  )
    endif()
 
    if( ARGUMENTUM_INSTALL_HEADERONLY )
-      set( target_list_name ${PROJECT_NAME}Targets )
       target_include_directories( ${headeronly_name}
          INTERFACE
          $<INSTALL_INTERFACE:include>  # <prefix>/include
          )
       install( TARGETS ${headeronly_name}
-         EXPORT ${target_list_name}
+         EXPORT ArgumentumTargets
          )
       set( _argumentum_has_exported_targets TRUE PARENT_SCOPE )
    endif()

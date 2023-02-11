@@ -1,12 +1,10 @@
 
-set( static_library_name ${ARGUMENTUM_STATIC_NAME} )
-set( internal_library_name ${ARGUMENTUM_INTERNAL_NAME} )
-set( target_list_name ${PROJECT_NAME}Targets )
+set( static_library_name argumentum )
 
 # The published static library
 if ( ARGUMENTUM_BUILD_STATIC_LIBS )
    add_library( ${static_library_name} STATIC "" )
-   add_library( ${PROJECT_NAME}::${static_library_name} ALIAS ${static_library_name} )
+   add_library( Argumentum::${static_library_name} ALIAS ${static_library_name} )
 
    target_sources( ${static_library_name}
       PRIVATE
@@ -28,7 +26,7 @@ if ( ARGUMENTUM_BUILD_STATIC_LIBS )
    endif()
 
    install( TARGETS ${static_library_name}
-      EXPORT ${target_list_name}
+      EXPORT ArgumentumTargets
       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
       LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
       )
@@ -36,6 +34,8 @@ if ( ARGUMENTUM_BUILD_STATIC_LIBS )
 endif()
 
 if( ARGUMENTUM_IS_TOP_LEVEL )
+   set( internal_library_name ${_ARGUMENTUM_INTERNAL_NAME} )
+
    # The static library used for internal purposes: instutil, tests, examples.
    add_library( ${internal_library_name} STATIC "" )
    target_sources( ${internal_library_name}

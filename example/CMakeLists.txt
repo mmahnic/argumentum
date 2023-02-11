@@ -1,6 +1,6 @@
 
 include_directories( ../include )
-set( argumentum_example_lib ${ARGUMENTUM_INTERNAL_NAME} )
+set( argumentum_example_lib ${_ARGUMENTUM_INTERNAL_NAME} )
 
 # The library is currently header-only.
 set(PARSER_SOURCES
