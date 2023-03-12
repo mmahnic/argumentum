@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/mmahnic/argumentum.svg?branch=master)](https://travis-ci.com/mmahnic/argumentum)
+[![Build Status](https://travis-ci.com/mmahnic/argumentum.svg?branch=master)](https://app.travis-ci.com/mmahnic/argumentum)
 
 # Argumentum / Argparse
 
