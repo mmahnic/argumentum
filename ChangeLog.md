@@ -1,6 +1,28 @@
 
 # Changelog
 
+## [0.3.2]
+
+### Added
+
+- It is possible to collect parameters that will be forwarded to a subprocess.  The syntax is
+  similar to the one used in GCC.
+- Multiple names can be defined for meta-varaiables in `metavar()` by specifying a list of strings
+  instead of a simple string.
+- Added the method `add` as an alias for `add_parameter`.
+- The method `absent` is now an alias for `default_value`.
+- Added shell tests for various library usage scenarios.
+
+### Changed
+
+- Some targets are available only when the Argumentum project is top-level.
+
+### Fixed
+
+- The header-only version can be installed.
+- The library can be used from a Git submodule using modern CMake.
+
+
 ## [0.3.0]
 
 ### Added
@@ -18,17 +40,6 @@
   parameters are deprecated and will be removed.
 - Fix: Treat negative numbers as numbers when they can not be mistaken for options.
 
+
 ## [Next]
 
-### Added
-
-- It is possible to collect parameters that will be forwarded to a subprocess.  The syntax is
-  similar to the one used in GCC.
-- Multiple names can be defined for meta-varaiables in `metavar()` by specifying a list of strings
-  instead of a simple string.
-- Added the method `add` as an alias for `add_parameter`.
-- The method `absent` is now an alias for `default_value`.
-- Some targets are available only when the Argumentum project is top-level.
-- The library can be used from a Git submodule using modern CMake.
-- The header-only version can be installed.
-- Added shell tests for various library usage scenarios.
