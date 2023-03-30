@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Download the library with CMake FetchContent and use it as a header-only library.
+
 here=$(pwd)
 thisscript=$(basename $0)
 workdir=$here/xdata/$thisscript

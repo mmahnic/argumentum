@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Configure, build and install the library then use it as a header-only library with find-package.
+
 here=$(pwd)
 thisscript=$(basename $0)
 workdir=$here/xdata/$thisscript

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Build the static version of the library.
+
 here=$(pwd)
 thisscript=$(basename $0)
 workdir=$here/xdata/$thisscript
