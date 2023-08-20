@@ -580,6 +580,58 @@ TEST( ArgumentParserTest, shouldSupportMaxNumberOfPositionalArguments )
    }
 }
 
+// TODO: Add support for optional<vector>
+// Support for optional<vector> was requested in Gitub issue #17. This is
+// reasonable for options since we are now adding the value "1" when only an
+// option is present in args but has no values. The new solution would fill the
+// optional with an empty vector, but leave a bare vector intact.  This will
+// introduce a breaking change.
+//
+// Having an optional vector for positional argumetns does not make much sense
+// sicne if there is a value present, it will fill the optional and add the
+// value to the vector. But we can implement it anyway.
+//
+// Defaults:
+//      optional<vector>: minargs(0)
+//      vector: minargs(1)
+TEST( ArgumentParserTest, shouldLoadOptionValuesIntoOptionalVector )
+{
+   std::optional<std::vector<std::string>> texts;
+
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( texts, "-v" );
+
+   auto res = parser.parse_args( { "-v", "1", "2" } );
+   ASSERT_TRUE( texts.has_value() );
+   EXPECT_TRUE( vector_eq( { "1", "2" }, *texts ) );
+}
+
+TEST( ArgumentParserTest, shouldFillOptionalOfOptionalVectorForOptionWitoutValues )
+{
+   std::optional<std::vector<std::string>> texts;
+
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( texts, "-v" );
+
+   auto res = parser.parse_args( { "-v" } );
+   ASSERT_TRUE( texts.has_value() );
+   EXPECT_TRUE( texts->empty() );
+}
+
+TEST( ArgumentParserTest, shouldFailForPlainVectorWithOptionWitoutValues )
+{
+   std::vector<std::string> texts;
+
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( texts, "-v" );
+
+   auto res = parser.parse_args( { "-v" } );
+   ASSERT_FALSE( res.errors.empty() );
+}
+
 TEST( ArgumentParserTest, shouldSetDefaultCountForPositionalArgumentsWithVectorValues )
 {
    std::vector<std::string> texts;
@@ -612,6 +664,8 @@ TEST( ArgumentParserTest, shouldSetDefaultCountForPositionalArgumentsWithScalarV
    EXPECT_EQ( 0, res.errors.size() );
 }
 
+// TODO: breaking change: do not set the flag, use optional<vector> if flag
+// without elements is valid.
 TEST( ArgumentParserTest, shouldSetFlagValueWhenZeroOrMoreArgumentsRequiredAndNoneGiven )
 {
    std::vector<std::string> texts;
