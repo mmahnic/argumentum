@@ -259,7 +259,9 @@ ARGUMENTUM_INLINE std::shared_ptr<OptionGroup> ParameterConfig::addGroup(
    if ( name.empty() )
       throw std::invalid_argument( "A group must have a name." );
 
-   std::transform( name.begin(), name.end(), name.begin(), tolower );
+   std::transform( name.begin(), name.end(), name.begin(), []( char ch ) {
+      return char( tolower( ch ) );
+   } );
    assert( mParserDef.mGroups.count( name ) == 0 );
 
    auto pGroup = std::make_shared<OptionGroup>( name, isExclusive );

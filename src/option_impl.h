@@ -175,8 +175,9 @@ ARGUMENTUM_INLINE std::vector<std::string> Option::getMetavar() const
    auto pos = name.find_first_not_of( "-" );
    auto metavar = name.substr( pos );
    auto isPositional = pos == 0;
-   std::transform(
-         metavar.begin(), metavar.end(), metavar.begin(), isPositional ? tolower : toupper );
+   std::transform( metavar.begin(), metavar.end(), metavar.begin(), [&]( char ch ) {
+      return char( isPositional ? tolower( ch ) : toupper( ch ) );
+   } );
    return { metavar };
 }
 

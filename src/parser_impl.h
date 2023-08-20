@@ -107,7 +107,7 @@ ARGUMENTUM_INLINE EArgumentType Parser::getNextArgumentType( std::string_view ar
 
    if ( arg.substr( 0, 1 ) == "-" ) {
       if ( isNumberLike( arg.substr( 1 ) ) ) {
-         if ( negativeMode == ENegativeMode::argparse ) {
+         if constexpr ( negativeMode == ENegativeMode::argparse ) {
             if ( !mParserDef.hasNumericOptions() )
                return haveActiveOption() ? EArgumentType::optionValue : EArgumentType::freeArgument;
          }
