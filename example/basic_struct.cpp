@@ -16,8 +16,12 @@ protected:
    void add_arguments( argument_parser& parser ) override
    {
       auto params = parser.params();
-      auto max = []( int a, int b ) { return std::max( a, b ); };
-      auto sum = []( int a, int b ) { return a + b; };
+      auto max = []( int a, int b ) {
+         return std::max( a, b );
+      };
+      auto sum = []( int a, int b ) {
+         return a + b;
+      };
 
       params.add_parameter( numbers, "N" ).minargs( 1 ).metavar( "INT" ).help( "Integers" );
       params.add_parameter( operation, "--sum", "-s" )

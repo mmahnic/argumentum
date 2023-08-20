@@ -46,10 +46,12 @@ ARGUMENTUM_INLINE std::vector<OptionSorter::GroupLimit> OptionSorter::reorderGro
 
 ARGUMENTUM_INLINE void OptionSorter::reorderOptions( GroupLimit& limit )
 {
-   limit.iendpos = std::stable_partition(
-         limit.ibegin, limit.iend, []( auto&& opt ) { return opt.is_positional(); } );
-   limit.iendreq = std::stable_partition(
-         limit.iendpos, limit.iend, []( auto&& opt ) { return opt.is_required(); } );
+   limit.iendpos = std::stable_partition( limit.ibegin, limit.iend, []( auto&& opt ) {
+      return opt.is_positional();
+   } );
+   limit.iendreq = std::stable_partition( limit.iendpos, limit.iend, []( auto&& opt ) {
+      return opt.is_required();
+   } );
 }
 
 }   // namespace argumentum

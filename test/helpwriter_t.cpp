@@ -21,7 +21,9 @@ std::vector<std::string_view> splitLines(
    size_t start = 0;
    auto delims = "\n\r";
 
-   auto isWinEol = [&text]( auto pos ) { return text[pos] == '\r' && text[pos + 1] == '\n'; };
+   auto isWinEol = [&text]( auto pos ) {
+      return text[pos] == '\r' && text[pos + 1] == '\n';
+   };
 
    while ( start < text.size() ) {
       const auto stop = text.find_first_of( delims, start );

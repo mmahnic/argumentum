@@ -35,7 +35,9 @@ public:
    template<typename TOptions>
    CommandConfig add_command( const std::string& name )
    {
-      auto factory = []( std::string_view name ) { return std::make_shared<TOptions>( name ); };
+      auto factory = []( std::string_view name ) {
+         return std::make_shared<TOptions>( name );
+      };
       auto command = Command( name, factory );
       return tryAddCommand( command );
    }

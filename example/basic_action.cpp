@@ -10,8 +10,12 @@ using namespace argumentum;
 int main( int argc, char** argv )
 {
    vector<int> numbers;
-   auto max = []( int a, int b ) { return std::max( a, b ); };
-   auto sum = []( int a, int b ) { return a + b; };
+   auto max = []( int a, int b ) {
+      return std::max( a, b );
+   };
+   auto sum = []( int a, int b ) {
+      return a + b;
+   };
    std::pair<std::function<int( int, int )>, int> operation;
 
    auto parser = argument_parser{};

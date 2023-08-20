@@ -46,7 +46,7 @@ class RequiredExclusiveOption : public std::runtime_error
 public:
    RequiredExclusiveOption( const std::string& groupName, const std::string& optionName )
       : runtime_error( std::string( "Option '" ) + optionName + "' is required in exclusive group '"
-              + groupName + "'." )
+            + groupName + "'." )
    {}
 };
 
@@ -55,7 +55,7 @@ class DuplicateOption : public std::runtime_error
 public:
    DuplicateOption( const std::string& groupName, const std::string& optionName )
       : runtime_error( std::string( "Option '" ) + optionName + "' is already defined in group '"
-              + groupName + "'." )
+            + groupName + "'." )
    {}
 };
 

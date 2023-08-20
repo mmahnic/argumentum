@@ -22,7 +22,9 @@ int main( int argc, char** argv )
    if ( !parser.parse_args( argc, argv, 1 ) )
       return 1;
 
-   auto mmax = []( auto&& a, auto&& b ) { return max( a, b ); };
+   auto mmax = []( auto&& a, auto&& b ) {
+      return max( a, b );
+   };
    auto acc = isSum ? accumulate( numbers.begin(), numbers.end(), 0 )
                     : accumulate( numbers.begin(), numbers.end(), INT_MIN, mmax );
    cout << acc << "\n";

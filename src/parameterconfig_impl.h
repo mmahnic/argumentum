@@ -62,7 +62,7 @@ ARGUMENTUM_INLINE VoidOptionConfig ParameterConfig::add_default_help_option()
 ARGUMENTUM_INLINE VoidOptionConfig ParameterConfig::add_help_option(
       const std::string& name, const std::string& altName )
 {
-   if ( (!name.empty() && name[0] != '-') || (!altName.empty() && altName[0] != '-') )
+   if ( ( !name.empty() && name[0] != '-' ) || ( !altName.empty() && altName[0] != '-' ) )
       throw std::invalid_argument( "A help argument must be an option." );
 
    auto value = VoidValue{};
@@ -126,7 +126,9 @@ ARGUMENTUM_INLINE OptionConfig ParameterConfig::tryAddParameter(
       Option& newOption, std::vector<std::string_view> names )
 {
    // Remove empty names
-   auto is_empty = [&]( auto&& name ) { return name.empty(); };
+   auto is_empty = [&]( auto&& name ) {
+      return name.empty();
+   };
    names.erase( std::remove_if( names.begin(), names.end(), is_empty ), names.end() );
 
    if ( names.empty() )
@@ -137,7 +139,9 @@ ARGUMENTUM_INLINE OptionConfig ParameterConfig::tryAddParameter(
          if ( std::isspace( ch ) )
             throw std::invalid_argument( "Argument names must not contain spaces." );
 
-   auto has_dash = []( auto name ) { return name[0] == '-'; };
+   auto has_dash = []( auto name ) {
+      return name[0] == '-';
+   };
 
    auto isOption = [&]( auto&& names ) -> bool {
       return std::all_of( names.begin(), names.end(), has_dash );
