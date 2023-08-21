@@ -101,6 +101,7 @@ private:
    Option( std::shared_ptr<Value>&& pValue, Kind kind )
       : mpValue( std::move( pValue ) )
       , mIsVectorValue( kind == Option::vectorValue )
+      , mMaxArgs( mIsVectorValue ? -1 : 0 )
    {}
 };
 
