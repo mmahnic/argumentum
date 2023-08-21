@@ -50,6 +50,22 @@ public:
       }
    }
 
+   template<typename TTarget>
+   Option createOption( std::optional<std::vector<TTarget>>& value )
+   {
+      std::shared_ptr<Value> pValue;
+      using val_vector = std::optional<std::vector<TTarget>>;
+      if constexpr ( std::is_base_of<Value, TTarget>::value ) {
+         throw UnsupportedTargetType( "Unsupported target type: optional<vector<Value>>." );
+      }
+      else {
+         using wrap_type = ConvertedValue<val_vector>;
+         pValue = std::make_shared<wrap_type>( value );
+
+         return Option( getValueForKnownTarget( pValue ), Option::vectorValue );
+      }
+   }
+
 private:
    std::shared_ptr<Value> getValueForKnownTarget( std::shared_ptr<Value> pValue )
    {

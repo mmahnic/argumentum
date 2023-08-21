@@ -173,6 +173,17 @@ protected:
    }
 
    template<typename TVar>
+   void assign( std::optional<std::vector<TVar>>& var, const std::string& value )
+   {
+      TVar target;
+      assign( target, value );
+      if ( !var.has_value() )
+         var = std::vector<TVar>{};
+      var->emplace_back( std::move( target ) );
+
+   }
+
+   template<typename TVar>
    void assign( std::optional<TVar>& var, const std::string& value )
    {
       TVar target;

@@ -602,9 +602,9 @@ TEST( ArgumentParserTest, shouldLoadOptionValuesIntoOptionalVector )
    auto params = parser.params();
    params.add_parameter( texts, "-v" );
 
-   auto res = parser.parse_args( { "-v", "1", "2" } );
+   auto res = parser.parse_args( { "-v", "a", "b" } );
    ASSERT_TRUE( texts.has_value() );
-   EXPECT_TRUE( vector_eq( { "1", "2" }, *texts ) );
+   EXPECT_TRUE( vector_eq( { "a", "b" }, *texts ) );
 }
 
 TEST( ArgumentParserTest, shouldFillOptionalOfOptionalVectorForOptionWitoutValues )
