@@ -295,7 +295,7 @@ ARGUMENTUM_INLINE void Parser::closeOption()
       if ( option.needsMoreArguments() )
          addError( option.getHelpName(), MISSING_ARGUMENT );
       else if ( option.willAcceptArgument() && !option.wasAssignedThroughThisOption() )
-         setValue( option, option.getFlagValue() );
+         autoSetMissingValue( option );
    }
    mpActiveOption = nullptr;
 }
@@ -324,6 +324,23 @@ ARGUMENTUM_INLINE void Parser::setValue( Option& option, std::string_view value 
    try {
       auto env = Environment{ option, mResult, mParserDef };
       option.setValue( value, env );
+   }
+   catch ( const InvalidChoiceError& ) {
+      addError( option.getHelpName(), INVALID_CHOICE );
+   }
+   catch ( const std::invalid_argument& ) {
+      addError( option.getHelpName(), CONVERSION_ERROR );
+   }
+   catch ( const std::out_of_range& ) {
+      addError( option.getHelpName(), CONVERSION_ERROR );
+   }
+}
+
+ARGUMENTUM_INLINE void Parser::autoSetMissingValue( Option& option )
+{
+   try {
+      auto env = Environment{ option, mResult, mParserDef };
+      option.autoSetMissingValue( env );
    }
    catch ( const InvalidChoiceError& ) {
       addError( option.getHelpName(), INVALID_CHOICE );

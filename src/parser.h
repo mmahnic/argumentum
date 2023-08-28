@@ -41,6 +41,7 @@ private:
    void addFreeArgument( std::string_view arg );
    void addError( std::string_view optionName, int errorCode );
    void setValue( Option& option, std::string_view value );
+   void autoSetMissingValue( Option& option );
 
    void parse( ArgumentStream& argStream, unsigned depth );
    void parseCommandArguments(
