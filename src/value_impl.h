@@ -38,6 +38,15 @@ ARGUMENTUM_INLINE void Value::setDefault( AssignDefaultAction action )
    }
 }
 
+ARGUMENTUM_INLINE void Value::setMissingValue( std::string_view flagValue, Environment& env )
+{
+   auto action = getMissingValueAction();
+   if ( action ) {
+      ++mAssignCount;
+      action( *this, "", env );
+   }
+}
+
 ARGUMENTUM_INLINE void Value::markBadArgument()
 {
    // Increase the assign count so that flagValue will not be used.
@@ -76,6 +85,11 @@ ARGUMENTUM_INLINE VoidValue* VoidValue::value_cast( Value& value )
 }
 
 ARGUMENTUM_INLINE AssignAction VoidValue::getDefaultAction()
+{
+   return {};
+}
+
+ARGUMENTUM_INLINE AssignAction VoidValue::getMissingValueAction()
 {
    return {};
 }

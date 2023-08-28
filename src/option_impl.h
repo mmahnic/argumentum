@@ -198,6 +198,14 @@ ARGUMENTUM_INLINE void Option::setValue( std::string_view value, Environment& en
    mpValue->setValue( value, mAssignAction, env );
 }
 
+ARGUMENTUM_INLINE void Option::autoSetMissingValue( Environment& env )
+{
+   ++mCurrentAssignCount;
+   ++mTotalAssignCount;
+
+   mpValue->setMissingValue( getFlagValue(), env );
+}
+
 ARGUMENTUM_INLINE void Option::assignDefault()
 {
    if ( mAssignDefaultAction )

@@ -607,7 +607,7 @@ TEST( ArgumentParserTest, shouldLoadOptionValuesIntoOptionalVector )
    EXPECT_TRUE( vector_eq( { "a", "b" }, *texts ) );
 }
 
-TEST( ArgumentParserTest, shouldFillOptionalOfOptionalVectorForOptionWitoutValues )
+TEST( ArgumentParserTest, shouldFillOptionalOfOptionalVectorForOptionWithoutValues )
 {
    std::optional<std::vector<std::string>> texts;
 

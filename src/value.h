@@ -45,6 +45,10 @@ class Value
 public:
    void setValue( std::string_view value, AssignAction action, Environment& env );
    void setDefault( AssignDefaultAction action );
+   /**
+    * Called when an option expects 0 or more values, but none is given.
+    */
+   void setMissingValue( std::string_view flagValue, Environment& env );
    void markBadArgument();
 
    /**
@@ -61,6 +65,7 @@ public:
 
 protected:
    virtual AssignAction getDefaultAction() = 0;
+   virtual AssignAction getMissingValueAction() = 0;
    virtual void doReset();
 };
 
@@ -72,6 +77,7 @@ public:
 
 protected:
    AssignAction getDefaultAction() override;
+   AssignAction getMissingValueAction() override;
 };
 
 template<typename T>
@@ -159,6 +165,21 @@ protected:
       };
    }
 
+
+   // Special handling for vectors and optional vectors. Maybe also for optional
+   // strings.
+   // vector: add flagValue if empty
+   // optional<vector>: set to empty vector if nullopt
+   // string: set to empty string if nullopt
+   AssignAction getMissingValueAction() override
+   {
+      return []( Value& value, const std::string& argument, Environment& ) {
+         auto pConverted = ConvertedValue<TTarget>::value_cast( value );
+         if ( pConverted )
+            pConverted->assignMissing( pConverted->mTarget, argument );
+      };
+   }
+
    void doReset() override
    {
       mTarget = TTarget{};
@@ -173,14 +194,31 @@ protected:
    }
 
    template<typename TVar>
+   void assignMissing( std::vector<TVar>& var, const std::string& value )
+   {
+      if ( var.empty() ) {
+         TVar target;
+         assign( target, value );
+         var.emplace_back( std::move( target ) );
+      }
+   }
+
+   template<typename TVar>
    void assign( std::optional<std::vector<TVar>>& var, const std::string& value )
    {
       TVar target;
       assign( target, value );
       if ( !var.has_value() )
          var = std::vector<TVar>{};
+      std::cout << value << "\n";
       var->emplace_back( std::move( target ) );
+   }
 
+   template<typename TVar>
+   void assignMissing( std::optional<std::vector<TVar>>& var, const std::string& value )
+   {
+      if ( !var.has_value() )
+         var = std::vector<TVar>{};
    }
 
    template<typename TVar>
@@ -189,6 +227,13 @@ protected:
       TVar target;
       assign( target, value );
       var = std::move( target );
+   }
+
+   template<typename TVar>
+   void assignMissing( std::optional<TVar>& var, const std::string& value )
+   {
+      if ( !var.has_value() )
+         var =TVar{};
    }
 
    template<typename TVar, std::enable_if_t<has_from_string<TVar>::value, int> = 0>
@@ -210,6 +255,13 @@ protected:
    {
       Notifier::warn( "Assignment is not implemented. ('" + value + "')" );
    }
-};
 
+   template<typename TVar>
+   void assignMissing( TVar& var, const std::string& value )
+   {
+      if ( getAssignCount() == 0 )
+         assign( var, value );
+   }
+
+};
 }   // namespace argumentum
