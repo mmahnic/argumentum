@@ -5,6 +5,7 @@
 
 #include "value.h"
 
+#include <cassert>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -73,6 +74,11 @@ public:
    const std::string& getRawHelp() const;
    std::vector<std::string> getMetavar() const;
    void setValue( std::string_view value, Environment& env );
+
+   /**
+    * Called when an option was started but no values followed.
+    */
+   void autoSetMissingValue( Environment& env );
    void assignDefault();
    bool hasDefault() const;
    void resetValue();
@@ -101,8 +107,12 @@ private:
    Option( std::shared_ptr<Value>&& pValue, Kind kind )
       : mpValue( std::move( pValue ) )
       , mIsVectorValue( kind == Option::vectorValue )
-      , mMaxArgs( mIsVectorValue ? -1 : 0 )
-   {}
+      , mMinArgs(  kind == Option::vectorValue  ? 1 : 0 )
+      , mMaxArgs(  kind == Option::vectorValue  ? -1 : 0 )
+   {
+      // TODO: add getValue() that checks if it is nullptr and throws; returns *mpValue.
+      assert( mpValue != nullptr );
+   }
 };
 
 }   // namespace argumentum
