@@ -201,7 +201,7 @@ TEST( ArgumentParserActionTest, shouldThrowWhenExitRequestIsUnchecked )
 
    bool caught = false;
    try {
-      auto res = parser.parse_args( { "-x" } );
+      auto res = parser.parse_args( { "-x", "1" } );
    }
    catch ( const argumentum::UncheckedParseResult& ) {
       caught = true;
