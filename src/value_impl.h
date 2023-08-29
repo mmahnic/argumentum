@@ -43,7 +43,8 @@ ARGUMENTUM_INLINE void Value::setMissingValue( std::string_view flagValue, Envir
    auto action = getMissingValueAction();
    if ( action ) {
       ++mAssignCount;
-      action( *this, "", env );
+      std::string fv{ flagValue };
+      action( *this, fv, env );
    }
 }
 
