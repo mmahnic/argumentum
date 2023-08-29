@@ -633,6 +633,33 @@ TEST( ArgumentParserTest, shouldFailForPlainVectorWithOptionWitoutValues )
    ASSERT_FALSE( res.errors.empty() );
 }
 
+TEST( ArgumentParserTest, shouldAddMissingValueAtMostOnce )
+{
+   std::vector<std::string> texts;
+
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( texts, "-v" ).minargs(0);
+
+   auto res = parser.parse_args( { "-v", "-v", "-v" } );
+   ASSERT_TRUE( bool( res ) );
+   ASSERT_TRUE( vector_eq( { "1" }, texts ) );
+}
+
+TEST( ArgumentParserTest, shouldNotAddValueToOptionalWhenMissingSetMoreThanOnce )
+{
+   std::optional<std::vector<std::string>> texts;
+
+   auto parser = argument_parser{};
+   auto params = parser.params();
+   params.add_parameter( texts, "-v" ).minargs(0);
+
+   auto res = parser.parse_args( { "-v", "-v", "-v" } );
+   ASSERT_TRUE( bool( res ) );
+   ASSERT_TRUE( texts.has_value() );
+   ASSERT_TRUE( texts->empty() );
+}
+
 TEST( ArgumentParserTest, shouldSetDefaultCountForPositionalArgumentsWithVectorValues )
 {
    std::vector<std::string> texts;
