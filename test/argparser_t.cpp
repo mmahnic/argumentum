@@ -613,7 +613,7 @@ TEST( ArgumentParserTest, shouldFillOptionalOfOptionalVectorForOptionWithoutValu
 
    auto parser = argument_parser{};
    auto params = parser.params();
-   params.add_parameter( texts, "-v" );
+   params.add_parameter( texts, "-v" ).minargs(0);
 
    auto res = parser.parse_args( { "-v" } );
    ASSERT_TRUE( texts.has_value() );
@@ -629,6 +629,7 @@ TEST( ArgumentParserTest, shouldFailForPlainVectorWithOptionWitoutValues )
    params.add_parameter( texts, "-v" );
 
    auto res = parser.parse_args( { "-v" } );
+   ASSERT_FALSE( bool( res ) );
    ASSERT_FALSE( res.errors.empty() );
 }
 

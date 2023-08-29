@@ -233,7 +233,7 @@ protected:
    void assignMissing( std::optional<TVar>& var, const std::string& value )
    {
       if ( !var.has_value() )
-         var =TVar{};
+         var = TVar{};
    }
 
    template<typename TVar, std::enable_if_t<has_from_string<TVar>::value, int> = 0>
