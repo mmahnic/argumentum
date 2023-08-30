@@ -580,20 +580,6 @@ TEST( ArgumentParserTest, shouldSupportMaxNumberOfPositionalArguments )
    }
 }
 
-// TODO: Add support for optional<vector>
-// Support for optional<vector> was requested in Gitub issue #17. This is
-// reasonable for options since we are now adding the value "1" when only an
-// option is present in args but has no values. The new solution would fill the
-// optional with an empty vector, but leave a bare vector intact.  This will
-// introduce a breaking change.
-//
-// Having an optional vector for positional argumetns does not make much sense
-// sicne if there is a value present, it will fill the optional and add the
-// value to the vector. But we can implement it anyway.
-//
-// Defaults:
-//      optional<vector>: minargs(0)
-//      vector: minargs(1)
 TEST( ArgumentParserTest, shouldLoadOptionValuesIntoOptionalVector )
 {
    std::optional<std::vector<std::string>> texts;
