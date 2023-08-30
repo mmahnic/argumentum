@@ -46,7 +46,9 @@ public:
          using wrap_type = ConvertedValue<val_vector>;
          pValue = std::make_shared<wrap_type>( value );
 
-         return Option( getValueForKnownTarget( pValue ), Option::vectorValue );
+         auto option = Option( getValueForKnownTarget( pValue ), Option::vectorValue );
+         option.setMinArgs( 1 );
+         return option;
       }
    }
 
@@ -62,7 +64,9 @@ public:
          using wrap_type = ConvertedValue<val_vector>;
          pValue = std::make_shared<wrap_type>( value );
 
-         return Option( getValueForKnownTarget( pValue ), Option::vectorValue );
+         auto option = Option( getValueForKnownTarget( pValue ), Option::vectorValue );
+         option.setMinArgs( 0 );
+         return option;
       }
    }
 

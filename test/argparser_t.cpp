@@ -613,7 +613,8 @@ TEST( ArgumentParserTest, shouldFillOptionalOfOptionalVectorForOptionWithoutValu
 
    auto parser = argument_parser{};
    auto params = parser.params();
-   params.add_parameter( texts, "-v" ).minargs(0);
+   // default for optional<vector> target is minargs(0)
+   params.add_parameter( texts, "-v" );
 
    auto res = parser.parse_args( { "-v" } );
    ASSERT_TRUE( texts.has_value() );
@@ -626,6 +627,7 @@ TEST( ArgumentParserTest, shouldFailForPlainVectorWithOptionWitoutValues )
 
    auto parser = argument_parser{};
    auto params = parser.params();
+   // default for vector target is minargs(1)
    params.add_parameter( texts, "-v" );
 
    auto res = parser.parse_args( { "-v" } );
@@ -633,12 +635,13 @@ TEST( ArgumentParserTest, shouldFailForPlainVectorWithOptionWitoutValues )
    ASSERT_FALSE( res.errors.empty() );
 }
 
-TEST( ArgumentParserTest, shouldAddMissingValueAtMostOnce )
+TEST( ArgumentParserTest, shouldAddMissingValueToPlainVectorAtMostOnce )
 {
    std::vector<std::string> texts;
 
    auto parser = argument_parser{};
    auto params = parser.params();
+   // default for vector target is minargs(1)
    params.add_parameter( texts, "-v" ).minargs(0);
 
    auto res = parser.parse_args( { "-v", "-v", "-v" } );
@@ -652,7 +655,7 @@ TEST( ArgumentParserTest, shouldNotAddValueToOptionalWhenMissingSetMoreThanOnce 
 
    auto parser = argument_parser{};
    auto params = parser.params();
-   params.add_parameter( texts, "-v" ).minargs(0);
+   params.add_parameter( texts, "-v" );
 
    auto res = parser.parse_args( { "-v", "-v", "-v" } );
    ASSERT_TRUE( bool( res ) );
