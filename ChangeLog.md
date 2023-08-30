@@ -43,3 +43,14 @@
 
 ## [Next]
 
+### Fixed
+
+- The optional<vector> targets are now filled correctly.
+
+### Changed
+
+- For options with vector targets the default count changed from `minagrs(0)` to `minargs(1)`.  For
+  options with `optional<vector>` targets the default is still `minargs(0)`.
+- When an option with a vector target has `minargs(0)` a flagValue is added to the vector only if
+  the vector is empty.
+

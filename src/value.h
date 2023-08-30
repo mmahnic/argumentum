@@ -47,6 +47,10 @@ public:
    void setDefault( AssignDefaultAction action );
    /**
     * Called when an option expects 0 or more values, but none is given.
+    *
+    * Added to handle special cases for vectors and optional vectors.
+    * - vector: add flagValue if empty.
+    * - optional<vector>: set to empty vector if nullopt.
     */
    void setMissingValue( std::string_view flagValue, Environment& env );
    void markBadArgument();
@@ -165,12 +169,6 @@ protected:
       };
    }
 
-
-   // Special handling for vectors and optional vectors. Maybe also for optional
-   // strings.
-   // vector: add flagValue if empty
-   // optional<vector>: set to empty vector if nullopt
-   // string: set to empty string if nullopt
    AssignAction getMissingValueAction() override
    {
       return []( Value& value, const std::string& argument, Environment& ) {
