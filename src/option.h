@@ -107,10 +107,7 @@ private:
    Option( std::shared_ptr<Value>&& pValue, Kind kind )
       : mpValue( std::move( pValue ) )
       , mIsVectorValue( kind == Option::vectorValue )
-      , mMinArgs(  kind == Option::vectorValue  ? 1 : 0 )
-      , mMaxArgs(  kind == Option::vectorValue  ? -1 : 0 )
    {
-      // TODO: add getValue() that checks if it is nullptr and throws; returns *mpValue.
       assert( mpValue != nullptr );
    }
 };
