@@ -9,6 +9,9 @@
 
 namespace argumentum {
 
+void Options::add_parameters( ParameterConfig& )
+{}
+
 void Options::add_arguments( argument_parser& parser )
 {
    auto params = parser.params();
@@ -24,7 +27,7 @@ ARGUMENTUM_INLINE const std::string& CommandOptions::getName() const
    return mName;
 }
 
-ARGUMENTUM_INLINE void CommandOptions::execute( const ParseResult& result )
+ARGUMENTUM_INLINE void CommandOptions::execute( const ParseResult& )
 {}
 
 }   // namespace argumentum

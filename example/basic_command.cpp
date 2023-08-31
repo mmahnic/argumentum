@@ -30,7 +30,7 @@ public:
 public:
    using CommandOptions::CommandOptions;
 
-   void execute( const ParseResult& res ) override
+   void execute( const ParseResult& ) override
    {
       const auto& numbers = common->numbers;
       auto acc = accumulate( numbers.begin(), numbers.end(), operation.second, operation.first );
@@ -54,7 +54,7 @@ protected:
       params.add_parameter( operation, "--sum", "-s" )
             .nargs( 0 )
             .absent( std::make_pair( max, INT_MIN ) )
-            .action( [&]( auto& target, const std::string& value ) {
+            .action( [&]( auto& target, const std::string& /*value*/ ) {
                target = std::make_pair( sum, 0 );
             } )
             .help( "Sum the integers (default: find the max)" );
@@ -76,7 +76,7 @@ public:
       params.add_parameters( common );
    };
 
-   void execute( const ParseResult& res ) override
+   void execute( const ParseResult& ) override
    {
       for ( auto n : common->numbers )
          cout << n << " ";

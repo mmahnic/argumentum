@@ -91,7 +91,7 @@ ARGUMENTUM_INLINE std::ostream* ParserConfig::Data::output_stream() const
 }
 
 ARGUMENTUM_INLINE std::shared_ptr<IFormatHelp> ParserConfig::Data::help_formatter(
-      const std::string& helpOption ) const
+      const std::string& /*helpOption*/ ) const
 {
    return mpHelpFormatter ? mpHelpFormatter : std::make_shared<HelpFormatter>();
 }

@@ -25,7 +25,7 @@ int main( int argc, char** argv )
    params.add_parameter( operation, "--sum", "-s" )
          .nargs( 0 )
          .absent( std::make_pair( max, INT_MIN ) )
-         .action( [&]( auto& target, const std::string& value ) {
+         .action( [&]( auto& target, const std::string& /*value*/ ) {
             target = std::make_pair( sum, 0 );
          } )
          .help( "Sum the integers (default: find the max)" );

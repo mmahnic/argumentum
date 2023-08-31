@@ -228,7 +228,7 @@ TEST( ArgumentParserActionTest, shouldReadOptionNameFromActionEvnironment )
 
 TEST( ArgumentParserActionTest, shouldReportErrorsThroughActionEvnironment )
 {
-   auto actionEnv = []( std::string& target, const std::string& value, Environment& env ) {
+   auto actionEnv = []( std::string& /*target*/, const std::string& /*value*/, Environment& env ) {
       env.add_error( "Something is wrong" );
    };
 

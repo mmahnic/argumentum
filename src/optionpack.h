@@ -16,10 +16,7 @@ class Options
 {
 public:
    virtual ~Options() = default;
-   virtual void add_parameters( ParameterConfig& args )
-   {
-      // TODO (mmahnic): make method add_parameters( ParameterConfig) abstract.
-   }
+   virtual void add_parameters( ParameterConfig& args );
 
 #ifdef ARGUMENTUM_DEPRECATED_ATTR
 // Attributes are not handled well by clang-format so we use a macro.
