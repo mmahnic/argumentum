@@ -4,6 +4,8 @@ build-*/
 out/
 xdata/
 
+CMakeSettings.json
+
 *.swp
 *.*~
 ~*.*
