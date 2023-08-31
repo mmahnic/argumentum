@@ -20,8 +20,8 @@ if ( ARGUMENTUM_BUILD_STATIC_LIBS )
    if( ARGUMENTUM_PEDANTIC )
       target_compile_options( ${static_library_name}
          PRIVATE
-         $<$<CXX_COMPILER_ID:GNU>:-Werror -Wall>
-         $<$<CXX_COMPILER_ID:MSVC>:/WX /permissive- /Za>
+         $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -pedantic -Werror -Wl,--fatal-warnings>
+         $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /permissive- /Za>
          )
    endif()
 
@@ -46,8 +46,8 @@ if( ARGUMENTUM_IS_TOP_LEVEL )
    if( ARGUMENTUM_PEDANTIC )
       target_compile_options( ${internal_library_name}
          PRIVATE
-         $<$<CXX_COMPILER_ID:GNU>:-Werror -Wall>
-         $<$<CXX_COMPILER_ID:MSVC>:/WX /permissive- /Za>
+         $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -pedantic -Werror -Wl,--fatal-warnings>
+         $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /permissive- /Za>
          )
    endif()
 endif()

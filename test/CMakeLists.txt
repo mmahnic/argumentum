@@ -31,6 +31,14 @@ add_executable( argumentumTests
    value_t.cpp
    )
 
+if( ARGUMENTUM_PEDANTIC )
+   target_compile_options( argumentumTests
+      PRIVATE
+      $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -pedantic -Werror -Wl,--fatal-warnings>
+      $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /permissive- /Za>
+      )
+endif()
+
 target_link_libraries( argumentumTests
    ${GTEST_LIBRARIES}
    ${CMAKE_THREAD_LIBS_INIT}
