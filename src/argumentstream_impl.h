@@ -8,7 +8,7 @@
 
 namespace argumentum {
 
-ARGUMENTUM_INLINE void ArgumentStream::peek( std::function<EPeekResult( std::string_view )> fnPeek )
+ARGUMENTUM_INLINE void ArgumentStream::peek( std::function<EPeekResult( std::string_view )> )
 {}
 
 ARGUMENTUM_INLINE StdStreamArgumentStream::StdStreamArgumentStream(

@@ -213,7 +213,7 @@ protected:
    }
 
    template<typename TVar>
-   void assignMissing( std::optional<std::vector<TVar>>& var, const std::string& value )
+   void assignMissing( std::optional<std::vector<TVar>>& var, const std::string& /*value*/ )
    {
       if ( !var.has_value() )
          var = std::vector<TVar>{};
@@ -228,7 +228,7 @@ protected:
    }
 
    template<typename TVar>
-   void assignMissing( std::optional<TVar>& var, const std::string& value )
+   void assignMissing( std::optional<TVar>& var, const std::string& /*value*/ )
    {
       if ( !var.has_value() )
          var = TVar{};
@@ -249,7 +249,7 @@ protected:
 
    template<typename TVar,
          std::enable_if_t<!has_from_string<TVar>::value && !can_convert<TVar>::value, int> = 0>
-   void assign( TVar& var, const std::string& value )
+   void assign( TVar&, const std::string& value )
    {
       Notifier::warn( "Assignment is not implemented. ('" + value + "')" );
    }
