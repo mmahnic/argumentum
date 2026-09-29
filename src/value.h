@@ -6,6 +6,7 @@
 #include "convert.h"
 #include "notifier.h"
 
+#include <cstdint>
 #include <functional>
 #include <string>
 
